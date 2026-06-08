@@ -4,321 +4,598 @@
     "en": "The cycle of sending a request to Claude, checking stop_reason, executing requested tools, appending results to history, and iterating until end_turn.",
     "sr": "Ciklus: posalji zahtev Claude-u, proveri stop_reason, izvrsi trazene alate, dodaj rezultate u istoriju, ponavljaj dok ne dodje end_turn.",
     "domain": 1,
-    "seen_in": ["d1-q001"]
+    "seen_in": [
+      "d1-q001"
+    ]
   },
   {
     "term": "stop_reason",
     "en": "A structured field in the Claude API response indicating why the model stopped generating. Key values: 'tool_use' (model wants to call a tool) and 'end_turn' (model finished its turn).",
     "sr": "Strukturirano polje u odgovoru Claude API-ja koje govori zasto je model stao. Vazne vrednosti: 'tool_use' (model hoce da pozove alat) i 'end_turn' (model je zavrsio).",
     "domain": 1,
-    "seen_in": ["d1-q001", "d1-q015"]
+    "seen_in": [
+      "d1-q001",
+      "d1-q015"
+    ]
   },
   {
     "term": "tool_use",
     "en": "A stop_reason value (and content block type) signaling the model is requesting a tool call. The loop should continue: execute the tool and return its result. A tool_use block is also the right way to signal explicit TASK completion - have the model call a dedicated completion tool rather than relying on end_turn or natural-language parsing.",
     "sr": "Vrednost stop_reason-a (i tip bloka) koja znaci da model trazi poziv alata. Petlja se nastavlja: izvrsi alat i vrati rezultat. tool_use blok je i pravi nacin da se signalizira eksplicitan ZAVRSETAK ZADATKA - model pozove namenski completion tool umesto oslanjanja na end_turn ili parsiranje prirodnog jezika.",
     "domain": 1,
-    "seen_in": ["d1-q001", "d1-q004", "d1-q015", "d1-q019", "d1-q021"]
+    "seen_in": [
+      "d1-q001",
+      "d1-q004",
+      "d1-q015",
+      "d1-q019",
+      "d1-q021"
+    ]
   },
   {
     "term": "end_turn",
     "en": "A stop_reason value signaling the model has finished its TURN (no more tool calls this turn) - the correct signal for terminating a single loop turn. IMPORTANT: end_turn means the turn ended, NOT that a higher-level TASK is complete; the model may end a turn to await tool results or user input. For explicit task-completion, use a dedicated completion tool, not end_turn.",
     "sr": "Vrednost stop_reason-a koja znaci da je model zavrsio svoj POTEZ (nema vise poziva alata u tom potezu) - pravi signal za zaustavljanje jednog kruga petlje. VAZNO: end_turn znaci da je potez zavrsen, NE da je visi ZADATAK gotov; model moze zavrsiti potez da saceka rezultate alata ili korisnikov unos. Za eksplicitan zavrsetak zadatka koristi namenski completion tool, ne end_turn.",
     "domain": 1,
-    "seen_in": ["d1-q001", "d1-q015"]
+    "seen_in": [
+      "d1-q001",
+      "d1-q015"
+    ]
   },
   {
     "term": "PreToolCall hook",
     "en": "A hook that intercepts an outgoing tool call BEFORE it executes. Used to enforce compliance deterministically (block, modify, or gate the call). Sometimes called PreToolUse.",
     "sr": "Hook koji presrece odlazeci poziv alata PRE nego sto se izvrsi. Koristi se za determinsticko sprovodjenje pravila (blokiraj, izmeni ili uslovi poziv). Ponekad se zove PreToolUse.",
     "domain": 1,
-    "seen_in": ["d1-q002", "d1-q008", "d1-q009"]
+    "seen_in": [
+      "d1-q002",
+      "d1-q008",
+      "d1-q009",
+      "d1-q023",
+      "d1-q027",
+      "d1-q028"
+    ]
   },
   {
     "term": "PostToolUse hook",
     "en": "A hook that intercepts a tool RESULT after execution, used to transform/normalize data before the model processes it. Runs AFTER the action, so it cannot prevent it.",
     "sr": "Hook koji presrece REZULTAT alata posle izvrsenja, za transformaciju/normalizaciju podataka pre nego sto ih model obradi. Radi POSLE akcije, pa je ne moze spreciti.",
     "domain": 1,
-    "seen_in": ["d1-q002", "d1-q008", "d1-q009"]
+    "seen_in": [
+      "d1-q002",
+      "d1-q008",
+      "d1-q009",
+      "d1-q023",
+      "d1-q027",
+      "d1-q028"
+    ]
   },
   {
     "term": "dry run",
     "en": "Executing an operation in a way that reveals what would happen (e.g., EXPLAIN, or a rolled-back transaction) without making permanent changes.",
     "sr": "Izvrsavanje operacije tako da se vidi sta bi se desilo (npr. EXPLAIN ili transakcija sa rollback-om) bez trajnih izmena.",
     "domain": 1,
-    "seen_in": ["d1-q002"]
+    "seen_in": [
+      "d1-q002"
+    ]
   },
   {
     "term": "blast radius",
     "en": "The scope of impact an operation would have (e.g., how many rows a DELETE would affect). A dry run estimates blast radius before real execution.",
     "sr": "Obim uticaja koji bi operacija imala (npr. koliko redova bi DELETE pogodio). Dry run procenjuje blast radius pre stvarnog izvrsenja.",
     "domain": 1,
-    "seen_in": ["d1-q002"]
+    "seen_in": [
+      "d1-q002"
+    ]
   },
   {
     "term": "session state",
     "en": "Persistent data within a session, e.g., an approval token recording that a human approved an action. A hook can check it before allowing a gated operation.",
     "sr": "Trajni podaci unutar sesije, npr. approval token koji belezi da je covek odobrio akciju. Hook moze da ga proveri pre nego sto dozvoli uslovljenu operaciju.",
     "domain": 1,
-    "seen_in": ["d1-q002"]
+    "seen_in": [
+      "d1-q002"
+    ]
   },
   {
     "term": "deterministic enforcement",
     "en": "Guaranteeing a rule holds 100% of the time via code (hooks, prerequisite gates) rather than prompt instructions, which have a non-zero failure rate.",
     "sr": "Garantovanje da pravilo vazi 100% vremena pomocu koda (hooks, prerequisite gates), a ne prompt instrukcija koje imaju nenulti procenat greske.",
     "domain": 1,
-    "seen_in": ["d1-q002", "d1-q008"]
+    "seen_in": [
+      "d1-q002",
+      "d1-q008"
+    ]
   },
   {
     "term": "task decomposition",
     "en": "Breaking a complex workflow into smaller steps. The decomposition strategy should match the task's nature: predictable tasks use a fixed pipeline, open-ended tasks use dynamic adaptation.",
     "sr": "Rastavljanje slozenog posla na manje korake. Strategija dekompozicije treba da odgovara prirodi zadatka: predvidljiv posao -> fiksni pipeline, otvoren posao -> dinamicka adaptacija.",
     "domain": 1,
-    "seen_in": ["d1-q003", "d1-q013", "d1-q014"]
+    "seen_in": [
+      "d1-q003",
+      "d1-q013",
+      "d1-q014"
+    ]
   },
   {
     "term": "fixed sequential pipeline",
     "en": "A decomposition pattern with predefined steps executed in the same order every time (prompt chaining). Deterministic, efficient, and easy to test - best for structured, predictable tasks.",
     "sr": "Obrazac dekompozicije sa unapred definisanim koracima koji se izvrsavaju uvek istim redom (prompt chaining). Determinisitcki, efikasan, lak za testiranje - najbolji za strukturiran, predvidljiv posao. Anti-pattern kad se SVAKI upit (i najprostiji) gura kroz sve korake - tada treba dinamicko rutiranje.",
     "domain": 1,
-    "seen_in": ["d1-q003", "d1-q017"]
+    "seen_in": [
+      "d1-q003",
+      "d1-q017"
+    ]
   },
   {
     "term": "dynamic adaptive decomposition",
     "en": "A decomposition pattern where the agent decides at runtime which steps to take, how many, and in what order, based on what it discovers. Flexible but costlier and less predictable - best for open-ended, complex tasks.",
     "sr": "Obrazac dekompozicije gde agent u toku rada sam odlucuje koje korake da preduzme, koliko njih i kojim redom, na osnovu onoga sto otkrije. Fleksibilan ali skuplji i manje predvidljiv - najbolji za otvoren, slozen posao.",
     "domain": 1,
-    "seen_in": ["d1-q003"]
+    "seen_in": [
+      "d1-q003"
+    ]
   },
   {
     "term": "tool_choice",
     "en": "An API request parameter that controls whether and which tool the model must call. Values: 'auto' (model decides), 'any' (must call some tool), 'tool' with a name (must call that specific tool), 'none' (no tools). Forces a tool_use block - deterministic API-level enforcement, unlike a prompt.",
     "sr": "Parametar API zahteva koji kontrolise da li i koji alat model mora da pozove. Vrednosti: 'auto' (model bira), 'any' (mora neki alat), 'tool' sa imenom (mora bas taj alat), 'none' (bez alata). Iznudjuje tool_use blok - determinsticko sprovodjenje na nivou API-ja, za razliku od prompta.",
     "domain": 1,
-    "seen_in": ["d1-q004"]
+    "seen_in": [
+      "d1-q004"
+    ]
   },
   {
     "term": "temperature",
     "en": "A sampling parameter controlling the randomness/creativity of the model's output (0.0 = most deterministic). It affects WHAT text is produced, not WHETHER the model returns text versus a tool call - so it cannot enforce tool use.",
     "sr": "Parametar uzorkovanja koji kontrolise nasumicnost/kreativnost izlaza (0.0 = najdeterministicniji). Utice na to KAKAV tekst nastaje, ne na to DA LI model vraca tekst ili poziv alata - zato ne moze da iznudi koriscenje alata.",
     "domain": 1,
-    "seen_in": ["d1-q004", "d1-q010"]
+    "seen_in": [
+      "d1-q004",
+      "d1-q010"
+    ]
   },
   {
     "term": "context passing",
     "en": "Passing the output of one (sub)agent as the input to another within a multi-agent system. The transmission format matters: structured data preserves fidelity, while free-form prose is lossy and ambiguous.",
     "sr": "Prenos izlaza jednog (sub)agenta kao ulaza drugom u multi-agent sistemu. Format prenosa je bitan: strukturirani podaci cuvaju tacnost, dok je slobodna proza lossy i dvosmislena.",
     "domain": 1,
-    "seen_in": ["d1-q005", "d1-q007", "d1-q010"]
+    "seen_in": [
+      "d1-q005",
+      "d1-q007",
+      "d1-q010"
+    ]
   },
   {
     "term": "structured output",
     "en": "A machine-readable output format (JSON, CSV) that preserves exact values and field semantics with no ambiguity. Preferred over free-form prose when data must be consumed by another program or agent.",
     "sr": "Masinski-citljiv izlazni format (JSON, CSV) koji cuva tacne vrednosti i znacenje polja bez dvosmislenosti. Bolji od slobodne proze kada podatke konzumira drugi program ili agent.",
     "domain": 1,
-    "seen_in": ["d1-q005", "d1-q012"]
+    "seen_in": [
+      "d1-q005",
+      "d1-q012",
+      "d1-q026"
+    ]
   },
   {
     "term": "subagent",
     "en": "A specialized agent to which a coordinator delegates a sub-task (coordinator/subagent architecture). Each subagent handles one focused job; the coordinator orchestrates and passes data between them.",
     "sr": "Specijalizovani agent kome koordinator delegira pod-zadatak (coordinator/subagent arhitektura). Svaki podagent radi jedan fokusiran posao; koordinator orkestrira i prenosi podatke izmedju njih.",
     "domain": 1,
-    "seen_in": ["d1-q005", "d1-q007", "d1-q010", "d1-q011", "d1-q013", "d1-q017"]
+    "seen_in": [
+      "d1-q005",
+      "d1-q007",
+      "d1-q010",
+      "d1-q011",
+      "d1-q013",
+      "d1-q017",
+      "d1-q025"
+    ]
   },
   {
     "term": "fork-based session",
     "en": "Forking as an abstract session-state primitive creates a new BRANCH of an existing session: it preserves the current context and produces a new session handle, enabling parallel/divergent workflows WITHOUT modifying the original (contrast --resume = continue same line, --clear-context = wipe). CAVEAT (per CCA-F): it is over-engineered when a clean data hand-off would suffice (d1-q005/07), AND - critically - it is NOT a documented mechanism for branching/sharing LIVE INTERACTIVE state BETWEEN HUMAN developers (d1-q018). For human collaboration/handoff the recommended approach is Git branches per task + a synthesized summary/Projects, not fork_session. Discriminator: abstract 'which op forks' (d1-q016, fork) vs human-to-human handoff (d1-q018, summarize+isolate).",
     "sr": "Forkovanje kao apstraktni session-state primitiv pravi novu GRANU postojece sesije: cuva trenutni kontekst i daje nov session handle, omogucava paralelne/divergentne workflow-ove BEZ diranja originala (za razliku od --resume = nastavi istu liniju, --clear-context = obrisi). CAVEAT (po CCA-F): preterano je kada bi cist prenos podataka bio dovoljan (d1-q005/07), I - kljucno - NIJE dokumentovan mehanizam za grananje/deljenje ZIVOG INTERAKTIVNOG stanja IZMEDJU LJUDSKIH developera (d1-q018). Za ljudsku saradnju/predaju preporuka je Git grane po zadatku + sintetizovan sazetak/Projects, ne fork_session. Diskriminator: apstraktno 'koja op forkuje' (d1-q016, fork) vs predaja izmedju dvoje ljudi (d1-q018, summarize+isolate).",
     "domain": 1,
-    "seen_in": ["d1-q005", "d1-q007", "d1-q016", "d1-q018", "d1-q020"]
+    "seen_in": [
+      "d1-q005",
+      "d1-q007",
+      "d1-q016",
+      "d1-q018",
+      "d1-q020",
+      "d1-q025",
+      "d1-q026"
+    ]
   },
   {
     "term": "chain of thought",
     "en": "The model's internal reasoning, emitted as a text block before it acts (e.g. before a tool_use block). It is the logical bridge from the request to the action; preserving it in conversation history keeps multi-turn reasoning coherent.",
     "sr": "Interno rezonovanje modela, ispisano kao text blok pre nego sto deluje (npr. pre tool_use bloka). To je logicki most od zahteva do akcije; cuvanje u istoriji razgovora odrzava rezonovanje koherentnim kroz vise koraka.",
     "domain": 1,
-    "seen_in": ["d1-q006"]
+    "seen_in": [
+      "d1-q006"
+    ]
   },
   {
     "term": "text block",
     "en": "A content block type in an assistant response carrying prose/reasoning, as opposed to a tool_use block (a tool call). The text block before a tool_use typically holds the model's chain of thought - not redundant filler.",
     "sr": "Tip content bloka u odgovoru asistenta koji nosi prozu/rezonovanje, nasuprot tool_use bloku (poziv alata). Text blok ispred tool_use-a obicno sadrzi chain of thought modela - nije suvisni ukras.",
     "domain": 1,
-    "seen_in": ["d1-q006"]
+    "seen_in": [
+      "d1-q006"
+    ]
   },
   {
     "term": "conversation history",
     "en": "The array of messages passed to the model on each request. The model is stateless: it only knows what is present in this history. Anything stripped or omitted does not exist for the model and cannot be regenerated.",
     "sr": "Niz messages koji se salje modelu pri svakom zahtevu. Model je stateless: zna samo ono sto je prisutno u ovoj istoriji. Sve sto je izbaceno ili izostavljeno za model ne postoji i ne moze biti regenerisano.",
     "domain": 1,
-    "seen_in": ["d1-q006"]
+    "seen_in": [
+      "d1-q006"
+    ]
   },
   {
     "term": "subagent statelessness",
     "en": "A subagent retains no memory between separate invocations. Each Task tool call starts fresh, so anything a prior invocation 'knew' (e.g. previously approved decisions) is gone unless re-supplied. Persisting context across calls is the coordinator's responsibility, not a built-in feature.",
     "sr": "Subagent ne pamti nista izmedju odvojenih poziva. Svaki Task poziv krece 'od nule', pa sve sto je prethodni poziv 'znao' (npr. ranije odobrene odluke) nestaje ako se ponovo ne prosledi. Cuvanje konteksta kroz pozive je odgovornost koordinatora, ne ugradjena funkcija.",
     "domain": 1,
-    "seen_in": ["d1-q007", "d1-q010"]
+    "seen_in": [
+      "d1-q007",
+      "d1-q010"
+    ]
   },
   {
     "term": "Task tool",
     "en": "The tool a coordinator uses to spawn/invoke a subagent and hand it a prompt. Each Task call is an independent invocation with no memory of previous ones - so all context the subagent needs must be included in that call's prompt.",
     "sr": "Alat kojim koordinator pokrece/poziva subagent i prosledjuje mu prompt. Svaki Task poziv je nezavisan i bez memorije prethodnih - pa sav kontekst koji subagentu treba mora biti u promptu tog poziva.",
     "domain": 1,
-    "seen_in": ["d1-q007"]
+    "seen_in": [
+      "d1-q007",
+      "d1-q025"
+    ]
   },
   {
     "term": "exponential backoff",
     "en": "A retry strategy where the wait between attempts grows (e.g. 1s, 2s, 4s) instead of retrying immediately. Used for transient errors (503, timeout) to give the failing service time to recover without hammering it.",
     "sr": "Strategija ponavljanja gde pauza izmedju pokusaja raste (npr. 1s, 2s, 4s) umesto trenutnog ponavljanja. Koristi se za tranzijentne greske (503, timeout) da se servisu da vremena da se oporavi, bez zatrpavanja.",
     "domain": 1,
-    "seen_in": ["d1-q009"]
+    "seen_in": [
+      "d1-q009"
+    ]
   },
   {
     "term": "TOCTOU",
     "en": "Time-of-Check to Time-of-Use: a flaw where the state checked at one moment changes before it is actually used. E.g. pinging an API for 200 OK (check) does not guarantee the real call (use) succeeds - it can fail in between.",
     "sr": "Time-of-Check to Time-of-Use: mana gde se stanje provereno u jednom trenutku promeni pre nego sto se stvarno iskoristi. Npr. ping API-ja za 200 OK (provera) ne garantuje da ce pravi poziv (koriscenje) uspeti - moze pasti u medjuvremenu.",
     "domain": 1,
-    "seen_in": ["d1-q009"]
+    "seen_in": [
+      "d1-q009"
+    ]
   },
   {
     "term": "graceful degradation",
     "en": "When an operation fails, returning a clear standardized signal (e.g. an 'Offline' status) instead of a raw error. The model then knows the true state and does not hallucinate or misinterpret a transport-level failure.",
     "sr": "Kad operacija ne uspe, vracanje jasnog standardizovanog signala (npr. 'Offline' status) umesto sirove greske. Model tada zna stvarno stanje i ne halucinira niti pogresno tumaci gresku na transport nivou.",
     "domain": 1,
-    "seen_in": ["d1-q009"]
+    "seen_in": [
+      "d1-q009"
+    ]
   },
   {
     "term": "context isolation",
     "en": "Subagents operate with isolated contexts: they do not share a global session state nor automatically inherit the coordinator's context. The coordinator must explicitly include any needed context in the delegation prompt. Multi-agent systems avoid auto-inheritance on purpose, to prevent token waste and context stuffing.",
     "sr": "Subagenti rade sa izolovanim kontekstom: ne dele globalno session state niti automatski nasledjuju koordinatorov kontekst. Koordinator mora eksplicitno da ukljuci sve potrebno u delegation prompt. Multi-agent sistemi namerno izbegavaju auto-nasledjivanje, da spreče token waste i context stuffing. Izolacija se koristi i namerno: forkovanje u izolovane niti (svaka sa sopstvenim context window-om) sprecava context pollution izmedju nezavisnih istraga.",
     "domain": 1,
-    "seen_in": ["d1-q010", "d1-q020"]
+    "seen_in": [
+      "d1-q010",
+      "d1-q020"
+    ]
   },
   {
     "term": "delegation prompt",
     "en": "The prompt a coordinator sends when delegating a task to a subagent. Because the subagent inherits nothing, this prompt must carry ALL context the subagent needs (the relevant document, conversation history, constraints). Missing context here is the typical root cause of 'the subagent doesn't know X' failures.",
     "sr": "Prompt kojim koordinator delegira zadatak subagentu. Posto subagent nista ne nasledjuje, ovaj prompt mora da nosi SAV kontekst koji subagentu treba (relevantan dokument, istoriju razgovora, ogranicenja). Nedostatak konteksta ovde je tipican koren grešaka tipa 'subagent ne zna X'.",
     "domain": 1,
-    "seen_in": ["d1-q010"]
+    "seen_in": [
+      "d1-q010"
+    ]
   },
   {
     "term": "hub-and-spoke",
     "en": "An orchestration topology where all subagents communicate THROUGH a central coordinator (the hub), never directly with each other (the spokes). The coordinator centralizes orchestration, error handling, validation, and retry/backoff, and gates each downstream step on the success of the upstream one. Contrast with brittle peer-to-peer wiring, where one agent's failure silently poisons the next.",
     "sr": "Topologija orkestracije gde svi subagenti komuniciraju KROZ centralnog koordinatora (hub), nikad direktno medjusobno (spokes). Koordinator centralizuje orkestraciju, error handling, validaciju i retry/backoff, i gejtuje svaki naredni korak na uspeh prethodnog. Suprotnost krhkom peer-to-peer vezivanju, gde greska jednog agenta tiho zatruje sledeceg.",
     "domain": 1,
-    "seen_in": ["d1-q011"]
+    "seen_in": [
+      "d1-q011"
+    ]
   },
   {
     "term": "separation of concerns",
     "en": "A design principle: each component/agent does its own focused job and does not take on another's responsibility. Violated when, e.g., a Summarizer agent is made to tail another agent's logs and run its own error-check logic - brittle and out of its lane. Keeps systems modular and debuggable.",
     "sr": "Dizajn princip: svaka komponenta/agent radi svoj fokusiran posao i ne preuzima tudju odgovornost. Prekrsen kad se npr. Summarizer natera da tail-uje tudje logove i vodi sopstvenu error-check logiku - krhko i van njegove uloge. Cuva sistem modularnim i lakim za debug.",
     "domain": 1,
-    "seen_in": ["d1-q011"]
+    "seen_in": [
+      "d1-q011"
+    ]
   },
   {
     "term": "handoff pattern",
     "en": "The moment a task is handed off to another executor (agent->human escalation, or agent->agent). A good handoff is STRUCTURED and CURATED - the cause, what was attempted, and the recommended next step - not a raw transcript, so the receiver continues rather than starting from scratch. Best enforced via a tool with required fields that forces the handing-off agent to synthesize the needed context.",
     "sr": "Trenutak predaje zadatka drugom izvrsiocu (agent->covek eskalacija ili agent->agent). Dobra predaja je STRUKTURISANA i KURIRANA - uzrok, sta je pokusano, preporuceni sledeci korak - ne sirov transkript, da primalac nastavi umesto da krene iz nule. Najbolje iznudjena tool-om sa obaveznim poljima koji primorava agenta-predavaoca da sintetizuje potreban kontekst.",
     "domain": 1,
-    "seen_in": ["d1-q012"]
+    "seen_in": [
+      "d1-q012"
+    ]
   },
   {
     "term": "human-in-the-loop",
     "en": "A pattern (HITL) where a human approves an agent's actions before they execute. The right tool for destructive actions or final approvals - NOT for every diagnostic step, where it adds latency and defeats automation. Solves control/safety, not handoff quality.",
     "sr": "Obrazac (HITL) gde covek odobrava akcije agenta pre izvrsenja. Pravi alat za destruktivne akcije ili finalna odobrenja - NE za svaki dijagnosticki korak, gde uvodi latenciju i gusi automatizaciju. Resava kontrolu/bezbednost, ne kvalitet predaje.",
     "domain": 1,
-    "seen_in": ["d1-q012"]
+    "seen_in": [
+      "d1-q012"
+    ]
   },
   {
     "term": "cognitive overload",
     "en": "A failure mode where a single agent juggling too many parallel tasks and tools dilutes its focus: it gets confused, drops tasks, and exceeds its reasoning limits. The fix is not a bigger token window or a faster model but decomposition into focused subagents under a coordinator - the bottleneck is orchestration/cognitive load, not capacity or speed.",
     "sr": "Rezim otkaza gde jedan agent zongliranjem previse paralelnih zadataka i tool-ova razvodnjava fokus: zbunjuje se, ispusta zadatke, prebija reasoning limite. Lek nije veci token prozor ni brzi model, nego dekompozicija na fokusirane subagente pod koordinatorom - bottleneck je orkestracija/kognitivni teret, ne kapacitet ni brzina.",
     "domain": 1,
-    "seen_in": ["d1-q013"]
+    "seen_in": [
+      "d1-q013"
+    ]
   },
   {
     "term": "attention dilution",
     "en": "When too much content is packed into a single context/prompt, the model's attention spreads thin and it loses or fabricates details (hallucinations). The reason a single giant prompt fails on long input; chunking mitigates it, but reverting to one prompt (even with strict XML tags) brings the problem back - tags do not reduce the amount of context.",
     "sr": "Kad se previse sadrzaja ugura u jedan kontekst/prompt, pažnja modela se razvodni pa gubi ili izmislja detalje (halucinacije). Razlog zasto jedan ogroman prompt pada na dugackom ulazu; chunking ublazava, ali vracanje na jedan prompt (cak i sa strogim XML tagovima) vraca problem - tagovi ne smanjuju kolicinu konteksta.",
     "domain": 1,
-    "seen_in": ["d1-q014"]
+    "seen_in": [
+      "d1-q014"
+    ]
   },
   {
     "term": "map-reduce",
     "en": "A decomposition pattern: 'map' runs local passes over independent chunks; 'reduce' (an integration/synthesis pass) reasons over the chunks' OUTPUTS/summaries to derive global conclusions. Chunking alone (map without reduce) catches local issues but misses cross-chunk/global patterns; the reduce step bridges the context gap. More parallelism is NOT the fix - the integration step is.",
     "sr": "Obrazac dekompozicije: 'map' = lokalni prolazi po nezavisnim chunk-ovima; 'reduce' (integration/synthesis pass) = rezonuje nad IZLAZIMA/sazecima chunk-ova da izvede globalne zakljucke. Chunking sam (map bez reduce) hvata lokalne probleme ali promasuje cross-chunk/globalne; reduce premoscuje context gap. Vise paralelizma NIJE lek - integration korak jeste.",
     "domain": 1,
-    "seen_in": ["d1-q014"]
+    "seen_in": [
+      "d1-q014"
+    ]
   },
   {
     "term": "completion tool",
     "en": "A dedicated tool (e.g. research_complete(), submit_final_answer()) that the model CALLS to explicitly signal a TASK is complete; the loop detects that tool_use block by name. This is the reliable, schema-validated completion signal - preferred over end_turn (which only means the turn ended, not the task) and over natural-language parsing or stop_sequence (which depend on the model emitting exact text).",
     "sr": "Namenski tool (npr. research_complete(), submit_final_answer()) koji model POZOVE da eksplicitno signalizira da je ZADATAK gotov; petlja detektuje taj tool_use blok po imenu. To je pouzdan, schema-validisan signal zavrsetka - bolji od end_turn (koji znaci samo da je potez zavrsen, ne zadatak) i od NL parsiranja ili stop_sequence (koji zavise od toga da model emituje tacan tekst).",
     "domain": 1,
-    "seen_in": ["d1-q015"]
+    "seen_in": [
+      "d1-q015"
+    ]
   },
   {
     "term": "stop_sequence",
     "en": "A custom token sequence that, when generated by the model, halts generation at the API level (and is reported back as the stop_reason). A real mechanism, but a poor choice for signaling task completion: it still depends on the model EMITTING that exact sequence (natural-language generation), so it is not deterministic control. Anthropic recommends structured tool calls over stop sequences for completion signals.",
     "sr": "Prilagodjeni niz tokena koji, kad ga model generise, prekida generisanje na nivou API-ja (i vraca se kao stop_reason). Realan mehanizam, ali los izbor za signaliziranje zavrsetka zadatka: i dalje zavisi od toga da model EMITUJE bas taj niz (generisanje prirodnog jezika), pa nije deterministicka kontrola. Anthropic preporucuje strukturne tool pozive umesto stop sekvenci za signale zavrsetka.",
     "domain": 1,
-    "seen_in": ["d1-q015"]
+    "seen_in": [
+      "d1-q015"
+    ]
   },
   {
     "term": "session resumption",
     "en": "Returning to an existing saved session and continuing from its last state (e.g. --resume <session-name>). It CONTINUES the same line of interaction; it does not branch it. Distinct from forking (creates a divergent branch from the state) and from clearing context (wipes/resets the state).",
     "sr": "Vracanje u postojecu sacuvanu sesiju i nastavak iz njenog poslednjeg stanja (npr. --resume <session-name>). NASTAVLJA istu liniju interakcije; ne grana je. Razlikuj od forkovanja (pravi divergentnu granu iz stanja) i od clear-context (brise/resetuje stanje).",
     "domain": 1,
-    "seen_in": ["d1-q016"]
+    "seen_in": [
+      "d1-q016"
+    ]
   },
   {
     "term": "routing",
     "en": "An orchestration pattern where the Coordinator evaluates a query's complexity/intent UPFRONT and dynamically dispatches it to only the relevant subagent(s) ('fast path'), bypassing the rest - instead of pushing every query through a fixed full pipeline. Matches work to need: lower latency and compute without sacrificing accuracy. Contrast with broadcasting to all + taking the first response (fast but risks an inaccurate answer).",
     "sr": "Obrazac orkestracije gde Coordinator UNAPRED proceni slozenost/nameru upita i dinamicki ga posalje SAMO relevantnom subagentu/ima ('fast path'), preskacuci ostale - umesto da svaki upit gura kroz fiksni puni pipeline. Upari posao sa potrebom: manje latencije i compute-a bez zrtvovanja tacnosti. Suprotno od broadcast-a svima + uzimanja prvog odgovora (brzo ali rizikuje netacan odgovor).",
     "domain": 1,
-    "seen_in": ["d1-q017"]
+    "seen_in": [
+      "d1-q017"
+    ]
   },
   {
     "term": "Projects",
     "en": "An Anthropic feature for sharing knowledge/context across a team or a set of conversations. The recommended vehicle for human collaboration and context sharing: a developer starts a new, isolated session bootstrapped with synthesized context (e.g. a Claude-generated summary of the existing schema/resolvers), rather than sharing or forking one live interactive session between people. Pairs with isolating agent scope and Git branches per task to avoid conflicts.",
     "sr": "Anthropic feature za deljenje znanja/konteksta kroz tim ili skup razgovora. Preporuceno sredstvo za ljudsku saradnju i context sharing: developer krene u novoj, IZOLOVANOJ sesiji bootstrap-ovanoj sintetizovanim kontekstom (npr. Claude-generisan sazetak postojece schema/resolvera), umesto deljenja ili forkovanja jedne zive interaktivne sesije izmedju ljudi. Ide uz izolaciju scope-a agenta i Git grane po zadatku da se izbegnu konflikti.",
     "domain": 1,
-    "seen_in": ["d1-q018"]
+    "seen_in": [
+      "d1-q018"
+    ]
   },
   {
     "term": "tool_result",
     "en": "A content block returned in a USER message carrying the output of an executed tool, paired to its originating tool_use block via tool_use_id. When the assistant made multiple (parallel) tool_use calls, all the tool_result blocks go together in ONE user message. tool_result does NOT belong in a system or assistant message.",
     "sr": "Content blok koji se vraca u USER poruci i nosi izlaz izvrsenog alata, uparen sa svojim izvornim tool_use blokom preko tool_use_id. Kad je asistent uputio vise (paralelnih) tool_use poziva, svi tool_result blokovi idu zajedno u JEDNU user poruku. tool_result NE pripada system ni assistant poruci. Mora biti STRUKTURNI blok (ne plain text) - inace puca tool_use_id veza i model gubi proveniencu/stanje.",
     "domain": 1,
-    "seen_in": ["d1-q019", "d1-q021"]
+    "seen_in": [
+      "d1-q019",
+      "d1-q021"
+    ]
   },
   {
     "term": "message alternation",
     "en": "The Messages API requirement that 'user' and 'assistant' roles strictly alternate - you cannot have two consecutive messages of the same role. This is why tool_use (in the assistant message) and all its corresponding tool_result blocks (in one following user message) preserve the alternation; splitting results across several user messages would create consecutive user messages and break the pattern.",
     "sr": "Zahtev Messages API-ja da se 'user' i 'assistant' role-ovi strogo smenjuju - ne mozes imati dve uzastopne poruke istog role-a. Zato tool_use (u assistant poruci) i svi pripadajuci tool_result blokovi (u jednoj sledecoj user poruci) cuvaju alternaciju; razbijanje rezultata u vise user poruka napravilo bi uzastopne user poruke i pokvarilo obrazac.",
     "domain": 1,
-    "seen_in": ["d1-q019"]
+    "seen_in": [
+      "d1-q019"
+    ]
   },
   {
     "term": "parallel tool use",
     "en": "Anthropic models can emit MULTIPLE tool_use blocks in a single assistant turn (calling several tools at once). All their results are returned together in one user message. Supported by default; the disable_parallel_tool_use option forces one-tool-at-a-time, but is not required just because multiple tools were called - the results are simply batched.",
     "sr": "Anthropic modeli mogu emitovati VISE tool_use blokova u jednom assistant potezu (vise alata odjednom). Svi rezultati se vracaju zajedno u jednoj user poruci. Podrzano po defaultu; opcija disable_parallel_tool_use forsira jedan-po-jedan, ali nije potrebna samo zato sto je pozvano vise alata - rezultati se prosto grupisu.",
     "domain": 1,
-    "seen_in": ["d1-q019"]
+    "seen_in": [
+      "d1-q019"
+    ]
   },
   {
     "term": "tool_use_id",
     "en": "An identifier that links a tool_result back to its originating tool_use call. It provides PROVENANCE - letting the model reliably map each observation (result) to the specific action (call) that produced it. It exists only inside a structured tool_result block; appending the result as plain text drops the tool_use_id, breaking the action<->result link and causing hallucination and loss of state.",
     "sr": "Identifikator koji povezuje tool_result sa njegovim originalnim tool_use pozivom. Daje PROVENIENCU - model pouzdano mapira svaku opservaciju (rezultat) na tacnu akciju (poziv) koja ju je proizvela. Postoji samo unutar strukturnog tool_result bloka; lepljenje rezultata kao plain text izbacuje tool_use_id, kida vezu akcija<->ishod i izaziva halucinaciju i gubitak stanja.",
     "domain": 1,
-    "seen_in": ["d1-q021"]
+    "seen_in": [
+      "d1-q021"
+    ]
   },
   {
     "term": "context pollution",
     "en": "Accumulation of IRRELEVANT or stale data in the context window that corrupts subsequent reasoning (e.g. network logs from a failed DDoS investigation confusing a later database-failure investigation). Distinct from attention dilution (that is about too MUCH content/volume; this is about irrelevant content bleeding in and contaminating). Fix: fork into isolated threads after a shared setup so each line of work has a clean, independent context.",
     "sr": "Nakupljanje IRELEVANTNIH ili zastarelih podataka u context window-u koji kvare naredno rezonovanje (npr. mrezni logovi iz neuspesne DDoS istrage zbunjuju kasniju DB istragu). Razlika od attention dilution (tamo: previse sadrzaja/volumen; ovde: irelevantan sadrzaj curi i kontaminira). Lek: forkovati u izolovane niti posle zajednickog setupa, da svaka linija rada ima cist, nezavisan kontekst.",
     "domain": 1,
-    "seen_in": ["d1-q020"]
+    "seen_in": [
+      "d1-q020"
+    ]
+  },
+  {
+    "term": "EC2 (Elastic Compute Cloud)",
+    "en": "AWS service providing virtual servers (instances) in the cloud, billed per running time. In agentic cost-optimization scenarios, EC2 instances are typically the largest spend item an agent starts from - but an instance is rarely standalone; its lifecycle may be controlled by an Auto Scaling Group.",
+    "sr": "AWS servis koji daje virtuelne servere (instance) u oblaku, naplata po vremenu rada. U agentskim scenarijima optimizacije troskova, EC2 instance su obicno najveca stavka od koje agent krece - ali instanca retko stoji sama; njenim zivotnim ciklusom moze upravljati Auto Scaling Group.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q022"
+    ]
+  },
+  {
+    "term": "ASG (Auto Scaling Group)",
+    "en": "An AWS mechanism that automatically launches and terminates EC2 instances according to min/max/desired and scaling rules - effectively the 'owner' of those instances. Implication for an agent: terminating an instance without understanding its ASG can be futile (the ASG re-launches it) or harmful (it disrupts something the ASG maintains). A discovered, undocumented ASG is therefore in-scope context to investigate, not scope creep to ignore.",
+    "sr": "AWS mehanizam koji automatski pali i gasi EC2 instance prema min/max/zeljenom broju i scaling pravilima - prakticno 'vlasnik' tih instanci. Posledica za agenta: gasenje instance bez razumevanja njenog ASG-a moze biti uzaludno (ASG je ponovo upali) ili stetno (poremeti nesto sto ASG odrzava). Otkriven, nedokumentovan ASG je zato kontekst koji treba istraziti, a ne 'scope creep' koji se ignorise.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q022"
+    ]
+  },
+  {
+    "term": "GDPR data residency",
+    "en": "EU data protection law requiring that personal data of EU residents physically stay within permitted (EU) geographies; certain data cannot be transferred to US regions. A hard legal constraint, not a best-effort goal.",
+    "sr": "Evropski zakon o zastiti podataka: podaci o EU gradjanima moraju fizicki ostati u dozvoljenoj (EU) geografiji i ne smeju u US regione. Tvrdo PRAVNO ogranicenje, ne 'best effort' - krsenje znaci kaznu, pa je determinisana prevencija (PreToolCall hook) jedina garancija.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q023"
+    ]
+  },
+  {
+    "term": "S3 bucket",
+    "en": "AWS Simple Storage Service top-level container for files/objects. Each bucket lives in a specific AWS region (a geographic data-center location), which is why moving a bucket between regions has data-residency implications.",
+    "sr": "Kontejner najviseg nivoa za fajlove u AWS S3 skladistu. Svaki bucket zivi u jednom REGIONU (geografska lokacija data centra), zato premestanje bucket-a izmedju regiona dodiruje data residency. U pitanju alat transfer_bucket bas to radi.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q023"
+    ]
+  },
+  {
+    "term": "IAM",
+    "en": "AWS Identity and Access Management - the permission system controlling who (which identity) may perform which action on which resource. Can block actions, but is generally not granular enough to judge data residency based on a bucket's content.",
+    "sr": "AWS Identity and Access Management - sistem dozvola: ko sme koju akciju nad kojim resursom. Moze da blokira akcije, ali nije dovoljno granularan da procenjuje residency po SADRZAJU bucket-a (da li bas taj bucket ima EU podatke), pa sam po sebi ne garantuje GDPR usklađenost.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q023"
+    ]
+  },
+  {
+    "term": "synthesizer agent",
+    "en": "A final-step agent (aka aggregator) that takes the structured outputs of multiple parallel sub-agents and produces a single, coherent natural-language response addressing the whole query. The recommended way to merge fan-out results.",
+    "sr": "Agent zavrsnog koraka (sinonim: aggregator) koji uzme strukturisane izlaze vise paralelnih pod-agenata i napravi JEDAN koherentan odgovor na prirodnom jeziku za celo pitanje. Preporuceni nacin spajanja fan-out rezultata; koordinacija ide preko njega, ne peer-to-peer.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q024"
+    ]
+  },
+  {
+    "term": "router",
+    "en": "An orchestration component that inspects an incoming request and dispatches sub-tasks to the appropriate sub-agents (often fanning out to several in parallel). It routes work; it is not where final synthesis belongs.",
+    "sr": "Komponenta orkestracije koja pregleda zahtev i prosledi pod-zadatke pravim pod-agentima (cesto fan-out u paralelu). Ruti posao; finalna sinteza NIJE njegov posao (za to ide synthesizer). Odbacivanje sporijeg pod-agenta radi latencije je anti-obrazac.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q024"
+    ]
+  },
+  {
+    "term": "peer-to-peer agent communication",
+    "en": "An anti-pattern in which sub-agents talk directly to each other (e.g. via shared memory) to negotiate a result, instead of being coordinated through a central aggregator/synthesizer. Adds coupling and complexity with no convergence guarantee.",
+    "sr": "Anti-obrazac u kome pod-agenti komuniciraju direktno medju sobom (npr. preko deljene memorije) da 'ispregovaraju' rezultat, umesto da ih koordinise centralni aggregator/synthesizer. Dodaje coupling i kompleksnost, bez garancije konvergencije. Robusna orkestracija = hub-and-spoke.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q024"
+    ]
+  },
+  {
+    "term": "allowedTools",
+    "en": "The list of tools an agent is permitted to call. Putting a tool here makes it AVAILABLE but does not make the model USE it — the system prompt must still tell the model when to invoke it.",
+    "sr": "Lista alata koje agent SME da pozove. Stavljanje alata ovde ga cini DOSTUPNIM, ali ne znaci da ce ga model UPOTREBITI - sistem prompt i dalje mora reci modelu KADA da ga pozove. Dostupan alat != upotrebljen alat.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q025"
+    ]
+  },
+  {
+    "term": "AgentDefinition",
+    "en": "The definition of a subagent: its identity, system prompt, and the tools it may use. It describes the subagent; it does NOT contain an automatic routing trigger that fires it.",
+    "sr": "Definicija subagenta: identitet, sistem prompt i alati koje sme da koristi. OPISUJE subagenta; ne sadrzi automatski okidac (npr. izmisljeni 'trigger_intent') koji bi ga sam pokrenuo - invokaciju radi koordinator preko Task alata.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q025"
+    ]
+  },
+  {
+    "term": "coordinator",
+    "en": "The orchestrating main agent that delegates sub-tasks to specialized subagents (by calling the Task tool). Coordination flows through it (hub-and-spoke), not peer-to-peer between subagents.",
+    "sr": "Glavni agent koji orkestrira i delegira pod-zadatke specijalizovanim subagentima (pozivom Task alata). Koordinacija ide kroz njega (hub-and-spoke), ne peer-to-peer medju subagentima. Da bi delegirao, prompt mu mora reci KADA da pozove Task.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q025"
+    ]
+  },
+  {
+    "term": "attribution (provenance)",
+    "en": "The binding 'this datum came from this source'. In multi-agent pipelines it must survive every handoff. Best preserved by passing structured data that explicitly links each item to its source metadata, not prose the downstream agent must parse.",
+    "sr": "Veza 'ovaj podatak potice iz ovog izvora'. U vise-agentskim pipeline-ima mora prezivi svaki handoff. Najbolje se cuva prenosom STRUKTURNIH podataka koji eksplicitno vezuju svaku stavku za metapodatke izvora (doc/strana/URL), a ne prozom koju nizvodni agent mora da parsira (rizik misatribucije/halucinacije).",
+    "domain": 1,
+    "seen_in": [
+      "d1-q026"
+    ]
+  },
+  {
+    "term": "token bucket rate limiter",
+    "en": "A local rate-limiting mechanism: a bucket holds N tokens, each call consumes one, tokens refill over time; when empty, calls are blocked or made to wait. Enforced in code before a request leaves, so it can deterministically prevent exceeding an API limit.",
+    "sr": "Lokalni mehanizam ogranicavanja brzine: kofica ima N zetona, svaki poziv trosi jedan, zetoni se obnavljaju u vremenu; kad nema zetona -> blokiraj/cekaj. Sprovodi se u KODU pre nego zahtev ode, pa deterministicki sprecava prekoracenje API limita. Stavlja se u PreToolCall hook.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q027"
+    ]
+  },
+  {
+    "term": "rate limit",
+    "en": "An API rule capping requests per unit of time. Exceeding it triggers a penalty (here a 24h account ban). Because the penalty is immediate/irreversible, protection must PREVENT the offending call before it is sent (PreToolCall), not react after.",
+    "sr": "Pravilo API-ja koje ogranicava broj zahteva po jedinici vremena. Prekoracenje kaznjava (ovde 24h ban naloga). Posto je kazna trenutna/nepovratna, zastita mora da SPRECI sporni poziv pre slanja (PreToolCall), a ne da reaguje posle (PostToolCall je prekasno).",
+    "domain": 1,
+    "seen_in": [
+      "d1-q027"
+    ]
+  },
+  {
+    "term": "data normalization",
+    "en": "Converting heterogeneous inputs/outputs into a single consistent format before the model interprets them. Done deterministically in code (e.g., a PostToolUse hook over the tool result), not via prompt instructions, so the model never has to reconcile ambiguous raw values.",
+    "sr": "Svodjenje raznorodnih ulaza/izlaza na jedan dosledan format pre nego ih model tumaci. Radi se DETERMINISTICKI u kodu (npr. PostToolUse hook nad rezultatom alata), ne uputstvom u promptu, da model nikad ne mora da pomiruje dvosmislene sirove vrednosti (npr. 0/200/OK kao 'uspeh').",
+    "domain": 1,
+    "seen_in": [
+      "d1-q028"
+    ]
+  },
+  {
+    "term": "unified schema",
+    "en": "The agreed target shape that all variants are mapped to (e.g., {\"status\":\"SUCCESS\"}). Removes ambiguity: different legacy codes (0, 200, OK) all become the same normalized structure the model can read reliably.",
+    "sr": "Dogovoreni ciljni oblik u koji se sve varijante mapiraju (npr. {'status':'SUCCESS'}). Uklanja dvosmislenost: razliciti legacy kodovi (0, 200, OK) postaju ista normalizovana struktura koju model pouzdano cita.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q028"
+    ]
   }
 ]

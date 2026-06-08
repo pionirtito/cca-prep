@@ -40,7 +40,13 @@ CLAUDE.md                         # ovaj fajl
   "claude_notes": "objasnjenje nejasnoca (SR)",
   "glossary_refs": ["stop_reason"], // pojmovi koje pitanje dodiruje
   "pattern_refs": ["intercept-before-not-after"], // obrasci koje ilustruje
-  "tags": ["agentic-loop"]
+  "tags": ["agentic-loop"],
+  "disputed": {                     // OPCIONO — samo ako kviz daje konfliktne zvanicne kljuceve za isti stem
+    "reason": "kratko zasto je sporno (SR)",
+    "official_answers_seen": ["po SADRZAJU, ne po slovu (opcije se mesaju)", "..."],
+    "our_verdict": "A",             // slovo koje MI smatramo tacnim; mora biti == correct
+    "verdict_rationale": "zasto bas to (SR)"
+  }
 }
 ```
 
@@ -49,6 +55,17 @@ CLAUDE.md                         # ovaj fajl
 - `correct` — `my_answer === correct`
 - `wrong` — `my_answer !== correct`
 Uvek izracunaj `status` iz `my_answer` i `correct`, ne pogadjaj.
+
+### Kontradiktorni zvanični odgovori (disputed pitanja)
+Kvizovi ponekad daju RAZLIČIT zvanični tačan odgovor za isti stem (isto pitanje, izmešane opcije).
+Kviz NIJE izvor istine kad protivreči sebi — mi jesmo, uz obrazloženje. Kada to uočiš (pri proveri duplikata):
+1. **Nikad nečujno ne menjaj `correct`.**
+2. `correct` = **naš rezonovan verdikt** — arhitektonski najbranjiviji odgovor, usklađen sa Anthropic
+   best-practice i sa ostatkom baze. Obrazloži ga u `claude_notes`.
+3. Dodaj opciono polje **`disputed`** (vidi šemu) sa SVIM viđenim zvaničnim odgovorima (po sadržaju),
+   izvorima/instancama, i našim `verdict_rationale`. `our_verdict` mora biti == `correct`.
+4. Pouku koju pitanje stvarno testira tretiraj kao pouzdanu (npr. „ne parsiraj NL za kontrolu toka");
+   izbor IZMEĐU dva validna signala je tačka gde je baza klimava — tako ga i tretiraj na ispitu.
 
 ## Domeni (za određivanje `domain` i prefiksa `id`)
 1. Agentic Architecture & Orchestration
@@ -89,6 +106,15 @@ pišemo u bazu. Za svako pitanje pratiti ovu petlju:
    - Ako pojam već postoji u `glossary.json`: dodaj `id` pitanja u njegov niz `seen_in` (bez duplikata).
    - Ako ne postoji: kreiraj novi unos sa `term`, `en`, `sr`, `domain`, `seen_in`.
 5. Validiraj da je JSON ispravan pre nego što sačuvaš (npr. `python3 -c "import json; json.load(open('data/domain1.json'))"`).
+
+## Pojašnjenje → glossary (OBAVEZNO)
+Kad god korisnik traži pojašnjenje nekog pojma (u toku tutorskog toka ili bilo kad), unesi taj
+pojam u `glossary.json` — čak i ako nije u `glossary_refs` nijednog pitanja.
+- Ako pojam još nije vezan za upisano pitanje: `seen_in` = []. Kad pitanje koje ga koristi bude
+  upisano, dodaj njegov `id` u `seen_in`.
+- Glossary je indeks **ispitnih** pojmova. Čisto tooling/meta termini (npr. „harness", samo Claude
+  Code okruženje) se objašnjavaju u razgovoru ali NE ulaze u bazu.
+- Validiraj JSON posle unosa.
 
 ## Obrasci (patterns.json)
 Pored pojmova, vodimo i sloj POUKA/OBRAZACA u `data/patterns.json` — mentalni modeli koji
