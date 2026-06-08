@@ -9,6 +9,16 @@ Korisnik je sa srpskog govornog područja. Polje `explanation` ostavljaj na engl
 (zvanični tekst), a `claude_notes` piši na srpskom — to su objašnjenja nejasnoća.
 Glossary ima i `en` i `sr` polje za svaki pojam.
 
+### Dijakritike (OBAVEZNO)
+Sav srpski tekst MORA koristiti pravilne dijakritike `ć č ž š đ` svuda gde po pravopisu
+treba. Korisnik često kuca latinično bez kvačica ("kljuc", "vraca", "deterministicki") —
+to NE znači da i baza sme biti bez njih. Pri svakom upisu/izmeni Claude restaurira
+dijakritike u srpskim poljima: `claude_notes`, `disputed` SR podpolja
+(`reason`/`verdict_rationale`/`official_answers_seen`), `glossary.sr`,
+`patterns.title`/`lesson_sr`, `guide.*.sr`.
+NE diraj engleski/zvanični tekst (`explanations`, `*.en`, `question`/`options`) ni tehničke
+tokene/kod (`stop_reason`, `PreToolCall`, `allowedTools`, imena alata, navodnici sa kodom).
+
 ## Struktura repo-a
 ```
 data/
