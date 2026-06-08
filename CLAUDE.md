@@ -14,6 +14,7 @@ Glossary ima i `en` i `sr` polje za svaki pojam.
 data/
   domain1.json ... domain5.json   # pitanja, po jedan niz po domenu
   glossary.json                   # index pojmova, dvosmerno povezan sa pitanjima
+  patterns.json                   # obrasci/pouke po pod-domenu, povezani sa pitanjima
 index.html / style.css / app.js   # staticki sajt (cita data/ direktno)
 CLAUDE.md                         # ovaj fajl
 .claude/commands/add-question.md  # slash komanda za unos pitanja
@@ -30,9 +31,15 @@ CLAUDE.md                         # ovaj fajl
   "correct": "B",                   // slovo tacnog odgovora; "" ako jos nije poznat
   "my_answer": "C",                 // sta je korisnik odgovorio; "" ako nije odgovorio
   "status": "wrong",               // "correct" | "wrong" | "unseen"
-  "explanation": "zvanicni tekst sa sajta (EN)",
+  "explanations": {                 // objasnjenje PO SVAKOJ opciji (EN, sa sajta)
+    "A": "Incorrect. ...",
+    "B": "Correct. ...",
+    "C": "Incorrect. ...",
+    "D": "Incorrect. ..."
+  },
   "claude_notes": "objasnjenje nejasnoca (SR)",
   "glossary_refs": ["stop_reason"], // pojmovi koje pitanje dodiruje
+  "pattern_refs": ["intercept-before-not-after"], // obrasci koje ilustruje
   "tags": ["agentic-loop"]
 }
 ```
@@ -50,6 +57,26 @@ Uvek izracunaj `status` iz `my_answer` i `correct`, ne pogadjaj.
 4. Prompt Engineering & Structured Output
 5. Context Management & Reliability
 
+## Tutorski tok (interakcija pitanje-po-pitanje)
+Ovo je PRIMARNI način rada: korisnik uči obrasce, ne pamti pitanja. Prvo učimo, pa tek onda
+pišemo u bazu. Za svako pitanje pratiti ovu petlju:
+
+1. Korisnik šalje pitanje + sve opcije (tekst ili screenshot).
+2. **Pre tačnog odgovora:** ukratko objasniti pojmove koji bi mogli biti nejasni — na srpskom,
+   sa analogijom ako pomaže. Zatim pitati da li je jasno ili želi odmah da odgovori.
+   **Ne otkrivati tačan odgovor pre nego što korisnik kaže svoj.**
+3. Korisnik kaže svoj odgovor (A/B/C/D) → potvrditi da li je tačno ili ne.
+4. Razložiti SVE opcije: zašto je tačna tačna i zašto svaka pogrešna pada. Na srpskom, jasno,
+   sa fokusom na zamke. Ovo je najvažniji deo.
+5. Korisnik šalje zvanični response sa sajta → uporediti sa onim što smo izveli.
+6. **Tek onda** upis u bazu — vidi „Radni tok kada korisnik doda pitanje".
+
+### Pravila tutorskog toka
+- Nikad ne upisuj pitanje pre nego što prođu koraci 2–5 (prvo učimo, pa pišemo).
+- Objašnjenja idu na srpskom; `explanations` tekst ostaje na engleskom (zvanični).
+- Posle upisa: kratak rezime šta je dodato (koji `id`, koji novi pojmovi/obrasci).
+- Ne predlaži `git push` samoinicijativno — korisnik sam grupiše commit-e.
+
 ## Radni tok kada korisnik doda pitanje
 1. Odredi domen iz sadržaja pitanja (ili pitaj ako nije jasno).
 2. **Provera duplikata:** pre dodavanja, pretraži SVE domene da li isto pitanje već postoji
@@ -62,6 +89,14 @@ Uvek izracunaj `status` iz `my_answer` i `correct`, ne pogadjaj.
    - Ako pojam već postoji u `glossary.json`: dodaj `id` pitanja u njegov niz `seen_in` (bez duplikata).
    - Ako ne postoji: kreiraj novi unos sa `term`, `en`, `sr`, `domain`, `seen_in`.
 5. Validiraj da je JSON ispravan pre nego što sačuvaš (npr. `python3 -c "import json; json.load(open('data/domain1.json'))"`).
+
+## Obrasci (patterns.json)
+Pored pojmova, vodimo i sloj POUKA/OBRAZACA u `data/patterns.json` — mentalni modeli koji
+pokrivaju vise pitanja (npr. „deterministicko = hook, ne prompt"). Svaki obrazac ima `id`,
+`title`, `domain`, `lesson_sr`, `lesson_en`, `seen_in` (lista id-jeva pitanja).
+Pitanja se vezuju za obrasce preko polja `pattern_refs`.
+Kada dodajes pitanje koje ilustruje postojeci obrazac: dodaj id pitanja u `seen_in` tog obrasca
+i dodaj `id` obrasca u `pattern_refs` pitanja. Ako uocis NOVI ponavljajuci obrazac, kreiraj ga.
 
 ## Pravila konzistentnosti
 - Nikad ne menjaj postojeći `id`.

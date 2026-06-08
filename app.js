@@ -1,8 +1,11 @@
 // ---- state ----
 let QUESTIONS = [];
 let GLOSSARY = [];
+let PATTERNS = [];
+let GUIDE = null;
 let view = "overview";
 let quiz = null;
+let guideLang = "both"; // "both" | "en" | "sr"
 
 const app = document.getElementById("app");
 const statsEl = document.getElementById("stats");
@@ -11,16 +14,16 @@ const statsEl = document.getElementById("stats");
 async function load() {
   try {
     const domains = await Promise.all(
-      [1, 2, 3, 4, 5].map((d) =>
-        fetch(`./data/domain${d}.json`).then((r) => r.json())
-      )
+      [1, 2, 3, 4, 5].map((d) => fetch(`./data/domain${d}.json`).then((r) => r.json()))
     );
     QUESTIONS = domains.flat();
     GLOSSARY = await fetch("./data/glossary.json").then((r) => r.json());
+    try { PATTERNS = await fetch("./data/patterns.json").then((r) => r.json()); } catch (e) { PATTERNS = []; }
+    try { GUIDE = await fetch("./data/guide.json").then((r) => r.json()); } catch (e) { GUIDE = null; }
     renderStats();
     render();
   } catch (e) {
-    app.innerHTML = `<p class="empty">Ne mogu da učitam podatke. Pokreni sajt preko lokalnog servera (vidi README), ne otvaranjem fajla direktno.</p>`;
+    app.innerHTML = `<p class="empty">Ne mogu da ucitam podatke. Pokreni sajt preko lokalnog servera (vidi README), ne otvaranjem fajla direktno.</p>`;
     console.error(e);
   }
 }
@@ -31,8 +34,8 @@ function renderStats() {
   const no = QUESTIONS.filter((q) => q.status === "wrong").length;
   statsEl.innerHTML = `
     <span>ukupno <b>${total}</b></span>
-    <span class="ok">tačno <b>${ok}</b></span>
-    <span class="no">netačno <b>${no}</b></span>`;
+    <span class="ok">tacno <b>${ok}</b></span>
+    <span class="no">netacno <b>${no}</b></span>`;
 }
 
 // ---- routing ----
@@ -50,6 +53,8 @@ function render() {
   if (view === "overview") renderOverview();
   else if (view === "quiz") renderQuizSetup();
   else if (view === "glossary") renderGlossary();
+  else if (view === "patterns") renderPatterns();
+  else if (view === "guide") renderGuide();
 }
 
 // ---- overview + search ----
@@ -64,26 +69,22 @@ function renderOverview(filter = "", domain = "all", status = "all") {
 
   app.innerHTML = `
     <div class="toolbar">
-      <input id="search" placeholder="Pretraži pitanja, opcije, tagove…" value="${filter}" />
+      <input id="search" placeholder="Pretrazi pitanja, opcije, tagove..." value="${filter}" />
       <select id="fdom">
         <option value="all">Svi domeni</option>
         ${[1, 2, 3, 4, 5].map((d) => `<option value="${d}" ${domain == d ? "selected" : ""}>Domen ${d}</option>`).join("")}
       </select>
       <select id="fstat">
         <option value="all">Svi statusi</option>
-        <option value="correct" ${status === "correct" ? "selected" : ""}>Tačno</option>
-        <option value="wrong" ${status === "wrong" ? "selected" : ""}>Netačno</option>
-        <option value="unseen" ${status === "unseen" ? "selected" : ""}>Neobrađeno</option>
+        <option value="correct" ${status === "correct" ? "selected" : ""}>Tacno</option>
+        <option value="wrong" ${status === "wrong" ? "selected" : ""}>Netacno</option>
+        <option value="unseen" ${status === "unseen" ? "selected" : ""}>Neobradjeno</option>
       </select>
     </div>
     <div id="list"></div>`;
 
   const list = document.getElementById("list");
-  if (!filtered.length) {
-    list.innerHTML = `<p class="empty">Nema pitanja za ovaj filter.</p>`;
-  } else {
-    list.innerHTML = filtered.map(cardHTML).join("");
-  }
+  list.innerHTML = filtered.length ? filtered.map(cardHTML).join("") : `<p class="empty">Nema pitanja za ovaj filter.</p>`;
 
   document.getElementById("search").oninput = (e) =>
     renderOverview(e.target.value, document.getElementById("fdom").value, document.getElementById("fstat").value);
@@ -93,11 +94,22 @@ function renderOverview(filter = "", domain = "all", status = "all") {
     renderOverview(document.getElementById("search").value, document.getElementById("fdom").value, e.target.value);
 }
 
+function explanationsHTML(q) {
+  // podrzava i staru semu (explanation: string) i novu (explanations: {A,B,C,D})
+  if (q.explanations) {
+    return Object.entries(q.explanations).map(([k, v]) => {
+      const good = k === q.correct;
+      return `<div class="exp-opt ${good ? "good" : "bad"}"><span class="exp-key">${k}</span><span>${esc(v)}</span></div>`;
+    }).join("");
+  }
+  return `<div>${esc(q.explanation || "-")}</div>`;
+}
+
 function cardHTML(q) {
   const statusPill =
-    q.status === "correct" ? `<span class="pill ok">tačno</span>` :
-    q.status === "wrong" ? `<span class="pill no">netačno</span>` :
-    `<span class="pill un">neobrađeno</span>`;
+    q.status === "correct" ? `<span class="pill ok">tacno</span>` :
+    q.status === "wrong" ? `<span class="pill no">netacno</span>` :
+    `<span class="pill un">neobradjeno</span>`;
   const opts = Object.entries(q.options).map(([k, v]) => {
     let cls = "opt";
     if (k === q.correct) cls += " correct";
@@ -106,6 +118,7 @@ function cardHTML(q) {
     return `<div class="${cls}"><span class="key">${k}</span><span>${esc(v)}</span></div>`;
   }).join("");
   const refs = (q.glossary_refs || []).map((r) => `<span class="ref" onclick="jumpToTerm('${esc(r)}')">${esc(r)}</span>`).join("");
+  const prefs = (q.pattern_refs || []).map((r) => `<span class="ref pat" onclick="jumpToPattern('${esc(r)}')">⬡ ${esc(patternTitle(r))}</span>`).join("");
   return `
     <div class="card">
       <div class="meta">
@@ -116,10 +129,11 @@ function cardHTML(q) {
       <div class="q">${esc(q.question)}</div>
       ${opts}
       <div class="explain">
-        <h4>Objašnjenje</h4>
-        <div>${esc(q.explanation || "—")}</div>
+        <h4>Objasnjenje po opciji</h4>
+        ${explanationsHTML(q)}
         ${q.claude_notes ? `<div class="sr">${esc(q.claude_notes)}</div>` : ""}
-        ${refs ? `<div class="refs">${refs}</div>` : ""}
+        ${refs ? `<div class="refs"><span class="refs-label">pojmovi:</span> ${refs}</div>` : ""}
+        ${prefs ? `<div class="refs"><span class="refs-label">obrasci:</span> ${prefs}</div>` : ""}
       </div>
     </div>`;
 }
@@ -129,11 +143,11 @@ function renderQuizSetup() {
   app.innerHTML = `
     <div class="quiz-setup">
       <h2>Quiz mod</h2>
-      <p>Izaberi šta vežbaš. „Samo netačna" je najmoćniji način učenja.</p>
+      <p>Izaberi sta vezbas. „Samo netacna" je najmocniji nacin ucenja.</p>
       <div class="quiz-opts">
         <button onclick="startQuiz('all')">Sva pitanja</button>
-        <button onclick="startQuiz('wrong')">Samo netačna</button>
-        <button onclick="startQuiz('unseen')">Samo neobrađena</button>
+        <button onclick="startQuiz('wrong')">Samo netacna</button>
+        <button onclick="startQuiz('unseen')">Samo neobradjena</button>
         ${[1, 2, 3, 4, 5].map((d) => `<button onclick="startQuiz('d${d}')">Domen ${d}</button>`).join("")}
       </div>
     </div>`;
@@ -162,18 +176,18 @@ function renderQuizQuestion() {
   }).join("");
 
   app.innerHTML = `
-    <div class="progress">Pitanje ${quiz.i + 1} / ${quiz.pool.length} · tačno ${quiz.score}</div>
+    <div class="progress">Pitanje ${quiz.i + 1} / ${quiz.pool.length} · tacno ${quiz.score}</div>
     <div class="card">
       <div class="meta"><span class="pill">${q.id}</span><span>Domen ${q.domain} · ${q.subdomain || ""}</span></div>
       <div class="q">${esc(q.question)}</div>
       ${opts}
       ${quiz.revealed ? `
         <div class="explain">
-          <h4>Objašnjenje</h4>
-          <div>${esc(q.explanation || "—")}</div>
+          <h4>Objasnjenje po opciji</h4>
+          ${explanationsHTML(q)}
           ${q.claude_notes ? `<div class="sr">${esc(q.claude_notes)}</div>` : ""}
         </div>
-        <button class="btn btn-primary reveal-btn" onclick="nextQuiz()">${quiz.i + 1 < quiz.pool.length ? "Sledeće →" : "Završi"}</button>
+        <button class="btn btn-primary reveal-btn" onclick="nextQuiz()">${quiz.i + 1 < quiz.pool.length ? "Sledece →" : "Zavrsi"}</button>
       ` : `<button class="btn reveal-btn" onclick="reveal()">Otkrij odgovor</button>`}
     </div>`;
 }
@@ -197,17 +211,11 @@ function nextQuiz() {
 
 // ---- glossary ----
 function renderGlossary(filter = "") {
-  const filtered = GLOSSARY.filter((g) =>
-    (g.term + g.en + g.sr).toLowerCase().includes(filter.toLowerCase())
-  ).sort((a, b) => a.term.localeCompare(b.term));
-
+  const filtered = GLOSSARY.filter((g) => (g.term + g.en + g.sr).toLowerCase().includes(filter.toLowerCase()))
+    .sort((a, b) => a.term.localeCompare(b.term));
   app.innerHTML = `
-    <div class="toolbar"><input id="gsearch" placeholder="Pretraži pojmove…" value="${filter}" /></div>
-    <div id="glist">${
-      filtered.length
-        ? filtered.map(glossHTML).join("")
-        : `<p class="empty">Nema pojmova za ovaj filter.</p>`
-    }</div>`;
+    <div class="toolbar"><input id="gsearch" placeholder="Pretrazi pojmove..." value="${filter}" /></div>
+    <div id="glist">${filtered.length ? filtered.map(glossHTML).join("") : `<p class="empty">Nema pojmova za ovaj filter.</p>`}</div>`;
   document.getElementById("gsearch").oninput = (e) => renderGlossary(e.target.value);
 }
 
@@ -215,28 +223,216 @@ function glossHTML(g) {
   const seen = (g.seen_in || []).map((id) => `<span class="ref" onclick="jumpToQuestion('${id}')">${id}</span>`).join(" ");
   return `
     <div class="gloss-item" id="term-${slug(g.term)}">
-      <h3>${esc(g.term)} <span style="color:var(--ink-dim);font-size:11px">· domen ${g.domain || "?"}</span></h3>
+      <h3>${esc(g.term)} <span class="dim">· domen ${g.domain || "?"}</span></h3>
       <div class="en">${esc(g.en)}</div>
       <div class="sr">${esc(g.sr)}</div>
       ${seen ? `<div class="seen">javlja se u: ${seen}</div>` : ""}
     </div>`;
 }
 
+// ---- patterns ----
+function renderPatterns(filter = "") {
+  const filtered = PATTERNS.filter((p) => (p.title + p.lesson_sr + p.lesson_en).toLowerCase().includes(filter.toLowerCase()))
+    .sort((a, b) => (a.domain - b.domain) || a.title.localeCompare(b.title));
+  app.innerHTML = `
+    <div class="toolbar"><input id="psearch" placeholder="Pretrazi obrasce..." value="${filter}" /></div>
+    <div id="plist">${filtered.length ? filtered.map(patternHTML).join("") : `<p class="empty">Jos nema obrazaca.</p>`}</div>`;
+  document.getElementById("psearch").oninput = (e) => renderPatterns(e.target.value);
+}
+
+function patternHTML(p) {
+  const seen = (p.seen_in || []).map((id) => `<span class="ref" onclick="jumpToQuestion('${id}')">${id}</span>`).join(" ");
+  return `
+    <div class="gloss-item pattern" id="pat-${slug(p.id)}">
+      <h3>⬡ ${esc(p.title)} <span class="dim">· domen ${p.domain || "?"}</span></h3>
+      <div class="sr-main">${esc(p.lesson_sr)}</div>
+      <div class="en dim2">${esc(p.lesson_en)}</div>
+      ${seen ? `<div class="seen">ilustruju ga: ${seen}</div>` : ""}
+    </div>`;
+}
+
+function patternTitle(id) {
+  const p = PATTERNS.find((x) => x.id === id);
+  return p ? p.title : id;
+}
+
+// ---- guide ----
+function bi(node) {
+  if (!node) return "";
+  const en = node.en ? `<span class="g-en">${esc(node.en)}</span>` : "";
+  const sr = node.sr ? `<span class="g-sr">${esc(node.sr)}</span>` : "";
+  if (guideLang === "en") return en;
+  if (guideLang === "sr") return sr;
+  return en + sr;
+}
+
+function setGuideLang(lang) { guideLang = lang; renderGuide(); }
+
+function renderGuide() {
+  if (!GUIDE) {
+    app.innerHTML = `<p class="empty">Vodič nije učitan. Proveri data/guide.json (pokreni preko lokalnog servera).</p>`;
+    return;
+  }
+  const g = GUIDE;
+  const m = g.meta || {};
+  const langBtn = (val, label) => `<button class="${guideLang === val ? "active" : ""}" onclick="setGuideLang('${val}')">${label}</button>`;
+
+  const sections = [];
+
+  // meta header
+  sections.push(`
+    <div class="guide-meta">
+      <div class="guide-title">${esc((m.title && m.title.sr) || "Exam Guide")}</div>
+      <div class="guide-sub">${esc((m.title && m.title.en) || "")}</div>
+      <div class="guide-badges">
+        <span class="pill">verzija ${esc(m.version || "?")}</span>
+        <span class="pill">ažurirano ${esc(m.updated || "?")}</span>
+        ${m.source_pdf ? `<a class="pill link" href="${esc(m.source_pdf)}" target="_blank" rel="noopener">izvorni PDF ↗</a>` : ""}
+        ${m.official_page ? `<a class="pill link" href="${esc(m.official_page)}" target="_blank" rel="noopener">Anthropic Academy ↗</a>` : ""}
+      </div>
+      ${m.note ? `<div class="guide-note">${bi(m.note)}</div>` : ""}
+    </div>`);
+
+  // intro + target candidate
+  if (g.intro) {
+    sections.push(`<section class="guide-section"><h2>${esc(g.intro.title.sr)} <span class="dim">· ${esc(g.intro.title.en)}</span></h2>
+      ${g.intro.paragraphs.map((p) => `<div class="guide-p">${bi(p)}</div>`).join("")}</section>`);
+  }
+  if (g.target_candidate) {
+    const t = g.target_candidate;
+    sections.push(`<section class="guide-section"><h2>${esc(t.title.sr)} <span class="dim">· ${esc(t.title.en)}</span></h2>
+      <div class="guide-p">${bi(t.intro)}</div>
+      <ul class="guide-list">${t.items.map((i) => `<li>${bi(i)}</li>`).join("")}</ul>
+      <div class="guide-p">${bi(t.outro)}</div></section>`);
+  }
+
+  // exam format
+  if (g.exam_format) {
+    sections.push(`<section class="guide-section"><h2>${esc(g.exam_format.title.sr)} <span class="dim">· ${esc(g.exam_format.title.en)}</span></h2>
+      ${g.exam_format.groups.map((gr) => `<h3 class="guide-h3">${bi(gr.heading)}</h3>${gr.paragraphs.map((p) => `<div class="guide-p">${bi(p)}</div>`).join("")}`).join("")}</section>`);
+  }
+
+  // domains with weight bars
+  if (g.domains) {
+    sections.push(`<section class="guide-section"><h2>${esc(g.domains.title.sr)} <span class="dim">· ${esc(g.domains.title.en)}</span></h2>
+      <div class="domain-weights">${g.domains.items.map((d) => `
+        <div class="dw-row">
+          <span class="dw-n">D${d.n}</span>
+          <span class="dw-name">${bi(d.name)}</span>
+          <span class="dw-bar"><span class="dw-fill" style="width:${d.weight}%"></span></span>
+          <span class="dw-pct">${d.weight}%</span>
+        </div>`).join("")}</div></section>`);
+  }
+
+  // scenarios
+  if (g.scenarios) {
+    sections.push(`<section class="guide-section"><h2>${esc(g.scenarios.title.sr)} <span class="dim">· ${esc(g.scenarios.title.en)}</span></h2>
+      <div class="guide-p">${bi(g.scenarios.intro)}</div>
+      ${g.scenarios.items.map((s) => `
+        <div class="scenario">
+          <div class="scenario-h"><span class="pill">Scenario ${s.n}</span> ${bi(s.name)}</div>
+          <div class="guide-p">${bi(s.body)}</div>
+          <div class="scenario-dom"><span class="refs-label">primarni domeni:</span> ${bi(s.primary_domains)}</div>
+        </div>`).join("")}</section>`);
+  }
+
+  // domain details (task statements)
+  (g.domain_details || []).forEach((d) => {
+    sections.push(`<section class="guide-section"><h2 class="domain-head">${bi(d.title)}</h2>
+      ${d.tasks.map((t) => `
+        <div class="task">
+          <div class="task-h"><span class="pill warn">${esc(t.id)}</span> ${bi(t.title)}</div>
+          <div class="task-block">
+            <h4 class="kn-h">Knowledge of</h4>
+            <ul class="guide-list">${t.knowledge.map((k) => `<li>${bi(k)}</li>`).join("")}</ul>
+          </div>
+          <div class="task-block">
+            <h4 class="sk-h">Skills in</h4>
+            <ul class="guide-list">${t.skills.map((s) => `<li>${bi(s)}</li>`).join("")}</ul>
+          </div>
+        </div>`).join("")}</section>`);
+  });
+
+  // sample questions
+  if (g.sample_questions) {
+    const sq = g.sample_questions;
+    sections.push(`<section class="guide-section"><h2>${esc(sq.title.sr)} <span class="dim">· ${esc(sq.title.en)}</span></h2>
+      <div class="guide-p">${bi(sq.intro)}</div>
+      ${sq.items.map((q) => `
+        <div class="sample-q">
+          <div class="meta"><span class="pill">Q${q.n}</span> <span>${bi(q.scenario)}</span></div>
+          <div class="q">${bi(q.question)}</div>
+          ${Object.entries(q.options).map(([k, v]) => `<div class="opt ${k === q.correct ? "correct" : ""}"><span class="key">${k}</span><span>${bi(v)}</span></div>`).join("")}
+          <details class="sample-reveal">
+            <summary>Prikaži tačan odgovor i objašnjenje</summary>
+            <div class="sample-ans">Tačan odgovor: <b>${esc(q.correct)}</b></div>
+            <div class="explain"><h4>Objašnjenje</h4>${bi(q.explanation)}</div>
+          </details>
+        </div>`).join("")}</section>`);
+  }
+
+  // exercises
+  if (g.exercises) {
+    const ex = g.exercises;
+    sections.push(`<section class="guide-section"><h2>${esc(ex.title.sr)} <span class="dim">· ${esc(ex.title.en)}</span></h2>
+      <div class="guide-p">${bi(ex.intro)}</div>
+      ${ex.items.map((e) => `
+        <div class="exercise">
+          <div class="task-h"><span class="pill">Vežba ${e.n}</span> ${bi(e.title)}</div>
+          <div class="ex-obj"><span class="refs-label">cilj:</span> ${bi(e.objective)}</div>
+          <ol class="guide-olist">${e.steps.map((s) => `<li>${bi(s)}</li>`).join("")}</ol>
+          <div class="ex-dom"><span class="refs-label">domeni:</span> ${bi(e.domains_reinforced)}</div>
+        </div>`).join("")}</section>`);
+  }
+
+  // appendix
+  if (g.appendix) {
+    const a = g.appendix;
+    const termList = (block) => `<h3 class="guide-h3">${esc(block.title.sr)} <span class="dim">· ${esc(block.title.en)}</span></h3>
+      <div class="guide-p">${bi(block.intro)}</div>
+      <div class="appendix-grid">${block.items.map((i) => `<div class="appendix-item">${i.name ? `<span class="ai-name">${esc(i.name)}</span>` : ""}${bi(i)}</div>`).join("")}</div>`;
+    sections.push(`<section class="guide-section"><h2>${esc(a.title.sr)} <span class="dim">· ${esc(a.title.en)}</span></h2>
+      ${termList(a.technologies)}
+      ${termList(a.in_scope)}
+      <h3 class="guide-h3">${esc(a.out_of_scope.title.sr)} <span class="dim">· ${esc(a.out_of_scope.title.en)}</span></h3>
+      <div class="guide-p">${bi(a.out_of_scope.intro)}</div>
+      <ul class="guide-list scope-out">${a.out_of_scope.items.map((i) => `<li>${bi(i)}</li>`).join("")}</ul>
+      <h3 class="guide-h3">${esc(a.recommendations.title.sr)} <span class="dim">· ${esc(a.recommendations.title.en)}</span></h3>
+      <div class="guide-p">${bi(a.recommendations.intro)}</div>
+      <ol class="guide-olist">${a.recommendations.items.map((i) => `<li>${bi(i)}</li>`).join("")}</ol></section>`);
+  }
+
+  app.innerHTML = `
+    <div class="guide-lang">
+      <span class="refs-label">jezik:</span>
+      ${langBtn("both", "Oba")}${langBtn("en", "EN")}${langBtn("sr", "SR")}
+    </div>
+    ${sections.join("")}`;
+}
+
 // ---- cross-navigation ----
 function jumpToTerm(term) {
-  view = "glossary";
-  document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("active", x.dataset.view === "glossary"));
-  renderGlossary();
-  setTimeout(() => {
-    const el = document.getElementById("term-" + slug(term));
-    if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.style.borderColor = "var(--accent)"; }
-  }, 60);
+  switchTab("glossary"); renderGlossary();
+  highlight("term-" + slug(term));
+}
+function jumpToPattern(id) {
+  switchTab("patterns"); renderPatterns();
+  highlight("pat-" + slug(id));
 }
 function jumpToQuestion(id) {
-  view = "overview";
-  document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("active", x.dataset.view === "overview"));
+  switchTab("overview");
   const q = QUESTIONS.find((x) => x.id === id);
   renderOverview(q ? q.id : "");
+}
+function switchTab(name) {
+  view = name;
+  document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("active", x.dataset.view === name));
+}
+function highlight(elId) {
+  setTimeout(() => {
+    const el = document.getElementById(elId);
+    if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.style.borderColor = "var(--accent)"; }
+  }, 60);
 }
 
 // ---- utils ----

@@ -13,9 +13,515 @@
     "correct": "B",
     "my_answer": "B",
     "status": "correct",
-    "explanation": "The agentic loop should be controlled by the structured stop_reason field. While stop_reason is 'tool_use', Claude requests a tool and the loop continues; when it is 'end_turn', Claude has finished. Parsing natural language (A, D) and arbitrary iteration caps (C) are explicit anti-patterns.",
+    "explanations": {
+      "A": "Incorrect. Parsing natural-language signals is an explicit anti-pattern: phrasing varies, the model may not emit any such phrase, and it makes loop control brittle and non-deterministic.",
+      "B": "Correct. stop_reason is a structured API field. While it is 'tool_use' the model is requesting a tool, so the loop continues and returns the tool result; 'end_turn' means the model has finished.",
+      "C": "Incorrect. A fixed iteration cap is an anti-pattern as the primary stopping mechanism. It may cut off a task mid-way or run unnecessarily. A cap is acceptable only as a safety backstop, not the main control.",
+      "D": "Incorrect. Presence of assistant text does not indicate completion; the model often emits text alongside tool_use, so this would terminate the loop prematurely."
+    },
     "claude_notes": "Kljuc: stop_reason je STRUKTURIRANO polje koje API vraca - ne pogadjas iz teksta. 'tool_use' = Claude trazi alat, nastavi petlju i vrati mu rezultat. 'end_turn' = gotovo. Iteration cap (C) sme samo kao sigurnosna kocnica, NIKAD kao glavni mehanizam zaustavljanja.",
     "glossary_refs": ["agentic loop", "stop_reason", "tool_use", "end_turn"],
-    "tags": ["agentic-loop", "control-flow", "anti-patterns"]
+    "tags": ["agentic-loop", "control-flow", "anti-patterns"],
+    "pattern_refs": ["structured-signals-over-text"]
+  },
+  {
+    "id": "d1-q002",
+    "domain": 1,
+    "subdomain": "1.5",
+    "question": "A database administrator agent uses an execute_sql tool. To prevent accidental data loss, company policy requires that any DELETE or DROP statement must first be executed as a dry run (e.g., using EXPLAIN or wrapping in a rolled-back transaction) to assess the blast radius, which must then be approved by a human. The model occasionally attempts to execute destructive queries directly. How can you enforce this dry-run policy deterministically?",
+    "options": {
+      "A": "Update the system prompt to instruct the agent that DELETE or DROP statements must only be issued when the user's message includes an explicit approval phrase, and configure the agent to parse the user input for that phrase before calling execute_sql.",
+      "B": "Implement a PreToolCall hook that parses the SQL argument. If destructive keywords are detected without a human approval token in the session state, the hook modifies the query into a dry-run equivalent, executes it, and returns the blast radius to the model.",
+      "C": "Implement a PostToolUse hook that intercepts the agent's tool response after execution, checks whether the SQL statement contained DELETE or DROP, and if so, automatically initiates a point-in-time recovery from the most recent backup to undo the change.",
+      "D": "Remove the execute_sql tool from the agent's toolset and provide a read_only_query tool that wraps all SQL execution in a read-only transaction, so that any destructive statement is blocked by the database's permission model."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Relying on a system prompt and user input parsing is probabilistic, not deterministic. The model may ignore instructions or be vulnerable to prompt injection. It also targets the wrong actor: the model is the one issuing destructive queries, not the user.",
+      "B": "Correct. A PreToolCall hook intercepts the tool call before execution, allowing programmatic inspection of the SQL argument. It can deterministically detect destructive keywords and transform the query into a dry-run equivalent, ensuring the blast radius is assessed and human approval is obtained before any real execution.",
+      "C": "Incorrect. A PostToolUse hook runs after the tool has executed, so the destructive query would already have affected the database. Point-in-time recovery is a reactive measure, not deterministic prevention before the action occurs.",
+      "D": "Incorrect. Removing execute_sql and providing only a read-only tool blocks all destructive statements, but it also eliminates the agent's ability to perform necessary destructive operations under the required dry-run and approval workflow. The goal is to enforce the policy, not disable the functionality entirely."
+    },
+    "claude_notes": "Kljucna rec je 'deterministicki' = mehanizam koji radi 100%, ne prompt (model 'povremeno' ne poslusa). PreToolCall hvata upit PRE izvrsenja = prevencija. C koristi PostToolUse = hvata POSLE, steta vec nastala (samo ciscenje). A resava pogresnu tacku (parsira korisnika, a model je taj koji gresi). D je preterano - ubija legitiman tok rada.",
+    "glossary_refs": ["PreToolCall hook", "PostToolUse hook", "dry run", "blast radius", "session state", "deterministic enforcement"],
+    "tags": ["hooks", "deterministic-enforcement", "tool-interception", "pre-vs-post"],
+    "pattern_refs": ["deterministic-needs-hook-not-prompt", "intercept-before-not-after", "enforce-dont-disable"]
+  },
+  {
+    "id": "d1-q003",
+    "domain": 1,
+    "subdomain": "1.6",
+    "question": "A healthcare platform processes standard patient intake forms to extract demographic data, and then investigates complex, open-ended medical histories to suggest potential clinical trials. The engineering team needs to design the orchestration layer for these two distinct tasks. Which combination of decomposition patterns is most appropriate?",
+    "options": {
+      "A": "Fixed sequential pipeline for both the intake forms and the clinical trial investigation.",
+      "B": "Dynamic adaptive decomposition for both the intake forms and the clinical trial investigation.",
+      "C": "A fixed sequential pipeline for the intake forms, and dynamic adaptive decomposition for the clinical trial investigation.",
+      "D": "Dynamic adaptive decomposition for the intake forms, and a fixed sequential pipeline for the clinical trial investigation."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. While a fixed sequential pipeline is efficient for the intake forms, it is too rigid for clinical trial matching. Open-ended medical history analysis requires exploratory reasoning, iterative synthesis, and the ability to pivot based on discovered information, which a static pipeline cannot provide.",
+      "B": "Incorrect. Applying dynamic adaptive decomposition to structured intake forms adds unnecessary complexity, latency, and potential non-determinism. Simple extraction tasks benefit from a more predictable and efficient orchestration pattern.",
+      "C": "Correct. This approach matches the orchestration complexity to the task requirements. A fixed sequential pipeline provides reliability and efficiency for the predictable, structured extraction of demographic data. Conversely, dynamic adaptive decomposition allows the agent to iteratively explore complex, unstructured medical histories and synthesize trial suggestions based on context-specific reasoning.",
+      "D": "Incorrect. This reverses the appropriate patterns. Structured intake forms are best handled by a deterministic pipeline, while the high-variability task of clinical trial investigation requires dynamic orchestration to navigate complex medical datasets."
+    },
+    "claude_notes": "Poenta: uskladi STRATEGIJU DEKOMPOZICIJE sa PRIRODOM zadatka, ne univerzalno. Standardan/predvidljiv posao (vadjenje polja iz forme) -> fiksni sekvencijalni pipeline (jeftin, determinsticki, pouzdan). Otvoren/varijabilan posao (analiza slozenih medicinskih istorija) -> dinamicka adaptivna dekompozicija (model sam rastavlja problem). A i B koriste ISTI obrazac za oba zadatka - pada jer su zadaci razlicite prirode. D ima pravu ideju (mesaj obrasce) ali OBRNUTO rasporedjeno - najopasnija zamka, kaznjava ako ne proveris koji obrazac ide uz koji zadatak.",
+    "glossary_refs": ["fixed sequential pipeline", "dynamic adaptive decomposition", "task decomposition"],
+    "tags": ["task-decomposition", "orchestration", "agentic-architecture"],
+    "pattern_refs": ["match-decomposition-to-task-nature"]
+  },
+  {
+    "id": "d1-q004",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "An agent is designed to route customer inquiries to the correct department. It has a single route_ticket tool. The developer wants to guarantee that the agent *always* calls this tool to categorize the ticket, without ever responding directly to the user with conversational text. How should the architect configure the API request to enforce this behavior within the agentic loop?",
+    "options": {
+      "A": "Set the temperature parameter to 0.0 to eliminate the probability of the model generating conversational text.",
+      "B": "Wrap the user's prompt in <force_tool> XML tags, which is a native Anthropic feature for bypassing text generation.",
+      "C": "Add a system prompt instruction: \"CRITICAL: You must return a stop_reason of tool_use and never output plain text.\"",
+      "D": "Set the tool_choice parameter to {\"type\": \"any\"} or {\"type\": \"tool\", \"name\": \"route_ticket\"} to force the model to return a tool_use block."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Setting the temperature to 0.0 makes the model's output deterministic and reduces randomness, but it does not control the structure of the response or prevent the model from generating conversational text instead of a tool call.",
+      "B": "There is no native Anthropic feature or XML tag called <force_tool> used for bypassing text generation. Tool enforcement is handled through the standardized tool_choice API parameter.",
+      "C": "System prompts are influential but are not a strict guarantee. Even with strong instructions, the model may still output conversational text or ignore the formatting constraint if it deems it appropriate for the user's prompt. API parameters are more reliable for enforcement.",
+      "D": "Anthropic's tool_choice parameter provides direct API-level enforcement. By specifying {\"type\": \"any\"}, you force the model to use at least one of the provided tools. By specifying {\"type\": \"tool\", \"name\": \"route_ticket\"}, you force it to use that specific tool. This effectively prevents the model from returning only a text response."
+    },
+    "claude_notes": "Rec 'guarantee/always' je signal: trazi se DETERMINISTICKI mehanizam na nivou API zahteva, ne prompt. Resenje je strukturni parametar tool_choice: 'any' = mora neki alat, 'tool'+name = mora bas taj alat -> model fizicki ne moze da vrati cist tekst. A mesa temperature (kontrolise NASUMICNOST izlaza, ne TIP izlaza - tekst vs tool_use). B izmislja '<force_tool>' tag koji ne postoji (pazi na lazne 'native feature' opcije). C je prompt = probabilisticki, plus gresi sto tretira stop_reason kao nesto sto se POSTAVLJA (a to je izlaz koji API vraca). Isti deterministicki koren kao d1-q002.",
+    "glossary_refs": ["tool_choice", "temperature", "tool_use"],
+    "tags": ["tool-use", "tool-choice", "deterministic-enforcement", "agentic-loop"],
+    "pattern_refs": ["guarantee-with-api-param-not-prompt"]
+  },
+  {
+    "id": "d1-q005",
+    "domain": 1,
+    "subdomain": "1.3",
+    "question": "A financial analysis system extracts quarterly earnings data using a 'DataMiner' subagent and generates a chart using a 'Grapher' subagent. When the DataMiner passes its findings back to the coordinator as a conversational summary, and the coordinator passes that summary to the Grapher, the Grapher frequently plots incorrect numbers or mislabels axes. What is the most robust architectural solution to this context passing issue?",
+    "options": {
+      "A": "Use fork-based session management to allow the Grapher to iteratively query the DataMiner in a private thread, replotting the chart each time until the plotted values match the expected quarterly earnings data.",
+      "B": "Instruct the DataMiner to output its findings as a structured CSV or JSON array, and have the coordinator pass this exact structured output in the prompt to the Grapher subagent.",
+      "C": "Configure the Grapher subagent's AgentDefinition to use a lower temperature setting so that it relies more heavily on the coordinator's prompt and reduces spontaneous numerical variations during chart generation.",
+      "D": "Add a DataValidation tool to the coordinator that compares the Grapher's output against the DataMiner's summary and flags discrepancies in axis labels or plotted numbers before the chart is presented to the user."
+    },
+    "correct": "B",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Fork-based session management and iterative querying between agents introduce significant architectural complexity, latency, and tight coupling. While this might allow the Grapher to ask for clarification, it is far less efficient than simply passing a well-formatted, complete data object in the initial invocation.",
+      "B": "Correct. Instructing the DataMiner to output its findings as a structured CSV or JSON array ensures that exact, machine-readable numeric and field semantics are preserved. This eliminates the ambiguity introduced by free-form conversational summaries, allowing the Grapher to process concrete values and labels directly. This is the most robust way to maintain data integrity across subagent boundaries.",
+      "C": "Incorrect. While lowering the temperature can reduce model sampling noise and randomness, it does not solve the underlying issue of data loss or ambiguity caused by the unstructured nature of the input text. If the source context is a vague summary, the model will still struggle to reconstruct precise data points regardless of temperature settings.",
+      "D": "Incorrect. A DataValidation tool is a reactive measure that detects errors after they occur. While useful for quality assurance, it does not fix the root cause of the context-passing problem. A robust architecture should prioritize high-fidelity data transmission to prevent errors from occurring in the first place."
+    },
+    "claude_notes": "GRESKA: izabrao D umesto B. Koren problema = podaci se prenose kao PROZA na prirodnom jeziku (conversational summary) = lossy, dvosmisleno -> Grapher ne moze da rekonstruise tacne brojeve. Resenje B menja FORMAT podataka u strukturu (JSON/CSV) -> tacne, masinski-citljive vrednosti, dvosmislenost nestaje na izvoru. Rec 'most robust' = ukloni UZROK. Zamka D 'before the chart is presented' zvuci kao prevencija, ali je reaktivna detekcija POSLE (i validira protiv istog lossy summary-ja). A je over-engineering (fork + retry petlja, i dalje prenosi prozu). C je pogresna dijagnoza - problem nije nasumicnost Grapher-a nego dvosmislenost ULAZA; niza temperatura ne moze izmisliti preciznost koje nema u prozi.",
+    "glossary_refs": ["context passing", "structured output", "subagent", "fork-based session"],
+    "tags": ["multi-agent", "context-passing", "structured-output", "root-cause"],
+    "pattern_refs": ["structured-data-between-agents", "fix-root-cause-not-symptom"]
+  },
+  {
+    "id": "d1-q006",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "A developer implements an agentic loop. When stop_reason is tool_use, the API response often contains a text block (Claude's reasoning) followed by a tool_use block. To save tokens and reduce context window size, the developer's code strips out the text block and only appends the tool_use block to the assistant message in the conversation history. What is the architectural impact of this optimization?",
+    "options": {
+      "A": "The API will reject the subsequent request because an assistant message containing a tool_use block must always be preceded by a text block.",
+      "B": "This is a recommended optimization technique that reduces token usage without impacting the model's reasoning capabilities.",
+      "C": "Claude will automatically regenerate the missing text block in the next turn, increasing latency but not affecting reasoning.",
+      "D": "Claude loses its chain of thought context, degrading its ability to reason about why it called the tool and how to interpret the subsequent result."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. The Messages API does not require a text block to accompany a tool_use block. While it is architecturally detrimental to remove it, the request itself remains syntactically valid.",
+      "B": "Incorrect. This is a discouraged practice. Anthropic recommends preserving the model's reasoning blocks in the conversation history to maintain the integrity of the agentic loop and ensure high-quality decision making across multiple turns.",
+      "C": "Incorrect. Claude does not have visibility into stripped history and cannot automatically regenerate omitted reasoning from previous turns. The model only operates on the context provided in the current request.",
+      "D": "Correct. Claude often uses the text block to perform internal reasoning (Chain of Thought) before selecting a tool. Stripping this context removes the logical bridge between the user's request and the tool call, which can significantly degrade the model's ability to ground its next steps or interpret the tool's results correctly."
+    },
+    "claude_notes": "Text blok ispred tool_use-a NIJE visak - to je Claude-ovo rezonovanje (chain of thought): zasto poziva alat i kako planira da iskoristi rezultat. Izbacivanje iz istorije stedi tokene ali TIHO degradira rezonovanje - model u sledecem krugu vidi DA je pozvao alat ali ne i ZASTO. A izmislja API pravilo (zahtev ostaje sintaksno validan - nije odbijanje nego tiha degradacija). B je 'pola tacno': jeste usteda tokena, ali NIJE 'bez uticaja' - to je bas ono sto skodi (zamka 'besplatna optimizacija'). C izmislja regeneraciju - model je stateless, zna samo ono sto je u messages istoriji; sto nije tu, za njega ne postoji.",
+    "glossary_refs": ["chain of thought", "text block", "conversation history"],
+    "tags": ["agentic-loop", "chain-of-thought", "context-management", "tool-use"],
+    "pattern_refs": ["preserve-reasoning-in-history", "distractor-invents-a-mechanism"]
+  },
+  {
+    "id": "d1-q007",
+    "domain": 1,
+    "subdomain": "1.3",
+    "question": "A code-refactoring system uses a coordinator and a CodeReviewer subagent. The coordinator sends a code snippet to the CodeReviewer via the Task tool. If the reviewer finds issues, the coordinator attempts to fix them and spawns the CodeReviewer again to verify the fix. However, during the second invocation, the CodeReviewer frequently flags the exact same stylistic preferences it already approved in the first pass, frustrating the user. What is the architectural cause of this regression, and how should it be resolved?",
+    "options": {
+      "A": "The coordinator is emitting multiple Task tool calls in a single turn, causing a race condition where the CodeReviewer processes the original and fixed code out of order, leading to inconsistent review results.",
+      "B": "Subagents do not retain memory between invocations. The coordinator must explicitly pass the history of previous reviews and stylistic constraints in the prompt for each subsequent Task tool call.",
+      "C": "The CodeReviewer's AgentDefinition is missing the stateful: true parameter, which prevents it from caching previous tool outputs and forces it to re-evaluate the code from scratch without memory of the earlier review session.",
+      "D": "The coordinator is failing to use fork-based session management to branch the conversation state, causing the CodeReviewer to overwrite its context window with the new invocation's prompt and thus lose the record of prior approvals."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. The scenario describes a sequential workflow (review, fix, verify), not parallel calls. A race condition from multiple Task tool calls in a single turn would not explain why the subagent forgets previously approved stylistic preferences.",
+      "B": "Correct. Subagents are stateless by default across separate invocations. To prevent the subagent from repeating previous critiques, the coordinator must explicitly pass the history of prior reviews and stylistic constraints in the prompt for each subsequent Task tool call.",
+      "C": "Incorrect. There is no standard stateful: true parameter in agentic architectures that automatically persists memory across distinct tool calls. Memory management is the responsibility of the orchestrator, not a built-in caching mechanism.",
+      "D": "Incorrect. Fork-based session management is used for branching parallel conversation paths, not for sequential invocations of a subagent. The issue here is loss of context between separate calls, not overwriting a shared state via branching."
+    },
+    "claude_notes": "Srz: subagent je STATELESS izmedju odvojenih Task poziva - drugi poziv CodeReviewer-a krece 'od nule' i ne zna sta je vec odobrio. Lek (B): koordinator MORA da u prompt svakog narednog poziva eksplicitno ubaci istoriju prethodnih review-a + stilske constraint-e; memorija je odgovornost koordinatora, ne subagenta. Zamke: A izmislja race condition (tok je sekvencijalan - review/fix/verify, nema paralelizma). C izmislja parametar 'stateful: true' koji ne postoji (klasicna 'izmisljen mehanizam' zamka). D koristi STVARAN termin 'fork-based session' ali sa pogresnim modelom: fork je za grananje paralelnih putanja, a problem nije 'prepisivanje/gubljenje' konteksta - subagent ga u drugom pozivu nikad nije ni imao (stateless). Pogresna dijagnoza -> pogresan lek. Najopasniji distraktor jer zvuci strucno.",
+    "glossary_refs": ["subagent statelessness", "Task tool", "context passing", "subagent", "fork-based session"],
+    "tags": ["multi-agent", "subagent", "context-passing", "statelessness"],
+    "pattern_refs": ["subagent-stateless-coordinator-passes-context", "distractor-invents-a-mechanism"]
+  },
+  {
+    "id": "d1-q008",
+    "domain": 1,
+    "subdomain": "1.5",
+    "question": "A network security agent uses an update_firewall tool that accepts allow_ip and block_ip arrays. Security policy dictates that an IP address cannot exist in both arrays simultaneously, and the 0.0.0.0/0 CIDR can only be added if an override_admin flag is set to true. The model occasionally violates these complex cross-argument rules. How can you guarantee 100% compliance with this policy?",
+    "options": {
+      "A": "Add a negative constraint to the system prompt, explicitly forbidding the model from putting the same IP in both lists. The prompt should also state that using 0.0.0.0/0 requires the override_admin flag.",
+      "B": "Modify the backend firewall API to validate the allow_ip and block_ip arrays upon receipt. The API would silently drop any IP in both lists or 0.0.0.0/0 if the override flag is missing.",
+      "C": "Implement a PreToolCall hook that validates arguments against the security policy, blocking the tool call and returning a specific error to the model if any rules are violated.",
+      "D": "Implement a PostToolUse hook that audits the firewall rules after the tool executes. It would check for IPs in both lists or an invalid 0.0.0.0/0 entry, then alert an administrator of the violation."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Prompting the model with negative constraints is a probabilistic approach and cannot guarantee 100% compliance. While prompt engineering can reduce the frequency of errors, LLMs may still occasionally violate complex cross-argument constraints, especially in complex scenarios. Strict enforcement requires a deterministic code-level check.",
+      "B": "Incorrect. Modifying the backend firewall API to silently drop invalid IP addresses fails to provide transparency and can lead to a desynchronized state between the agent's expectations and reality. This approach hides errors rather than preventing the model from attempting non-compliant actions, making it difficult to debug and unreliable for security enforcement.",
+      "C": "Correct. A PreToolCall hook provides a deterministic layer of protection by intercepting the tool call before it reaches the execution environment. By validating the argument set against the security policy (enforcing mutual exclusivity and checking the override flag), the system can block invalid requests and return structured validation errors, allowing the model to correct itself while ensuring 100% compliance.",
+      "D": "Incorrect. A PostToolUse hook is reactive rather than proactive. While auditing and alerting are useful for monitoring and incident response, they occur after the tool has already executed, meaning the security policy has already been violated. This fails to meet the requirement of guaranteeing 100% compliance."
+    },
+    "claude_notes": "Dva okidaca u jednom pitanju: 'guarantee 100%' + 'model occasionally violates' -> garancija mora doci iz KODA (hook), ne iz prompta. PreToolCall hook presrece poziv PRE izvrsenja, validira sve argumente zajedno (cross-argument: ista IP u obe liste? 0.0.0.0/0 bez override_admin?), blokira i vraca strukturisanu gresku modelu koji onda moze da se ispravi. A = prompt je probabilistican; pitanje DOSLOVNO kaze da model 'occasionally violates' - to je dokaz da prompt pada (obrazac deterministic-needs-hook-not-prompt). B = 'silently drop' je toksicna rec: skriva gresku, model ne dobija feedback, nastaje desync izmedju onoga sto model misli i sta je firewall stvarno uradio; plus pomera kontrolu na backend umesto agent-sloj. D = PostToolUse je reaktivan, firewall je VEC promenjen kad hook proradi; alarm je ciscenje, ne prevencija (obrazac intercept-before-not-after). Ovo pitanje spaja oba obrasca iz d1-q002.",
+    "glossary_refs": ["deterministic enforcement", "PreToolCall hook", "PostToolUse hook"],
+    "tags": ["hooks", "tool-interception", "deterministic-enforcement", "security"],
+    "pattern_refs": ["deterministic-needs-hook-not-prompt", "intercept-before-not-after", "match-hook-to-job"]
+  },
+  {
+    "id": "d1-q009",
+    "domain": 1,
+    "subdomain": "1.5",
+    "question": "An IoT diagnostic agent queries sensor data using a get_sensor_metrics tool. The external sensor APIs are highly unstable and frequently return 503 Service Unavailable or timeout errors. When this happens, the model often hallucinates sensor data or prematurely concludes the sensor is broken. What is the best architectural pattern to improve reliability without wasting token context?",
+    "options": {
+      "A": "Implement a PreToolCall hook that pings the sensor API for a 200 OK status before allowing the model's tool call to proceed, caching the result for a short TTL to avoid redundant checks during rapid retries and blocking the call if the API remains unavailable.",
+      "B": "Instruct the model in the system prompt to catch 503 errors and manually retry the get_sensor_metrics tool up to three times before giving up, logging each attempt with a timestamp and the HTTP status code to enable post-hoc analysis of transient failures.",
+      "C": "Configure the orchestrator to automatically terminate the agent session and restart it whenever a 503 error is detected in the tool output, preserving the conversation history to resume the diagnostic flow from the last successful sensor reading.",
+      "D": "Implement a PostToolUse hook that intercepts 503s and timeouts, executes an exponential backoff retry mechanism transparently, and only returns the final success payload or a standardized 'Offline' message to the model."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. A PreToolCall hook that pings the API adds latency and suffers from the 'Time-of-Check to Time-of-Use' (TOCTOU) problem; the API might be available during the ping but fail during the actual tool call. It does not provide a mechanism for retries or data normalization.",
+      "B": "Incorrect. Relying on the model to handle retries via the system prompt is inefficient and brittle. It forces the model to reason about transport-level instability, consumes significant token context with repeated failed turns, and increases the likelihood of hallucinations if the model attempts to guess data during failures.",
+      "C": "Incorrect. Restarting the session is highly disruptive and inefficient. It discards all previously accumulated state and context, leading to a poor user experience and failing to address the underlying need for robust, granular error handling at the tool level.",
+      "D": "Correct. A PostToolUse hook allows the orchestrator to manage transient failures outside of the model's reasoning loop. By handling exponential backoff and only returning a finalized result, the system preserves token context, improves reliability, and prevents the model from hallucinating in response to raw API errors."
+    },
+    "claude_notes": "Isti subdomain (1.5) kao d1-q008 ali OBRNUT posao - namerni kontrast-par. d1-q008: treba SPRECITI stetnu akciju -> PreToolCall (pre, prevencija). d1-q009: treba GRACIOZNO OBRADITI/normalizovati nepouzdan REZULTAT (503/timeout) -> PostToolUse (posle, normalizacija). Pouka: hook biraj prema POSLU, ne reputaciji - 'PostToolUse je reaktivan' vazi samo kad je cilj prevencija. D pogadja tri stvari: (1) pravo vreme za normalizaciju rezultata; (2) ne trosi token kontekst jer je retry/backoff u kodu, ne u modelovoj petlji; (3) ubija halucinaciju jer model nikad ne vidi sirov 503, samo finalni payload ili standardizovan 'Offline'. A = PreToolCall ping: TOCTOU rupa (ping i stvarni poziv su dva zahteva; API moze biti ziv na pingu a pasti na pozivu), nema retry na stvarni poziv; mami te da slepo ponovis obrazac iz d1-q008. B = prompt + rucni retry: DVOSTRUKI promasaj - probabilistican (prompt) I trosi token kontekst (svaki pokusaj+log u istoriji), direktno krsi 'without wasting token context'. C = restart sesije: drastican i skup, baca akumulirani kontekst, ne resava nestabilnost API-ja nego je premesta.",
+    "glossary_refs": ["PostToolUse hook", "PreToolCall hook", "exponential backoff", "TOCTOU", "graceful degradation"],
+    "tags": ["hooks", "data-normalization", "reliability", "retry", "error-handling"],
+    "pattern_refs": ["match-hook-to-job", "handle-errors-outside-model-loop"]
+  },
+  {
+    "id": "d1-q010",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "A legal tech application features a conversational interface managed by a Coordinator agent. When a user asks, \"Can you summarize the liability clause from that last vendor contract?\", the Coordinator correctly identifies the intent and delegates the task to a specialized ContractAnalyzer subagent. However, the ContractAnalyzer responds with an error, stating it does not know which contract the user is referring to. What is the architectural root cause of this failure?",
+    "options": {
+      "A": "The Coordinator's system prompt lacks instructions for the subagent to access the global session state, which holds the reference to the 'last vendor contract'.",
+      "B": "Subagents operate with isolated context; the Coordinator failed to explicitly pass the relevant document and conversation history in its delegation prompt.",
+      "C": "The ContractAnalyzer's temperature setting is too low, preventing it from inferring the implicit context of the conversation to identify the specific vendor contract.",
+      "D": "The multi-agent system is utilizing an outdated API version that lacks support for automatic context inheritance, preventing the Coordinator from passing session data."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. While system prompts can guide behavior, the core architectural issue is that subagents do not automatically inherit global session state. The Coordinator must explicitly pass the necessary context, such as the reference to the 'last vendor contract,' in its delegation prompt.",
+      "B": "Correct. In coordinator-subagent architectures, subagents typically operate with isolated contexts. The Coordinator is responsible for gathering relevant conversation history and document references and explicitly including them in the delegation prompt, which it failed to do here.",
+      "C": "Incorrect. Temperature controls output randomness, not the ability to infer missing context. Without explicit information about which contract to analyze, the subagent cannot identify the document regardless of temperature settings.",
+      "D": "Incorrect. The failure is due to architectural design, not API versioning. Most multi-agent systems intentionally avoid automatic context inheritance to prevent token waste and context stuffing, requiring explicit context management by the Coordinator."
+    },
+    "claude_notes": "Blizak rodjak d1-q007. Subagent radi sa IZOLOVANIM kontekstom: koordinator je tacno prepoznao nameru i delegirao, ali nije u delegation prompt ubacio sam dokument + relevantnu istoriju razgovora (sta je 'last vendor contract'). Subagent ne moze da odgovori na nesto sto nikad nije video -> javlja gresku. Lek: koordinator eksplicitno prenosi kontekst u delegation prompt. Tri poznata distraktora odjednom: A = pogresan mentalni model 'global session state koji subagent treba da pristupi' - subagenti su izolovani po dizajnu, ne dele globalnu memoriju (ista vrsta greske kao fork/shared-state D-zamka u d1-q007); zvuci blizu jer pominje pravi problem (referencu na ugovor) ali nudi pogresan mehanizam. C = temperature kontrolise NASUMICNOST izlaza, ne vidljivost konteksta - model ne moze da 'zakljuci' dokument koji nije dobio, bez obzira na temperaturu (temperature zamka iz d1-q004). D = izmisljen 'automatic context inheritance'; multi-agent sistemi ga NAMERNO izbegavaju da sprece token waste i context stuffing - eksplicitni context management je dizajnerska odluka, ne posledica zastarele API verzije (distractor-invents-a-mechanism).",
+    "glossary_refs": ["context isolation", "subagent statelessness", "context passing", "subagent", "delegation prompt", "temperature"],
+    "tags": ["multi-agent", "subagent", "context-passing", "context-isolation", "coordinator"],
+    "pattern_refs": ["subagent-stateless-coordinator-passes-context", "distractor-invents-a-mechanism"]
+  },
+  {
+    "id": "d1-q011",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "A financial analysis platform utilizes a multi-agent system consisting of a Data-Fetcher subagent and a Summarizer subagent. To minimize latency, the engineering team configured the Data-Fetcher to send its retrieved financial data directly to the Summarizer. Recently, API rate limits have caused the Data-Fetcher to fail intermittently. Because the Summarizer still expects data, it begins hallucinating financial metrics based on its training data. Debugging these incidents has become highly complex. As an AI architect, which architectural change should you implement to resolve this issue?",
+    "options": {
+      "A": "Merge the Data-Fetcher and Summarizer into a single monolithic agent. This agent would first execute the data retrieval logic and, upon encountering an API error, would immediately halt its own execution.",
+      "B": "Implement a shared memory bus where the Data-Fetcher writes retrieved data to a specific memory location and the Summarizer agent continuously polls a status flag at another location to verify successful retrieval.",
+      "C": "Refactor to a hub-and-spoke model where the Data-Fetcher returns data to a Coordinator agent, which handles the API errors and only invokes the Summarizer upon successful data retrieval.",
+      "D": "Grant the Summarizer subagent direct access to the Data-Fetcher's execution logs, requiring it to continuously tail the log file and parse its contents for specific rate limit error codes before proceeding with its task."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. While merging subagents into a single monolithic agent might reduce communication latency, it sacrifices modularity, scalability, and fault isolation. Furthermore, it does not inherently provide a principled approach to handling transient API failures or the logic required to skip summarization when fetching fails.",
+      "B": "Incorrect. Implementing a shared memory bus increases concurrency complexity and coupling and does not inherently provide control flow management. It fails to address the core issue of error handling or provide the validation guarantees needed to stop the Summarizer from reading incomplete data and hallucinating.",
+      "C": "Correct. Refactoring to a hub-and-spoke model with a Coordinator agent centralizes error handling, validation, and retry/backoff logic. By ensuring the Summarizer is only invoked after successful data retrieval, this pattern prevents hallucinations caused by empty or failed inputs and significantly simplifies debugging and observability.",
+      "D": "Incorrect. Granting the Summarizer access to execution logs violates the principle of separation of concerns. It requires the Summarizer to interpret low-level operational states and manage its own error-check logic, which is brittle and does not guarantee that the summary process is halted during data-fetch failures."
+    },
+    "claude_notes": "Koren problema: subagenti su vezani PEER-TO-PEER (Data-Fetcher salje pravo Summarizer-u), pa nema sloja koji proverava da li je upstream korak uspeo. Kad Data-Fetcher padne (rate limit), Summarizer dobije prazan/nepotpun ulaz i halucinira metrike iz training data; greska jednog tiho zatruje drugog -> debug komplikovan. Lek (C): hub-and-spoke / coordinator - Data-Fetcher vraca Koordinatoru, koji CENTRALIZUJE error handling + retry/backoff + validaciju i Summarizer poziva SAMO posle uspesnog preuzimanja. Greska se hvata na granici, ne unutar agenta koji halucinira. Zamke: A = monolitni merge ukida komunikaciju tako sto je brise, ali zrtvuje modularnost/scalability/fault isolation, a 'immediately halt' je sirovo - obara ceo zadatak umesto principled error handling. B = shared memory bus + polling status flag = overengineering: povecava concurrency complexity i coupling, busy-wait polling, i NE resava core (validacija da Summarizer ne cita nepotpune podatke); rodjak TOCTOU/polling zamke iz d1-q009-A. D = Summarizer tail-uje tudje logove i parsira error kodove - krsi separation of concerns (Summarizer-ov posao je sazimanje, ne citanje tudjih logova), krhko (format loga se promeni -> puklo) i premesta error handling u pogresan sloj. Isti 'centralizuj obradu gresaka van agenta' koren kao handle-errors-outside-model-loop, ovde na nivou orkestracije a ne hook-a.",
+    "glossary_refs": ["hub-and-spoke", "separation of concerns", "subagent"],
+    "tags": ["multi-agent", "orchestration", "coordinator", "hub-and-spoke", "error-handling", "fault-isolation"],
+    "pattern_refs": ["coordinator-gates-not-peer-to-peer", "handle-errors-outside-model-loop"]
+  },
+  {
+    "id": "d1-q012",
+    "domain": 1,
+    "subdomain": "1.4",
+    "question": "An IT helpdesk bot attempts to resolve hardware issues but frequently fails and escalates to human Tier 2 support. The human agents complain that escalations lack context, forcing them to start troubleshooting from scratch. What is the best architectural pattern to resolve this?",
+    "options": {
+      "A": "Implement a pre-escalation step where Claude calls an escalate_ticket tool requiring fields for root cause analysis, steps attempted, and recommended next actions.",
+      "B": "Switch the architecture to a human-in-the-loop (HITL) model where a human approves every tool call the bot makes before escalation, allowing Tier 2 agents to review each diagnostic action.",
+      "C": "Prompt the bot to ask the user to summarize their issue in one sentence and include that summary in the escalation webhook payload, providing Tier 2 agents with a concise problem statement.",
+      "D": "Configure the orchestration layer to automatically append the last 5 user messages and the bot's diagnostic steps to the escalation ticket, giving Tier 2 agents a chronological interaction log."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. This pattern aligns with Anthropic's guidance on using Claude for incident response and agentic workflows. By requiring structured fields like root cause analysis, steps attempted, and recommended next actions, Claude enriches the escalation ticket with actionable context, enabling Tier 2 agents to pick up where the bot left off. This approach is supported by examples of Claude generating triage reports and populating tickets with AI-generated analysis.",
+      "B": "Incorrect. While HITL is a valid pattern for critical decisions, requiring human approval for every tool call would introduce significant latency and defeat the purpose of automation. Anthropic recommends using HITL for destructive actions or final approvals, not for every diagnostic step. The core issue here is the lack of context in escalations, which is better addressed by structured pre-escalation analysis.",
+      "C": "Incorrect. Relying on the user to provide a concise summary is unreliable and may not capture technical details or diagnostic steps already performed. The best practice is to have Claude synthesize information from the interaction and tool outputs into a structured escalation, rather than depending on user-generated summaries.",
+      "D": "Incorrect. While providing a log is helpful, it lacks the structured analysis and actionable recommendations that human agents need to quickly understand the issue. Anthropic's recommended approach emphasizes using Claude to perform root cause analysis and generate a structured summary with next steps, rather than just dumping raw conversation history."
+    },
+    "claude_notes": "Subdomain 1.4 (handoff/escalation). Dobar handoff = agent proizvodi STRUKTURISANU, KURIRANU predaju: root cause + pokusani koraci + preporucene sledece akcije. Najpouzdaniji nacin da se to iznudi je escalate_ticket tool sa OBAVEZNIM poljima - schema primorava bota da sintetizuje bas ono sto Tier 2 coveku treba da nastavi (deterministicka garancija kompletnosti, ne prompt-nada). Resava direktno pritužbu 'krecu iz nule'. Zamke: B = HITL resava POGRESAN problem - pritužba je 'nema konteksta', ne 'bot radi opasne akcije'; odobravanje svakog tool poziva dodaje latenciju i gusi automatizaciju; HITL je za destruktivne akcije/finalna odobrenja, ne za svaki dijagnosticki korak. C = POGRESAN AKTER - korisnik sazima u jednu recenicu; lossy i laicki, nema dijagnosticki kontekst koji JEDINO bot ima (sta je pokusano, root cause hipoteza); teret na osobu koja zna najmanje. D = najopasniji distraktor jer 'zvuci korisno' (kompletan log), ali je SIROV DUMP, ne kurirana predaja - Tier 2 i dalje mora da rekonstruise iz hronoloskog transkripta; vise podataka != upotrebljiv kontekst; nema analize ni preporuka. A (sinteza) > D (sirova hronologija): predaja treba da bude destilovana odluka, ne arhiva.",
+    "glossary_refs": ["handoff pattern", "human-in-the-loop", "structured output"],
+    "tags": ["handoff", "escalation", "structured-output", "multi-step-workflow", "human-in-the-loop"],
+    "pattern_refs": ["structured-handoff-not-raw-dump"]
+  },
+  {
+    "id": "d1-q013",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "A cybersecurity incident response system receives an alert about a potential data breach. The system must analyze firewall logs, check endpoint telemetry, and review active directory logins. The current architecture uses a single agent equipped with multiple tools to perform all three tasks simultaneously. However, the agent frequently gets confused, drops tasks, and exceeds its reasoning limits. Which architectural pattern best resolves this issue?",
+    "options": {
+      "A": "Increase the maximum token length of the single agent so it can process firewall logs, endpoint telemetry, and Active Directory logins in one extended reasoning pass without dropping intermediate results.",
+      "B": "Use a smaller, faster model for the single agent to rapidly execute tool calls for firewall logs and endpoint telemetry, completing the full task sequence before its reasoning limits are reached.",
+      "C": "Implement a coordinator-subagent pattern where the Coordinator decomposes the incident, delegates distinct log analyses to specialized subagents, and aggregates their findings.",
+      "D": "Implement a peer-to-peer network where three agents vote on task priority, allowing each to independently process a distinct data source like firewall logs or endpoint telemetry based on the consensus order."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Increasing the maximum token length may allow the single agent to process more data in one pass, but it does not address the core issue of task confusion and cognitive overload. The agent would still lack architectural boundaries to manage distinct, complex investigative tasks, leading to dropped tasks and reasoning limits.",
+      "B": "Incorrect. Using a smaller, faster model might improve processing speed but typically results in lower reasoning capabilities. This would likely exacerbate the issue of the agent getting confused or dropping tasks when faced with the same complex, multi-step investigation requirements.",
+      "C": "Correct. The coordinator-subagent pattern decomposes the incident into manageable, specialized sub-tasks, delegating firewall, endpoint, and AD analysis to dedicated subagents. This reduces the reasoning load on each agent, eliminates tool-selection confusion, and enables parallel execution, with the Coordinator aggregating findings into a final report.",
+      "D": "Incorrect. A peer-to-peer voting network focuses on consensus and task ordering, which does not solve the problem of task complexity or the need for specialization. This pattern adds coordination overhead without decomposing the workload or reducing the reasoning burden on individual agents."
+    },
+    "claude_notes": "Subdomain 1.2. Koren: JEDAN monolitni agent zonglira tri zadatka + vise tool-ova istovremeno -> cognitive overload (zbunjuje se, ispusta zadatke, prebija reasoning limite). Problem je STRUKTURA/orkestracija, ne kapacitet ni brzina. Lek (C): coordinator-subagent dekompozicija - koordinator rastavi incident, delegira svaku analizu (firewall/endpoint/AD) specijalizovanom subagentu sa fokusiranim kontekstom i jednim poslom, pa agregira nalaze; manji reasoning load po agentu, nema tool-selection zabune, plus paralelno izvrsenje. Zamke: A = veci token window = POGRESNA DIJAGNOZA (tretira kao manjak prostora; agent ne pada zbog mesta nego zbog zongliranja - vise prostora = vise sobe da se zbuni, bez ikakve strukture). B = manji/brzi model = menja POGRESNU POLUGU i pogorsava (slabije rezonovanje na istom slozenom poslu; brzina ne resava zbunjenost). D = peer-to-peer glasanje o prioritetu = najopasniji distraktor jer zvuci 'distribuirano/sofisticirano', ali glasanje ne smanjuje teret po zadatku (neko i dalje radi svaku analizu) + dodaje coordination overhead + krhko peer-to-peer bez huba (nema centralne agregacije/hvatanja gresaka; vidi coordinator-gates-not-peer-to-peer). Pouka: rastereti kroz PODELU, ne kroz 'daj mu vise/brze'.",
+    "glossary_refs": ["cognitive overload", "subagent", "task decomposition"],
+    "tags": ["multi-agent", "coordinator", "task-decomposition", "cognitive-load", "orchestration"],
+    "pattern_refs": ["decompose-overloaded-agent-not-scale-it"]
+  },
+  {
+    "id": "d1-q014",
+    "domain": 1,
+    "subdomain": "1.6",
+    "question": "A media company uses an AI agent to review 3-hour video transcripts for brand safety, narrative consistency, and pacing. Initially, the entire transcript was processed in one prompt, but the model hallucinated events due to attention dilution. The architect split the workflow into 10-minute local analysis chunks. Now, the agent accurately flags local brand safety issues but completely misses narrative inconsistencies that span across the entire video. How should the architect resolve this?",
+    "options": {
+      "A": "Switch the entire workflow to dynamic adaptive decomposition so the agent can autonomously decide which 10-minute chunks to read.",
+      "B": "Revert to a single prompt but use strict XML tags to separate the 10-minute chunks within the context window.",
+      "C": "Implement a cross-file integration pass that analyzes the summarized narrative outputs from the local chunk passes to evaluate global consistency.",
+      "D": "Increase the model's temperature and use a map-reduce pattern to process all chunks in parallel without a final integration step."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Dynamic adaptive decomposition may optimize which chunks are prioritized, but it does not address the fundamental need for synthesis. Without an explicit step to aggregate findings across chunks, the agent remains blind to global narrative signals.",
+      "B": "Incorrect. Returning to a single prompt reintroduces the original problem of attention dilution and context-length limitations. While XML tags improve structure, they do not fundamentally solve the model's difficulty in accurately processing 3 hours of dense transcript text in a single inference pass.",
+      "C": "Correct. This approach utilizes a Map-Reduce or Synthesis pattern. By implementing a second-stage integration pass, the architect allows the system to reason over summarized outputs from the local passes. This enables the model to detect long-range narrative inconsistencies that no single local chunk can identify while maintaining the accuracy gained by avoiding attention dilution on the raw text.",
+      "D": "Incorrect. Increasing the temperature introduces stochasticity and reduces the reliability of safety and consistency reviews. Furthermore, map-reduce without an integration (reduce) step is just parallel processing; it fails to bridge the context gap between isolated chunks."
+    },
+    "claude_notes": "Subdomain 1.6. Putanja u dva koraka: jedan prompt na 3h transkripta -> attention dilution (pažnja se razvodni, halucinira) -> arhitekta isece na 10-min chunk-ove -> sad hvata LOKALNE brand-safety probleme ali promasuje GLOBALNE narativne nedoslednosti preko cele celine. Poenta: chunking TRGUJE globalnim za lokalno (dobio lokalnu tacnost, izgubio cross-chunk pregled). Lek (C): drugi-stepeni integration/synthesis (reduce) pass koji rezonuje nad SAZECIMA lokalnih prolaza -> hvata long-range obrasce, a BEZ povratka attention dilution-a jer integraciji ulaze sazeci a ne svih 3h sirovog teksta. To je klasican Map-Reduce / Synthesis pattern (map = lokalni prolazi, reduce = integracija). Zamke: A = dinamicka adaptivna 'bira koje chunk-ove citati' - i dalje LOKALNA odluka, nema agregacionog sloja -> ostaje slep za globalni narativ. B = jedan prompt + XML tagovi - vraca PRVOBITNI problem (dilution); tagovi uredno obeleze ali ne smanjuju kolicinu konteksta. D = dvostruka zamka: temperature uvodi stohasticnost (nema veze sa opsegom; stara temperature zamka) + 'map-reduce BEZ finalnog integration koraka' = samo paralelizam, izostavlja bas reduce koji JESTE resenje (opisuje pola resenja i izbaci kljucnu polovinu). Razliciti OPSEZI problema (lokalni vs globalni) traze razlicite slojeve analize.",
+    "glossary_refs": ["attention dilution", "map-reduce", "task decomposition"],
+    "tags": ["task-decomposition", "map-reduce", "chunking", "attention-dilution", "long-context", "synthesis"],
+    "pattern_refs": ["chunk-local-then-integrate-global"]
+  },
+  {
+    "id": "d1-q015",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "A developer is building an autonomous research agent using Claude. To determine when the agent has finished its research, the developer's code checks if the assistant's response contains the phrase 'Research complete:'. If this phrase is found, the agent's main loop terminates. What is the architectural assessment of this approach?",
+    "options": {
+      "A": "This is an anti-pattern because it relies on parsing non-deterministic natural language for control flow. The developer should instead instruct the model to call a specific tool, such as research_complete(), to signal task completion.",
+      "B": "This is an anti-pattern; the developer should instead evaluate if stop_reason equals end_turn to safely and deterministically terminate the loop, avoiding reliance on natural language parsing. By checking the API response's stop_reason field.",
+      "C": "This is a best practice when the system prompt enforces the exact phrasing of 'Research complete:' using XML tags, and the agent's main loop parses the response for that tag to terminate deterministically.",
+      "D": "This is an anti-pattern; the developer should instead check for a specific stop_sequence like </research_complete> in the API response, and configure the agent to terminate when that sequence is detected."
+    },
+    "correct": "A",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Correct. Anthropic's official documentation and the CCA-F study guide state that parsing natural language for loop termination is an anti-pattern. The recommended approach is to use structured tool calling (function calling), where the model emits a tool_use block to signal completion, ensuring deterministic and reliable control flow.",
+      "B": "Incorrect. While stop_reason is useful for agentic loop control, end_turn indicates the model has finished its turn, not necessarily that the research task is complete. The model may end its turn to wait for tool results or user input. The proper completion signal is a dedicated tool call like research_complete().",
+      "C": "Incorrect. Even with XML tags, relying on natural language parsing for control flow is unreliable because LLM outputs are non-deterministic and can vary. Anthropic explicitly identifies this as an anti-pattern in the CCA-F study guide, recommending structured tool calls instead.",
+      "D": "Incorrect. Using a stop_sequence still relies on natural language generation and is not a deterministic control mechanism. Anthropic recommends structured tool calls over stop sequences for signaling task completion, as tool calls provide a reliable, schema-validated interaction."
+    },
+    "claude_notes": "GRESKA: izabrao B umesto A (i ja sam pogresno potvrdio B - moja analiza je vodila korisnika). KRITICNA NIJANSA: end_turn = 'potez zavrsen' != 'zadatak zavrsen'. Parsiranje fraze 'Research complete:' jeste anti-pattern (slazu se A, B, D), ALI ispravna zamena je STRUKTURNI TOOL POZIV: model emituje tool_use blok (npr. research_complete()) da eksplicitno signalizira zavrsetak ZADATKA - deterministicki, schema-validisano, nosi tacnu semantiku 'posao gotov'. B (stop_reason==end_turn) je pogresan strukturni signal: end_turn znaci da je model zavrsio TAJ POTEZ (moze ga zavrsiti da saceka rezultate alata ili korisnikov unos), pa bi petlja stala prerano; end_turn ne nosi semantiku zavrsetka zadatka. ZASTO SAM PROMASIO: poistovetio sam ovo sa d1-q001, ali q001 je o kontroli PETLJE (nastavi/stani jedan turn -> tamo end_turn JESTE pravi signal), a ovo je semantika zavrsetka ZADATKA na visem nivou (drugi opseg). Trap je bas 'izgleda kao loop-kontrola pitanje'. C = pogresno nazvano 'best practice' + i dalje NL parsiranje (XML tag ne cini izlaz determinstickim). D = stop_sequence prekida generisanje ali I DALJE zavisi od toga da model emituje bas taj niz (NL generisanje); Anthropic preporucuje strukturne tool pozive nad stop sekvencama. POUKA: razlikuj TURN-completion (end_turn) od TASK-completion (completion tool).",
+    "glossary_refs": ["stop_reason", "end_turn", "tool_use", "completion tool", "stop_sequence"],
+    "tags": ["agentic-loop", "anti-patterns", "task-completion", "tool-use", "control-flow", "stop-reason"],
+    "pattern_refs": ["structured-signals-over-text", "task-completion-tool-not-end-turn"]
+  },
+  {
+    "id": "d1-q016",
+    "domain": 1,
+    "subdomain": "1.7",
+    "question": "In the context of managing agentic session state and resumption, which of the following operations is specifically used to create a new session branch from an existing state to allow for parallel or divergent interactions?",
+    "options": {
+      "A": "--resume <session-name>",
+      "B": "fork_session",
+      "C": "--new-branch",
+      "D": "--clear-context"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. '--resume <session-name>' is typically a CLI flag or command used to continue an existing session from its last state, rather than creating a divergent or parallel branch from it.",
+      "B": "Correct. 'fork_session' is the appropriate primitive for creating a new branch of an existing session. It preserves the current context and produces a new session handle, enabling parallel workflows or resumption from a specific point without modifying the original session state.",
+      "C": "Incorrect. While '--new-branch' describes the concept, it is not a standard API or SDK primitive in the Claude/Anthropic architecture; branching logic is explicitly handled via forking operations like 'fork_session'.",
+      "D": "Incorrect. '--clear-context' implies wiping the current session history or buffer. This is the opposite of forking or resuming, as it destroys state rather than preserving or branching it."
+    },
+    "claude_notes": "Subdomain 1.7 (session state/resumption/forking). Recall/terminoloski: tri operacije nad sesijom - RESUME (nastavi istu sacuvanu liniju iz poslednjeg stanja), FORK (granaj iz postojeceg stanja u novu kopiju za paralelne/divergentne putanje, ne diras original), CLEAR (resetuj/obrisi kontekst). Kljucni glagol u pitanju 'kreira novu granu iz postojeceg stanja' + 'divergentno' = forkovanje -> B fork_session (cuva kontekst, daje novi session handle, paralelni workflow bez modifikovanja originala). Zamke: A --resume NASTAVLJA istu liniju (ne grana). C --new-branch je najopasniji jer doslovno sadrzi rec 'branch' da te namami, ALI nije stvaran primitiv - opisuje koncept, a stvarna operacija grananja je fork_session (distractor-invents-a-mechanism: realan-zvucan flag koji ne postoji). D --clear-context BRISE stanje - suprotno od grananja (pocinje praznim umesto da cuva/grana). OBRT vredan pamcenja: u d1-q005 i d1-q007 fork-based session je bio POGRESAN izbor (over-engineering kad bi cist prenos podataka bio dovoljan); ovde je forkovanje BAS ono sto se trazi - isti pojam, ali pitanje sad glasi 'koja operacija JESTE forkovanje', ne 'da li ti TREBA forkovanje'.",
+    "glossary_refs": ["fork-based session", "session resumption"],
+    "tags": ["session-management", "forking", "resumption", "session-state", "terminology"],
+    "pattern_refs": ["distractor-invents-a-mechanism"]
+  },
+  {
+    "id": "d1-q017",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "An HR assistant bot handles employee queries using a Coordinator and several subagents (PolicyAnalyzer, BenefitsCalculator, GeneralQA). For a simple query like \"What are the cafeteria hours?\", the bot takes 45 seconds to respond because the Coordinator routes the query through all subagents in a fixed pipeline before synthesizing the answer. Which design change will most effectively reduce latency for simple queries?",
+    "options": {
+      "A": "Program the PolicyAnalyzer and BenefitsCalculator to return empty strings faster if they determine the query is irrelevant to their domain.",
+      "B": "Deploy the subagents on faster, dedicated hardware to reduce the execution time of the fixed pipeline.",
+      "C": "Broadcast the query to all subagents simultaneously and configure the Coordinator to immediately output the first response it receives.",
+      "D": "Redesign the Coordinator to evaluate query complexity upfront and dynamically route simple queries directly to the GeneralQA subagent, bypassing the others."
+    },
+    "correct": "D",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Optimizing subagents to return empty strings for irrelevant queries (early exit) is a minor improvement but still requires the Coordinator to manage multiple network calls and wait for those responses. A centralized routing decision at the Coordinator level is much more effective at eliminating the latency associated with invoking those subagents in the first place.",
+      "B": "While upgrading hardware may provide some incremental speed improvements, it does not address the underlying architectural bottleneck. The system would still be executing a fixed pipeline of unnecessary calls for simple queries, making this an inefficient and non-scalable solution compared to architectural optimization.",
+      "C": "Broadcasting queries to all subagents in parallel can reduce wall-clock time, but taking the 'first response' is dangerous in an HR context. It introduces non-determinism and risks providing inaccurate information if a specialized agent provides a generic but incomplete answer faster than the appropriate agent. It also wastes significant computational resources and does not solve the root problem of the fixed pipeline.",
+      "D": "Evaluating query complexity and intent upfront allows the Coordinator to implement dynamic routing. By identifying simple queries and routing them directly to the GeneralQA subagent, the system bypasses the overhead of the specialized subagents entirely. This 'fast path' eliminates unnecessary sequential processing, significantly reducing latency and compute costs."
+    },
+    "claude_notes": "GRESKA: izabrao C umesto D. Koren problema: FIKSNI pipeline provlaci SVAKI upit kroz sve subagente, i kad je za 'kafeterija sati' relevantan samo GeneralQA -> 45s rasipanja. Lek (D): dinamicko/uslovno RUTIRANJE (router/triage) - Coordinator unapred proceni slozenost/nameru upita i prost upit posalje DIREKTNO GeneralQA, bypass specijalista ('fast path') -> uklanja nepotrebne pozive na izvoru, smanjuje I latenciju I compute, a TACNOST ostaje (pravi subagent odgovara). ZASTO SAM IZABRAO C (i zasto je pogresno): C 'broadcast svima + prvi odgovor pobedjuje' jeste najbrze na papiru, ALI 'first response' je opasno u HR/QA: nedeterminizam i rizik da specijalizovan agent vrati generican/nepotpun odgovor BRZE od pravog -> izbacis pogresan odgovor (race-to-first kockanje sa tacnoscu); plus i dalje pozivas SVE subagente (trosi resurse) i ne resava fiksni pipeline. To je 'brzo ali pogresno' zamka - optimizuje bas TRAZENU metriku (latenciju) zrtvujuci tacnost. B = jaci hardver: kapacitet ne leci ARHITEKTURU, pipeline i dalje vrti sve nepotrebne pozive (isti 'struktura ne kapacitet' koren kao d1-q013). A = subagenti brze vracaju prazan string: mikro-optimizacija, Coordinator i dalje upravlja svim mreznim pozivima i ceka ih - optimizujes otpad umesto da ga UKLONIS. Pouka: za fiksni-pipeline-je-spor problem -> inteligentno rutiranje (proceni pa posalji samo relevantnom), ne paralelni broadcast (zrtvuje tacnost), ne hardver, ne mikro-optimizacija.",
+    "glossary_refs": ["routing", "fixed sequential pipeline", "subagent"],
+    "tags": ["multi-agent", "coordinator", "routing", "latency", "fixed-pipeline", "orchestration"],
+    "pattern_refs": ["route-by-complexity-not-fixed-pipeline"]
+  },
+  {
+    "id": "d1-q018",
+    "domain": 1,
+    "subdomain": "1.7",
+    "question": "A senior developer uses Claude Code to scaffold a complex GraphQL API. After establishing the core schema and resolvers in a session, the developer wants to hand off the implementation of the User mutations to a junior developer, while the senior developer continues working on the Product queries. How can session management facilitate this parallel workflow without duplicating the initial setup effort?",
+    "options": {
+      "A": "Both developers resume the exact same named session simultaneously from different terminals, relying on Claude's native support for concurrent multi-user prompt resolution to work on separate mutations.",
+      "B": "The senior developer exports the session history as a JSON file and emails it to the junior developer, who imports it into a new session to continue with the User mutations.",
+      "C": "The senior developer uses fork_session to create a branch of the current state for the junior developer to use for the User mutations, while continuing their own work in the original session.",
+      "D": "The senior developer starts a new session for the junior developer and asks Claude to generate a summary of the GraphQL schema and resolver patterns to bootstrap the User mutations context."
+    },
+    "correct": "D",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Claude Code does not support multiple users interacting with the same session concurrently. Best practices explicitly warn that running agents on the same files simultaneously leads to conflicts, and isolation by file or directory is recommended.",
+      "B": "Incorrect. There is no documented feature in Claude Code or the Anthropic API for exporting and importing session history as a JSON file for handoff. While session persistence exists for long-running agents, it relies on artifacts like Git commits and progress notes, not direct file-based session transfer.",
+      "C": "Incorrect. Anthropic's official documentation does not describe a fork_session function for branching interactive session state between human developers. The recommended approach for parallel work is to use separate working branches in version control (e.g., Git) per task to avoid conflicts, as noted in Claude Code best practices.",
+      "D": "Correct. This aligns with Anthropic's recommended practices for collaboration and context sharing. Using Claude to generate a summary or context from the existing work allows the junior developer to start a new, isolated session with the necessary information, avoiding conflicts and leveraging Claude's ability to synthesize and transfer knowledge. This approach mirrors the use of Projects for shared knowledge and the principle of isolating agent scope."
+    },
+    "claude_notes": "GRESKA: izabrao C umesto D (i ja sam pogresno potvrdio C). KLJUC + TENZIJA sa d1-q016: zvanicno je C netacno jer Anthropic dokumentacija NE opisuje fork_session za grananje INTERAKTIVNOG stanja IZMEDJU LJUDSKIH developera; preporuka za paralelni ljudski rad su zasebne Git grane po zadatku (izbegavanje konflikata nad istim fajlovima). Ovo se PRIVIDNO sukobljava sa d1-q016 (gde je fork_session bio 'pravi primitiv' za grananje sesije). Linija koju kviz povlaci: q016 = apstraktni session-state primitiv ('koja operacija forkuje' -> fork); q018 = handoff IZMEDJU DVOJE LJUDI -> izoluj scope (nova izolovana sesija/Git grane) + prenesi znanje SAZETKOM (Projects-stil deljeno znanje). DISKRIMINATOR: kontekst 'predaja drugom LJUDSKOM developeru / paralelni ljudski rad'. Tacan (D): junior krene u novoj izolovanoj sesiji koju Claude bootstrap-uje sintetizovanim sazetkom schema/resolver obrazaca - izbegava konflikte, koristi Claude-ovu sintezu/prenos znanja, mirror Projects + izolacija scope-a agenta. Distraktori: A = 'concurrent multi-user prompt resolution' NE postoji (Claude Code ne podrzava vise korisnika u istoj sesiji; paralelni rad nad istim fajlovima = konflikti -> izolacija po fajlu/direktorijumu) - distractor-invents-a-mechanism. B = export JSON + email + import NEMA dokumentovane podrske; persistencija ide preko Git commit-a i progress notes, ne file-based session transfer - distractor-invents-a-mechanism. ZASTO SAM PROMASIO: naseo na 'lepo se nastavlja na q016' bez da uocim da kontekst 'izmedju dva coveka' menja tacan odgovor ka summarize+isolate.",
+    "glossary_refs": ["fork-based session", "Projects"],
+    "tags": ["session-management", "handoff", "collaboration", "forking", "projects", "human-handoff"],
+    "pattern_refs": ["human-handoff-synthesize-not-share-session", "distractor-invents-a-mechanism"]
+  },
+  {
+    "id": "d1-q019",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "Claude returns a stop_reason of tool_use with three tool_use blocks in a single response. The developer executes all three tools successfully. To append the results to the conversation history, the developer creates three separate user messages, each containing one tool_result block, and appends them sequentially to the messages array. What is the architectural flaw in this implementation of the agentic loop?",
+    "options": {
+      "A": "The Anthropic API requires strictly alternating user and assistant messages; all three tool_result blocks must be placed inside a single user message.",
+      "B": "The tool_result blocks must be merged into a single JSON array within a system message, rather than using user messages.",
+      "C": "The developer must append an assistant message acknowledging each tool_result between the user messages to maintain the conversation flow.",
+      "D": "Multiple tool_result blocks cannot be processed in a single iteration; the developer must force Claude to request one tool at a time using disable_parallel_tool_use."
+    },
+    "correct": "A",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "This is correct. The Anthropic Messages API enforces a strictly alternating pattern between 'user' and 'assistant' roles. When Claude generates multiple 'tool_use' blocks in a single assistant message, the corresponding 'tool_result' blocks must be returned collectively within the next single 'user' message to maintain this pattern.",
+      "B": "This is incorrect. 'tool_result' blocks are specifically designed to be placed in 'user' messages. They do not belong in 'system' messages, nor should they be formatted as a single JSON array outside of the standard tool block structure.",
+      "C": "This is incorrect. The protocol does not require or expect an assistant acknowledgment between individual tool results. The assistant turn consists of the tool requests, and the user turn consists of the corresponding results.",
+      "D": "This is incorrect. Anthropic models support parallel tool use, allowing multiple tools to be called and processed in a single turn. There is no architectural requirement to disable parallel tool use for multiple requests."
+    },
+    "claude_notes": "GRESKA: izabrao B umesto A (ja sam u tutoringu izveo A i bilo je tacno). Pravilo Messages API-ja: STROGA naizmenicnost user/assistant role-ova - nema dve uzastopne poruke istog role-a. tool_use blokovi su u ASSISTANT poruci; pripadajuci tool_result blokovi u SLEDECOJ USER poruci, upareni preko tool_use_id. Kad asistent emituje VISE tool_use blokova u jednom potezu (parallel tool use), svi tool_result-i moraju nazad ZAJEDNO u JEDNU user poruku (vise blokova u jednoj poruci). Developerova greska: tri ZASEBNE user poruke = tri uzastopne user poruke = krsi alternaciju. Zamke: B (tvoj izbor) = tool_result u SYSTEM poruci kao JSON niz - POGRESAN SLOJ: system je za instrukcije/personu (postavlja se jednom na vrhu), rezultati alata idu u USER; 'JSON niz u system' zvuci uredno/strukturno ali je pogresno mesto (uredno != tacan sloj - verovatno te to namamilo). C = izmisljen zahtev da assistant 'potvrdjuje' svaki tool_result izmedju poruka; protokol to ne trazi, i poremetilo bi uparivanje tool_use<->tool_result. D = pogresna dijagnoza: parallel tool use JE podrzan (vise alata u jednom potezu), problem nije paralelizam nego PAKOVANJE rezultata (tri poruke umesto jedne); disable_parallel_tool_use postoji ali nije potreban ovde.",
+    "glossary_refs": ["tool_result", "message alternation", "parallel tool use", "tool_use"],
+    "tags": ["agentic-loop", "tool-use", "tool-result", "messages-api", "parallel-tool-use", "message-structure"],
+    "pattern_refs": ["batch-parallel-tool-results-one-user-message"]
+  },
+  {
+    "id": "d1-q020",
+    "domain": 1,
+    "subdomain": "1.3",
+    "question": "An incident response system uses a coordinator to investigate server outages. When an outage occurs, the coordinator gathers initial logs. It then needs to investigate two competing hypotheses: a DDoS attack and a database failure. If it investigates the DDoS attack first and finds nothing, the context window is now polluted with irrelevant network logs, confusing the model when it subsequently investigates the database failure. How can the architect use fork-based session management to solve this context pollution problem?",
+    "options": {
+      "A": "Update the AgentDefinition for the subagents to include a ClearContext tool, allowing them to wipe the session memory before switching hypotheses, so that each investigation starts with a clean context.",
+      "B": "Configure the coordinator to emit two Task tool calls in parallel, ensuring the network logs and database logs are processed by separate subagents before merging the results.",
+      "C": "Branch the session state immediately after the initial log gathering, creating two isolated threads that each receive a copy of the initial logs and investigate one hypothesis independently.",
+      "D": "Instruct the coordinator to output its findings in a structured JSON format, separating the DDoS logs from the database logs, to preserve attribution in a single thread."
+    },
+    "correct": "C",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Wiping the session memory would also remove the initial logs needed for the second investigation, requiring re-gathering or manual preservation. Fork-based session management is more efficient because it duplicates the initial state without losing critical information, enabling parallel, independent investigations without data loss.",
+      "B": "Incorrect. While parallel task calls can achieve concurrency, they do not inherently solve the context pollution problem within the coordinator's own session. The coordinator's context may still become polluted if it processes results sequentially. Fork-based session management explicitly creates isolated threads with separate context windows, which is the recommended pattern for independent hypothesis testing.",
+      "C": "Correct. This approach directly addresses context pollution by forking the session into isolated threads, each with its own copy of the initial logs. This prevents cross-contamination between investigations and aligns with Anthropic's multi-agent research systems, where parallel subagents operate with their own context windows to explore different aspects simultaneously. The research confirms that parallel, isolated investigation of hypotheses based on initial logs is a sound strategy.",
+      "D": "Incorrect. Structured output does not prevent context pollution; the model's context window still accumulates all logs and reasoning steps, which can confuse subsequent investigations. The core issue is the mixing of irrelevant information in a single context, which structured formatting alone cannot resolve."
+    },
+    "claude_notes": "GRESKA: izabrao B umesto C (ja sam u tutoringu izveo C i bilo je tacno). Pitanje IZRICITO imenuje 'fork-based session management'. Lek (C): granaj stanje POSLE skupljanja pocetnih logova u dve IZOLOVANE niti - svaka NASLEDI kopiju pocetnih logova (zajednicki setup ocuvan), pa istrazuje jednu hipotezu nezavisno -> mrezni sum iz neuspesne DDoS istrage ostaje u svojoj grani i NE curi u DB granu (context pollution reseno na izvoru, bez gubitka deljenih logova). Usklađeno sa Anthropic multi-agent research sistemima (paralelni subagenti sa sopstvenim context window-ima). ZASTO SAM TREBAO C / ZASTO JE B POGRESNO: B = dva paralelna Task poziva / zasebni subagenti - TAKODJE izoluje, ALI to je SPAWNING subagenata, ne FORK-BASED SESSION; pitanje izricito trazi forkovanje. Plus koordinatorov sopstveni kontekst i dalje moze biti zagadjen ako obradjuje rezultate sekvencijalno. To je 'opcija koja radi ali nije TRAZENI mehanizam' zamka. A = ClearContext da obrise memoriju = DESTRUKTIVNO (obrisao bi i pocetne logove koji trebaju OBEMA hipotezama -> re-gathering); nije fork; 'ClearContext tool' u AgentDefinition mirise na izmisljen mehanizam. D = strukturni JSON sa atribucijom u JEDNOJ niti = kontekst i dalje zagadjen (model i dalje vidi sve u istom prozoru); atribucija != izolacija. META-pouka: kad pitanje IMENUJE mehanizam, biraj opciju koja koristi bas taj. Fork je ovde TACAN (apstraktna session-state izolacija, kao d1-q016) - za razliku od d1-q018 gde je fork bio pogresan jer je bila predaja IZMEDJU LJUDI (kontekst odlucuje).",
+    "glossary_refs": ["fork-based session", "context pollution", "context isolation"],
+    "tags": ["session-management", "forking", "context-isolation", "context-pollution", "subagent", "hypothesis-testing"],
+    "pattern_refs": ["fork-to-isolate-context"]
+  },
+  {
+    "id": "d1-q021",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "A cybersecurity agent uses a scan_port tool. The developer executes the tool and appends the result as a plain text string to the end of the last user message, rather than using a structured tool_result block. During testing, Claude begins hallucinating tool outputs and loses track of which ports it has already scanned. Why does this implementation cause model degradation?",
+    "options": {
+      "A": "The developer must use a system message to inject plain text results, as user messages are strictly reserved for human input and cannot contain tool data without corrupting the conversation context.",
+      "B": "Plain text strings bypass the model's internal safety filters, causing it to hallucinate malicious port activity instead of reading the actual scan results, which undermines the agent's situational awareness.",
+      "C": "Appending plain text instead of a structured tool_result block breaks the explicit linkage between the assistant's tool_use_id and the result, degrading the model's ability to reason about the action.",
+      "D": "Plain text strings do not support the is_error flag, so the model cannot distinguish between open and closed ports, leading it to misinterpret every scan result as a successful connection."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. tool_result blocks are actually intended to be placed within messages with the user role. The problem is not the role of the message, but the format of the content—specifically, the lack of a structured tool block and metadata linkage.",
+      "B": "Incorrect. Hallucinations in tool-use scenarios are typically a result of context and provenance loss. While plain text might be processed differently than structured blocks, the degradation is a cognitive reasoning failure rather than a mechanical bypass of internal safety filters.",
+      "C": "Correct. Claude's Messages API requires a structured action-observation loop where a tool_use (from the assistant) is followed by a tool_result (from the user). The tool_result block MUST contain a tool_use_id that matches the assistant's request. This linkage provides provenance and allows the model to reliably map observations back to specific actions. Without it, the model loses the logical thread, leading to hallucinations and a failure to maintain accurate state.",
+      "D": "Incorrect. While structured tool results can include an is_error flag, its absence is not the primary cause of reasoning failure or the loss of state regarding scanned ports. The degradation stems from structural misalignment, not the lack of a specific boolean flag."
+    },
+    "claude_notes": "Subdomain 1.1, nastavak d1-q019. Korisnik TACNO odgovorio C (preneo lekciju iz q019 umesto da ponovi gresku). Srz: Messages API trazi strukturisanu ACTION-OBSERVATION petlju - tool_use (assistant) prati tool_result (user), a tool_result MORA da sadrzi tool_use_id koji se poklapa sa tool_use pozivom. Ta veza daje PROVENIENCU: model pouzdano mapira svaku opservaciju (rezultat) nazad na tacnu akciju (poziv). Kad rezultat zalepis kao PLAIN TEXT na kraj user poruke, ta veza PUCA -> model gubi logicku nit, halucinira tool outpute, i ne odrzava stanje (gubi trag kojih portova je vec skenirao). KLJUC: greska je FORMAT SADRZAJA (nedostaje strukturni blok + tool_use_id metadata), NE role poruke - tool_result tacno ide u user. Zamke: A = tvrdi da mora system i da je user 'samo za coveka' - POGRESNO i inverzno (tool_result ide u user; problem je format, ne role); direktno suprotno od onog sto je q019 utvrdio. B = 'plain text zaobilazi safety filtere' = izmisljeno; degradacija je kognitivni/provenance gubitak, ne bypass filtera. D = 'nema is_error flag pa ne razlikuje open/closed portove' = is_error JE realan flag ali oznacava da je ALAT vratio gresku, nema veze sa open/closed semantikom (to je sadrzaj rezultata); realan termin + izmisljena funkcija.",
+    "glossary_refs": ["tool_result", "tool_use_id", "tool_use"],
+    "tags": ["agentic-loop", "tool-use", "tool-result", "messages-api", "tool-use-id", "provenance"],
+    "pattern_refs": ["structured-tool-result-not-plain-text"]
   }
 ]

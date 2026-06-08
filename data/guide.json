@@ -1,0 +1,879 @@
+{
+  "meta": {
+    "version": "0.1",
+    "updated": "Feb 10 2025",
+    "source_pdf": "https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F8lsy243ftffjjy1cx9lm3o2bw%2Fpublic%2F1773274827%2FClaude+Certified+Architect+%E2%80%93+Foundations+Certification+Exam+Guide.pdf",
+    "official_page": "https://anthropic.skilljar.com/claude-certified-architect-foundations-access-request",
+    "title": { "en": "Claude Certified Architect – Foundations Certification Exam Guide", "sr": "Claude Certified Architect – Foundations: zvanični vodič za sertifikacioni ispit" },
+    "note": { "en": "Unofficial study rendering of the official exam guide. English is verbatim from the official PDF (marked Confidential / Need to Know); Serbian is a translation added for study.", "sr": "Neoficijelni prikaz zvaničnog vodiča radi učenja. Engleski je doslovno iz zvaničnog PDF-a (označen Confidential / Need to Know); srpski je prevod dodat radi učenja." }
+  },
+  "intro": {
+    "title": { "en": "Introduction", "sr": "Uvod" },
+    "paragraphs": [
+      { "en": "The Claude Certified Architect – Foundations certification validates that practitioners can make informed decisions about tradeoffs when implementing real-world solutions with Claude. This exam tests foundational knowledge across Claude Code, the Claude Agent SDK, the Claude API, and Model Context Protocol (MCP) — the core technologies used to build production-grade applications with Claude.", "sr": "Sertifikat Claude Certified Architect – Foundations potvrđuje da praktičar ume da donosi informisane odluke o kompromisima pri implementaciji stvarnih rešenja sa Claude-om. Ispit proverava temeljno znanje iz Claude Code-a, Claude Agent SDK-a, Claude API-ja i Model Context Protocol-a (MCP) — ključnih tehnologija za izgradnju produkcionih aplikacija sa Claude-om." },
+      { "en": "Questions on this exam are grounded in realistic scenarios drawn from actual customer use cases, including building agentic systems for customer support, designing multi-agent research pipelines, integrating Claude Code into CI/CD workflows, building developer productivity tools, and extracting structured data from unstructured documents. Candidates must demonstrate not only conceptual knowledge but practical judgment about architecture, configuration, and tradeoffs in production deployments.", "sr": "Pitanja su zasnovana na realnim scenarijima iz stvarnih korisničkih slučajeva: izgradnja agentskih sistema za korisničku podršku, dizajn multi-agent istraživačkih pipeline-a, integracija Claude Code-a u CI/CD tokove, alati za produktivnost developera i ekstrakcija strukturisanih podataka iz nestrukturisanih dokumenata. Kandidat mora pokazati ne samo konceptualno znanje već i praktičnu procenu arhitekture, konfiguracije i kompromisa u produkciji." },
+      { "en": "This guide describes the exam content, lists the domains and task statements tested, provides sample questions, and recommends preparation strategies. Use it alongside hands-on experience to prepare effectively.", "sr": "Ovaj vodič opisuje sadržaj ispita, navodi domene i task statements koji se proveravaju, daje primere pitanja i preporučuje strategije pripreme. Koristi ga uz praktično iskustvo za efikasnu pripremu." }
+    ]
+  },
+  "target_candidate": {
+    "title": { "en": "Target Candidate Description", "sr": "Profil ciljnog kandidata" },
+    "intro": { "en": "The ideal candidate for this certification is a solution architect who designs and implements production applications with Claude. This candidate has hands-on experience with:", "sr": "Idealan kandidat je solution arhitekta koji dizajnira i implementira produkcione aplikacije sa Claude-om. Taj kandidat ima praktično iskustvo sa:" },
+    "items": [
+      { "en": "Building agentic applications using the Claude Agent SDK, including multi-agent orchestration, subagent delegation, tool integration, and lifecycle hooks", "sr": "Izgradnjom agentskih aplikacija pomoću Claude Agent SDK-a, uključujući multi-agent orkestraciju, delegiranje subagentima, integraciju alata i lifecycle hook-ove" },
+      { "en": "Configuring and customizing Claude Code for team workflows using CLAUDE.md files, Agent Skills, MCP server integrations, and plan mode", "sr": "Konfigurisanjem i prilagođavanjem Claude Code-a za timske tokove pomoću CLAUDE.md fajlova, Agent Skills-a, MCP integracija i plan moda" },
+      { "en": "Designing Model Context Protocol (MCP) tool and resource interfaces for backend system integration", "sr": "Dizajnom MCP tool i resource interfejsa za integraciju sa backend sistemima" },
+      { "en": "Engineering prompts that produce reliable structured output, leveraging JSON schemas, few-shot examples, and extraction patterns", "sr": "Pisanjem promptova koji daju pouzdan strukturisan izlaz, uz JSON šeme, few-shot primere i obrasce ekstrakcije" },
+      { "en": "Managing context windows effectively across long documents, multi-turn conversations, and multi-agent handoffs", "sr": "Efikasnim upravljanjem context window-om kroz duge dokumente, višekružne razgovore i predaje između agenata" },
+      { "en": "Integrating Claude into CI/CD pipelines for automated code review, test generation, and pull request feedback", "sr": "Integracijom Claude-a u CI/CD pipeline-e za automatski code review, generisanje testova i feedback na pull request-ove" },
+      { "en": "Making sound escalation and reliability decisions, including error handling, human-in-the-loop workflows, and self-evaluation patterns", "sr": "Donošenjem ispravnih odluka o eskalaciji i pouzdanosti, uključujući error handling, human-in-the-loop tokove i obrasce samoprocene" }
+    ],
+    "outro": { "en": "The candidate typically has 6+ months of practical experience building with Claude APIs, Agent SDK, Claude Code, and MCP, understanding both the capabilities and limitations of large language models in production environments.", "sr": "Kandidat obično ima 6+ meseci praktičnog iskustva sa Claude API-jima, Agent SDK-om, Claude Code-om i MCP-om, i razume i mogućnosti i ograničenja velikih jezičkih modela u produkciji." }
+  },
+  "exam_format": {
+    "title": { "en": "Exam Content", "sr": "Sadržaj ispita" },
+    "groups": [
+      {
+        "heading": { "en": "Response Types", "sr": "Tipovi pitanja" },
+        "paragraphs": [
+          { "en": "All questions on the exam are multiple choice format. Each question has one correct response and three incorrect responses (distractors).", "sr": "Sva pitanja su multiple choice. Svako pitanje ima jedan tačan i tri netačna odgovora (distraktore)." },
+          { "en": "Select the single response that best completes the statement or answers the question. Distractors are response options that a candidate with incomplete knowledge or experience might choose.", "sr": "Biraš jedan odgovor koji najbolje dopunjuje tvrdnju ili odgovara na pitanje. Distraktori su opcije koje bi izabrao kandidat sa nepotpunim znanjem ili iskustvom." },
+          { "en": "Unanswered questions are scored as incorrect; there is no penalty for guessing.", "sr": "Neodgovorena pitanja se boduju kao netačna; nema kazne za pogađanje." }
+        ]
+      },
+      {
+        "heading": { "en": "Exam Results", "sr": "Rezultati ispita" },
+        "paragraphs": [
+          { "en": "The exam has a pass or fail designation. The exam is scored against a minimum standard established by subject matter experts.", "sr": "Ispit je položio/pao. Boduje se prema minimalnom standardu koji su utvrdili stručnjaci za oblast." },
+          { "en": "Your results are reported as a scaled score of 100–1,000. The minimum passing score is 720. Scaled scoring models help equate scores across multiple exam forms that might have slightly different difficulty levels.", "sr": "Rezultat se prijavljuje kao skalirani skor 100–1.000. Minimalni prolazni skor je 720. Skalirano bodovanje izjednačava rezultate kroz različite forme ispita koje mogu imati blago različitu težinu." }
+        ]
+      }
+    ]
+  },
+  "domains": {
+    "title": { "en": "Content Outline — Domains & Weightings", "sr": "Pregled sadržaja — domeni i težine" },
+    "items": [
+      { "n": 1, "weight": 27, "name": { "en": "Agentic Architecture & Orchestration", "sr": "Agentska arhitektura i orkestracija" } },
+      { "n": 2, "weight": 18, "name": { "en": "Tool Design & MCP Integration", "sr": "Dizajn alata i MCP integracija" } },
+      { "n": 3, "weight": 20, "name": { "en": "Claude Code Configuration & Workflows", "sr": "Konfiguracija i tokovi rada Claude Code-a" } },
+      { "n": 4, "weight": 20, "name": { "en": "Prompt Engineering & Structured Output", "sr": "Prompt engineering i strukturisan izlaz" } },
+      { "n": 5, "weight": 15, "name": { "en": "Context Management & Reliability", "sr": "Upravljanje kontekstom i pouzdanost" } }
+    ]
+  },
+  "scenarios": {
+    "title": { "en": "Exam Scenarios", "sr": "Scenariji ispita" },
+    "intro": { "en": "The exam uses scenario-based questions. Each scenario presents a realistic production context that frames a set of questions. During the exam, 4 scenarios will be presented and picked at random from the full set of the 6 scenarios below.", "sr": "Ispit koristi pitanja zasnovana na scenarijima. Svaki scenario daje realan produkcioni kontekst koji uokviruje set pitanja. Na ispitu se prikazuju 4 scenarija, nasumično izabrana iz pune liste od 6 scenarija ispod." },
+    "items": [
+      { "n": 1, "name": { "en": "Customer Support Resolution Agent", "sr": "Agent za rešavanje korisničke podrške" }, "body": { "en": "You are building a customer support resolution agent using the Claude Agent SDK. The agent handles high-ambiguity requests like returns, billing disputes, and account issues. It has access to your backend systems through custom Model Context Protocol (MCP) tools (get_customer, lookup_order, process_refund, escalate_to_human). Your target is 80%+ first-contact resolution while knowing when to escalate.", "sr": "Gradiš agenta za rešavanje korisničke podrške pomoću Claude Agent SDK-a. Agent obrađuje visoko-dvosmislene zahteve poput povraćaja, sporova oko naplate i problema sa nalogom. Pristupa backend sistemima preko custom MCP alata (get_customer, lookup_order, process_refund, escalate_to_human). Cilj je 80%+ rešavanja u prvom kontaktu uz znanje kada da eskalira." }, "primary_domains": { "en": "Agentic Architecture & Orchestration, Tool Design & MCP Integration, Context Management & Reliability", "sr": "Agentska arhitektura i orkestracija, Dizajn alata i MCP integracija, Upravljanje kontekstom i pouzdanost" } },
+      { "n": 2, "name": { "en": "Code Generation with Claude Code", "sr": "Generisanje koda pomoću Claude Code-a" }, "body": { "en": "You are using Claude Code to accelerate software development. Your team uses it for code generation, refactoring, debugging, and documentation. You need to integrate it into your development workflow with custom slash commands, CLAUDE.md configurations, and understand when to use plan mode vs direct execution.", "sr": "Koristiš Claude Code da ubrzaš razvoj softvera. Tim ga koristi za generisanje koda, refaktorisanje, debug i dokumentaciju. Treba da ga integrišeš u razvojni tok sa custom slash komandama, CLAUDE.md konfiguracijama i razumeš kada koristiti plan mod a kada direktno izvršavanje." }, "primary_domains": { "en": "Claude Code Configuration & Workflows, Context Management & Reliability", "sr": "Konfiguracija i tokovi rada Claude Code-a, Upravljanje kontekstom i pouzdanost" } },
+      { "n": 3, "name": { "en": "Multi-Agent Research System", "sr": "Multi-agent istraživački sistem" }, "body": { "en": "You are building a multi-agent research system using the Claude Agent SDK. A coordinator agent delegates to specialized subagents: one searches the web, one analyzes documents, one synthesizes findings, and one generates reports. The system researches topics and produces comprehensive, cited reports.", "sr": "Gradiš multi-agent istraživački sistem pomoću Claude Agent SDK-a. Koordinator delegira specijalizovanim subagentima: jedan pretražuje web, jedan analizira dokumente, jedan sintetiše nalaze i jedan generiše izveštaje. Sistem istražuje teme i pravi sveobuhvatne, citirane izveštaje." }, "primary_domains": { "en": "Agentic Architecture & Orchestration, Tool Design & MCP Integration, Context Management & Reliability", "sr": "Agentska arhitektura i orkestracija, Dizajn alata i MCP integracija, Upravljanje kontekstom i pouzdanost" } },
+      { "n": 4, "name": { "en": "Developer Productivity with Claude", "sr": "Produktivnost developera sa Claude-om" }, "body": { "en": "You are building developer productivity tools using the Claude Agent SDK. The agent helps engineers explore unfamiliar codebases, understand legacy systems, generate boilerplate code, and automate repetitive tasks. It uses the built-in tools (Read, Write, Bash, Grep, Glob) and integrates with Model Context Protocol (MCP) servers.", "sr": "Gradiš alate za produktivnost developera pomoću Claude Agent SDK-a. Agent pomaže inženjerima da istraže nepoznate kodne baze, razumeju legacy sisteme, generišu boilerplate kod i automatizuju repetitivne zadatke. Koristi ugrađene alate (Read, Write, Bash, Grep, Glob) i integriše se sa MCP serverima." }, "primary_domains": { "en": "Tool Design & MCP Integration, Claude Code Configuration & Workflows, Agentic Architecture & Orchestration", "sr": "Dizajn alata i MCP integracija, Konfiguracija i tokovi rada Claude Code-a, Agentska arhitektura i orkestracija" } },
+      { "n": 5, "name": { "en": "Claude Code for Continuous Integration", "sr": "Claude Code za kontinuiranu integraciju" }, "body": { "en": "You are integrating Claude Code into your Continuous Integration/Continuous Deployment (CI/CD) pipeline. The system runs automated code reviews, generates test cases, and provides feedback on pull requests. You need to design prompts that provide actionable feedback and minimize false positives.", "sr": "Integrišeš Claude Code u svoj CI/CD pipeline. Sistem pokreće automatske code review-e, generiše test slučajeve i daje feedback na pull request-ove. Treba da dizajniraš promptove koji daju upotrebljiv feedback i smanjuju false positive-e." }, "primary_domains": { "en": "Claude Code Configuration & Workflows, Prompt Engineering & Structured Output", "sr": "Konfiguracija i tokovi rada Claude Code-a, Prompt engineering i strukturisan izlaz" } },
+      { "n": 6, "name": { "en": "Structured Data Extraction", "sr": "Ekstrakcija strukturisanih podataka" }, "body": { "en": "You are building a structured data extraction system using Claude. The system extracts information from unstructured documents, validates the output using JavaScript Object Notation (JSON) schemas, and maintains high accuracy. It must handle edge cases gracefully and integrate with downstream systems.", "sr": "Gradiš sistem za ekstrakciju strukturisanih podataka pomoću Claude-a. Sistem vadi informacije iz nestrukturisanih dokumenata, validira izlaz JSON šemama i održava visoku tačnost. Mora gracioznо da obrađuje edge case-ove i da se integriše sa downstream sistemima." }, "primary_domains": { "en": "Prompt Engineering & Structured Output, Context Management & Reliability", "sr": "Prompt engineering i strukturisan izlaz, Upravljanje kontekstom i pouzdanost" } }
+    ]
+  },
+  "domain_details": [{
+    "domain": 1,
+    "title": { "en": "Domain 1: Agentic Architecture & Orchestration", "sr": "Domen 1: Agentska arhitektura i orkestracija" },
+    "tasks": [
+      {
+        "id": "1.1",
+        "title": { "en": "Design and implement agentic loops for autonomous task execution", "sr": "Dizajn i implementacija agentskih petlji za autonomno izvršavanje zadataka" },
+        "knowledge": [
+          { "en": "The agentic loop lifecycle: sending requests to Claude, inspecting stop_reason (\"tool_use\" vs \"end_turn\"), executing requested tools, and returning results for the next iteration", "sr": "Životni ciklus agentske petlje: slanje zahteva Claude-u, provera stop_reason-a (\"tool_use\" vs \"end_turn\"), izvršavanje traženih alata i vraćanje rezultata za sledeću iteraciju" },
+          { "en": "How tool results are appended to conversation history so the model can reason about the next action", "sr": "Kako se rezultati alata dodaju u istoriju razgovora da model može da rezonuje o sledećoj akciji" },
+          { "en": "The distinction between model-driven decision-making (Claude reasons about which tool to call next based on context) and pre-configured decision trees or tool sequences", "sr": "Razlika između odlučivanja vođenog modelom (Claude na osnovu konteksta zaključuje koji alat sledeći da pozove) i unapred konfigurisanih stabala odlučivanja ili fiksnih nizova alata" }
+        ],
+        "skills": [
+          { "en": "Implementing agentic loop control flow that continues when stop_reason is \"tool_use\" and terminates when stop_reason is \"end_turn\"", "sr": "Implementacija kontrole toka petlje koja nastavlja kad je stop_reason \"tool_use\" a staje kad je \"end_turn\"" },
+          { "en": "Adding tool results to conversation context between iterations so the model can incorporate new information into its reasoning", "sr": "Dodavanje rezultata alata u kontekst između iteracija da model uključi nove informacije u rezonovanje" },
+          { "en": "Avoiding anti-patterns such as parsing natural language signals to determine loop termination, setting arbitrary iteration caps as the primary stopping mechanism, or checking for assistant text content as a completion indicator", "sr": "Izbegavanje anti-paterna poput parsiranja prirodnog jezika za zaustavljanje petlje, postavljanja proizvoljnog iteration cap-a kao glavnog mehanizma zaustavljanja ili provere da li postoji tekst asistenta kao indikatora završetka" }
+        ]
+      },
+      {
+        "id": "1.2",
+        "title": { "en": "Orchestrate multi-agent systems with coordinator-subagent patterns", "sr": "Orkestracija multi-agent sistema obrascem koordinator-subagent" },
+        "knowledge": [
+          { "en": "Hub-and-spoke architecture where a coordinator agent manages all inter-subagent communication, error handling, and information routing", "sr": "Hub-and-spoke arhitektura gde koordinator upravlja svom komunikacijom između subagenata, error handling-om i rutiranjem informacija" },
+          { "en": "How subagents operate with isolated context—they do not inherit the coordinator's conversation history automatically", "sr": "Kako subagenti rade sa izolovanim kontekstom — ne nasleđuju automatski koordinatorovu istoriju razgovora" },
+          { "en": "The role of the coordinator in task decomposition, delegation, result aggregation, and deciding which subagents to invoke based on query complexity", "sr": "Uloga koordinatora u dekompoziciji zadatka, delegiranju, agregaciji rezultata i odluci koje subagente pozvati prema složenosti upita" },
+          { "en": "Risks of overly narrow task decomposition by the coordinator, leading to incomplete coverage of broad research topics", "sr": "Rizici preuske dekompozicije od strane koordinatora, koja vodi nepotpunoj pokrivenosti širokih istraživačkih tema" }
+        ],
+        "skills": [
+          { "en": "Designing coordinator agents that analyze query requirements and dynamically select which subagents to invoke rather than always routing through the full pipeline", "sr": "Dizajn koordinatora koji analizira zahteve upita i dinamički bira koje subagente da pozove umesto da uvek provlači sve kroz pun pipeline" },
+          { "en": "Partitioning research scope across subagents to minimize duplication (e.g., assigning distinct subtopics or source types to each agent)", "sr": "Podela istraživačkog opsega među subagentima radi smanjenja dupliranja (npr. dodela različitih podtema ili tipova izvora svakom agentu)" },
+          { "en": "Implementing iterative refinement loops where the coordinator evaluates synthesis output for gaps, re-delegates to search and analysis subagents with targeted queries, and re-invokes synthesis until coverage is sufficient", "sr": "Implementacija iterativnih petlji dorade gde koordinator proverava izlaz sinteze na rupe, ponovo delegira pretrazi i analizi sa ciljanim upitima i ponovo poziva sintezu dok pokrivenost ne bude dovoljna" },
+          { "en": "Routing all subagent communication through the coordinator for observability, consistent error handling, and controlled information flow", "sr": "Rutiranje sve komunikacije subagenata kroz koordinatora radi vidljivosti, doslednog error handling-a i kontrolisanog toka informacija" }
+        ]
+      },
+      {
+        "id": "1.3",
+        "title": { "en": "Configure subagent invocation, context passing, and spawning", "sr": "Konfiguracija pozivanja subagenata, prenosa konteksta i pokretanja" },
+        "knowledge": [
+          { "en": "The Task tool as the mechanism for spawning subagents, and the requirement that allowedTools must include \"Task\" for a coordinator to invoke subagents", "sr": "Task alat kao mehanizam za pokretanje subagenata i zahtev da allowedTools mora sadržati \"Task\" da bi koordinator mogao da poziva subagente" },
+          { "en": "That subagent context must be explicitly provided in the prompt—subagents do not automatically inherit parent context or share memory between invocations", "sr": "Da se kontekst subagentu mora eksplicitno dati u promptu — subagenti ne nasleđuju automatski roditeljski kontekst niti dele memoriju između poziva" },
+          { "en": "The AgentDefinition configuration including descriptions, system prompts, and tool restrictions for each subagent type", "sr": "AgentDefinition konfiguracija sa opisima, sistemskim promptovima i ograničenjima alata za svaki tip subagenta" },
+          { "en": "Fork-based session management for exploring divergent approaches from a shared analysis baseline", "sr": "Upravljanje sesijama preko fork-a za istraživanje divergentnih pristupa iz zajedničke analitičke osnove" }
+        ],
+        "skills": [
+          { "en": "Including complete findings from prior agents directly in the subagent's prompt (e.g., passing web search results and document analysis outputs to the synthesis subagent)", "sr": "Uključivanje kompletnih nalaza prethodnih agenata direktno u prompt subagenta (npr. prosleđivanje rezultata web pretrage i analize dokumenata subagentu za sintezu)" },
+          { "en": "Using structured data formats to separate content from metadata (source URLs, document names, page numbers) when passing context between agents to preserve attribution", "sr": "Korišćenje strukturisanih formata da se sadržaj odvoji od metapodataka (URL izvora, imena dokumenata, brojevi strana) pri prenosu konteksta radi očuvanja atribucije" },
+          { "en": "Spawning parallel subagents by emitting multiple Task tool calls in a single coordinator response rather than across separate turns", "sr": "Pokretanje paralelnih subagenata emitovanjem više Task poziva u jednom odgovoru koordinatora umesto kroz odvojene poteze" },
+          { "en": "Designing coordinator prompts that specify research goals and quality criteria rather than step-by-step procedural instructions, to enable subagent adaptability", "sr": "Dizajn koordinatorovih promptova koji zadaju istraživačke ciljeve i kriterijume kvaliteta umesto korak-po-korak procedura, radi prilagodljivosti subagenata" }
+        ]
+      },
+      {
+        "id": "1.4",
+        "title": { "en": "Implement multi-step workflows with enforcement and handoff patterns", "sr": "Implementacija višekoračnih tokova sa obrascima sprovođenja i predaje" },
+        "knowledge": [
+          { "en": "The difference between programmatic enforcement (hooks, prerequisite gates) and prompt-based guidance for workflow ordering", "sr": "Razlika između programskog sprovođenja (hook-ovi, prerequisite gate-ovi) i vođenja kroz prompt za redosled toka rada" },
+          { "en": "When deterministic compliance is required (e.g., identity verification before financial operations), prompt instructions alone have a non-zero failure rate", "sr": "Kad je potrebna deterministička usklađenost (npr. verifikacija identiteta pre finansijskih operacija), same prompt instrukcije imaju nenulti procenat greške" },
+          { "en": "Structured handoff protocols for mid-process escalation that include customer details, root cause analysis, and recommended actions", "sr": "Strukturisani protokoli predaje za eskalaciju usred procesa koji uključuju podatke o korisniku, analizu uzroka i preporučene akcije" }
+        ],
+        "skills": [
+          { "en": "Implementing programmatic prerequisites that block downstream tool calls until prerequisite steps have completed (e.g., blocking process_refund until get_customer has returned a verified customer ID)", "sr": "Implementacija programskih preduslova koji blokiraju naredne pozive alata dok se preduslovni koraci ne završe (npr. blokiranje process_refund dok get_customer ne vrati verifikovan ID korisnika)" },
+          { "en": "Decomposing multi-concern customer requests into distinct items, then investigating each in parallel using shared context before synthesizing a unified resolution", "sr": "Razlaganje višeproblemskih zahteva na zasebne stavke, pa paralelno istraživanje svake uz deljen kontekst pre sinteze jedinstvenog rešenja" },
+          { "en": "Compiling structured handoff summaries (customer ID, root cause, refund amount, recommended action) when escalating to human agents who lack access to the conversation transcript", "sr": "Sastavljanje strukturisanih sažetaka predaje (ID korisnika, uzrok, iznos povraćaja, preporučena akcija) pri eskalaciji ka ljudima koji nemaju pristup transkriptu razgovora" }
+        ]
+      },
+      {
+        "id": "1.5",
+        "title": { "en": "Apply Agent SDK hooks for tool call interception and data normalization", "sr": "Primena Agent SDK hook-ova za presretanje poziva alata i normalizaciju podataka" },
+        "knowledge": [
+          { "en": "Hook patterns (e.g., PostToolUse) that intercept tool results for transformation before the model processes them", "sr": "Obrasci hook-ova (npr. PostToolUse) koji presreću rezultate alata radi transformacije pre nego što ih model obradi" },
+          { "en": "Hook patterns that intercept outgoing tool calls to enforce compliance rules (e.g., blocking refunds above a threshold)", "sr": "Obrasci hook-ova koji presreću odlazeće pozive alata radi sprovođenja pravila (npr. blokiranje povraćaja iznad praga)" },
+          { "en": "The distinction between using hooks for deterministic guarantees versus relying on prompt instructions for probabilistic compliance", "sr": "Razlika između korišćenja hook-ova za determinističke garancije i oslanjanja na prompt instrukcije za probabilističku usklađenost" }
+        ],
+        "skills": [
+          { "en": "Implementing PostToolUse hooks to normalize heterogeneous data formats (Unix timestamps, ISO 8601, numeric status codes) from different MCP tools before the agent processes them", "sr": "Implementacija PostToolUse hook-ova za normalizaciju heterogenih formata podataka (Unix timestamp-ovi, ISO 8601, numerički status kodovi) iz različitih MCP alata pre obrade" },
+          { "en": "Implementing tool call interception hooks that block policy-violating actions (e.g., refunds exceeding $500) and redirect to alternative workflows (e.g., human escalation)", "sr": "Implementacija hook-ova za presretanje poziva koji blokiraju akcije protiv pravila (npr. povraćaj preko $500) i preusmeravaju na alternativni tok (npr. eskalacija čoveku)" },
+          { "en": "Choosing hooks over prompt-based enforcement when business rules require guaranteed compliance", "sr": "Biranje hook-ova umesto sprovođenja kroz prompt kad poslovna pravila zahtevaju garantovanu usklađenost" }
+        ]
+      },
+      {
+        "id": "1.6",
+        "title": { "en": "Design task decomposition strategies for complex workflows", "sr": "Dizajn strategija dekompozicije zadataka za složene tokove" },
+        "knowledge": [
+          { "en": "When to use fixed sequential pipelines (prompt chaining) versus dynamic adaptive decomposition based on intermediate findings", "sr": "Kada koristiti fiksne sekvencijalne pipeline-e (prompt chaining) a kada dinamičku adaptivnu dekompoziciju na osnovu međurezultata" },
+          { "en": "Prompt chaining patterns that break reviews into sequential steps (e.g., analyze each file individually, then run a cross-file integration pass)", "sr": "Obrasci prompt chaining-a koji dele review na sekvencijalne korake (npr. analiziraj svaki fajl pojedinačno, pa pokreni cross-file integracioni prolaz)" },
+          { "en": "The value of adaptive investigation plans that generate subtasks based on what is discovered at each step", "sr": "Vrednost adaptivnih istražnih planova koji generišu podzadatke na osnovu onoga što se otkrije u svakom koraku" }
+        ],
+        "skills": [
+          { "en": "Selecting task decomposition patterns appropriate to the workflow: prompt chaining for predictable multi-aspect reviews, dynamic decomposition for open-ended investigation tasks", "sr": "Izbor obrasca dekompozicije prema toku: prompt chaining za predvidljive višeaspektne review-e, dinamička dekompozicija za otvorene istražne zadatke" },
+          { "en": "Splitting large code reviews into per-file local analysis passes plus a separate cross-file integration pass to avoid attention dilution", "sr": "Deljenje velikih code review-a na lokalne prolaze po fajlu plus zaseban cross-file integracioni prolaz radi izbegavanja attention dilution-a" },
+          { "en": "Decomposing open-ended tasks (e.g., \"add comprehensive tests to a legacy codebase\") by first mapping structure, identifying high-impact areas, then creating a prioritized plan that adapts as dependencies are discovered", "sr": "Razlaganje otvorenih zadataka (npr. „dodaj sveobuhvatne testove u legacy bazu\") tako što se prvo mapira struktura, identifikuju oblasti najvećeg uticaja, pa pravi prioritizovan plan koji se prilagođava kako se otkrivaju zavisnosti" }
+        ]
+      },
+      {
+        "id": "1.7",
+        "title": { "en": "Manage session state, resumption, and forking", "sr": "Upravljanje stanjem sesije, nastavkom i forkovanjem" },
+        "knowledge": [
+          { "en": "Named session resumption using --resume <session-name> to continue a specific prior conversation", "sr": "Nastavak imenovane sesije pomoću --resume <session-name> radi nastavka određenog prethodnog razgovora" },
+          { "en": "fork_session for creating independent branches from a shared analysis baseline to explore divergent approaches", "sr": "fork_session za pravljenje nezavisnih grana iz zajedničke analitičke osnove radi istraživanja divergentnih pristupa" },
+          { "en": "The importance of informing the agent about changes to previously analyzed files when resuming sessions after code modifications", "sr": "Važnost obaveštavanja agenta o izmenama ranije analiziranih fajlova pri nastavku sesije posle izmena koda" },
+          { "en": "Why starting a new session with a structured summary is more reliable than resuming with stale tool results", "sr": "Zašto je pokretanje nove sesije sa strukturisanim sažetkom pouzdanije od nastavka sa zastarelim rezultatima alata" }
+        ],
+        "skills": [
+          { "en": "Using --resume with session names to continue named investigation sessions across work sessions", "sr": "Korišćenje --resume sa imenima sesija za nastavak imenovanih istražnih sesija kroz radne sesije" },
+          { "en": "Using fork_session to create parallel exploration branches (e.g., comparing two testing strategies or refactoring approaches from a shared codebase analysis)", "sr": "Korišćenje fork_session za paralelne grane istraživanja (npr. poređenje dve test strategije ili pristupa refaktorisanju iz zajedničke analize baze)" },
+          { "en": "Choosing between session resumption (when prior context is mostly valid) and starting fresh with injected summaries (when prior tool results are stale)", "sr": "Biranje između nastavka sesije (kad je prethodni kontekst uglavnom validan) i kretanja iz početka sa ubačenim sažecima (kad su prethodni rezultati alata zastareli)" },
+          { "en": "Informing a resumed session about specific file changes for targeted re-analysis rather than requiring full re-exploration", "sr": "Obaveštavanje nastavljene sesije o konkretnim izmenama fajlova radi ciljane re-analize umesto pune ponovne eksploracije" }
+        ]
+      }
+    ]
+  }, {
+    "domain": 2,
+    "title": { "en": "Domain 2: Tool Design & MCP Integration", "sr": "Domen 2: Dizajn alata i MCP integracija" },
+    "tasks": [
+      {
+        "id": "2.1",
+        "title": { "en": "Design effective tool interfaces with clear descriptions and boundaries", "sr": "Dizajn efektivnih interfejsa alata sa jasnim opisima i granicama" },
+        "knowledge": [
+          { "en": "Tool descriptions as the primary mechanism LLMs use for tool selection; minimal descriptions lead to unreliable selection among similar tools", "sr": "Opisi alata kao primarni mehanizam koji LLM-ovi koriste za izbor alata; minimalni opisi vode nepouzdanom izboru između sličnih alata" },
+          { "en": "The importance of including input formats, example queries, edge cases, and boundary explanations in tool descriptions", "sr": "Važnost uključivanja formata ulaza, primera upita, edge case-ova i objašnjenja granica u opise alata" },
+          { "en": "How ambiguous or overlapping tool descriptions cause misrouting (e.g., analyze_content vs analyze_document with near-identical descriptions)", "sr": "Kako dvosmisleni ili preklapajući opisi alata izazivaju pogrešno rutiranje (npr. analyze_content vs analyze_document sa skoro identičnim opisima)" },
+          { "en": "The impact of system prompt wording on tool selection: keyword-sensitive instructions can create unintended tool associations", "sr": "Uticaj formulacije sistemskog prompta na izbor alata: instrukcije osetljive na ključne reči mogu stvoriti neželjene asocijacije ka alatima" }
+        ],
+        "skills": [
+          { "en": "Writing tool descriptions that clearly differentiate each tool's purpose, expected inputs, outputs, and when to use it versus similar alternatives", "sr": "Pisanje opisa alata koji jasno razlikuju svrhu svakog alata, očekivane ulaze, izlaze i kada ga koristiti naspram sličnih alternativa" },
+          { "en": "Renaming tools and updating descriptions to eliminate functional overlap (e.g., renaming analyze_content to extract_web_results with a web-specific description)", "sr": "Preimenovanje alata i ažuriranje opisa radi uklanjanja funkcionalnog preklapanja (npr. analyze_content u extract_web_results sa web-specifičnim opisom)" },
+          { "en": "Splitting generic tools into purpose-specific tools with defined input/output contracts (e.g., splitting a generic analyze_document into extract_data_points, summarize_content, and verify_claim_against_source)", "sr": "Razbijanje generičkih alata na namenske alate sa definisanim ulaz/izlaz ugovorima (npr. generički analyze_document na extract_data_points, summarize_content i verify_claim_against_source)" },
+          { "en": "Reviewing system prompts for keyword-sensitive instructions that might override well-written tool descriptions", "sr": "Pregled sistemskih promptova za instrukcije osetljive na ključne reči koje bi mogle da nadjačaju dobro napisane opise alata" }
+        ]
+      },
+      {
+        "id": "2.2",
+        "title": { "en": "Implement structured error responses for MCP tools", "sr": "Implementacija strukturisanih grešaka za MCP alate" },
+        "knowledge": [
+          { "en": "The MCP isError flag pattern for communicating tool failures back to the agent", "sr": "MCP isError flag obrazac za saopštavanje grešaka alata nazad agentu" },
+          { "en": "The distinction between transient errors (timeouts, service unavailability), validation errors (invalid input), business errors (policy violations), and permission errors", "sr": "Razlika između tranzijentnih grešaka (timeout, nedostupnost servisa), validacionih grešaka (nevažeći ulaz), poslovnih grešaka (kršenje pravila) i grešaka dozvola" },
+          { "en": "Why uniform error responses (generic \"Operation failed\") prevent the agent from making appropriate recovery decisions", "sr": "Zašto uniformne greške (generičko „Operation failed\") sprečavaju agenta da donese odgovarajuće odluke o oporavku" },
+          { "en": "The difference between retryable and non-retryable errors, and how returning structured metadata prevents wasted retry attempts", "sr": "Razlika između grešaka koje se mogu i ne mogu ponoviti, i kako vraćanje strukturisanih metapodataka sprečava uzaludne pokušaje ponavljanja" }
+        ],
+        "skills": [
+          { "en": "Returning structured error metadata including errorCategory (transient/validation/permission), isRetryable boolean, and human-readable descriptions", "sr": "Vraćanje strukturisanih metapodataka greške: errorCategory (transient/validation/permission), isRetryable boolean i ljudski-čitljiv opis" },
+          { "en": "Including retriable: false flags and customer-friendly explanations for business rule violations so the agent can communicate appropriately", "sr": "Uključivanje retriable: false flag-ova i korisniku-prijateljskih objašnjenja za kršenja poslovnih pravila da agent može primereno da komunicira" },
+          { "en": "Implementing local error recovery within subagents for transient failures, propagating to the coordinator only errors that cannot be resolved locally along with partial results and what was attempted", "sr": "Implementacija lokalnog oporavka u subagentima za tranzijentne greške, uz prosleđivanje koordinatoru samo grešaka koje se ne mogu rešiti lokalno, zajedno sa parcijalnim rezultatima i onim što je pokušano" },
+          { "en": "Distinguishing between access failures (needing retry decisions) and valid empty results (representing successful queries with no matches)", "sr": "Razlikovanje grešaka pristupa (traže odluku o ponavljanju) i validnih praznih rezultata (uspešni upiti bez pogodaka)" }
+        ]
+      },
+      {
+        "id": "2.3",
+        "title": { "en": "Distribute tools appropriately across agents and configure tool choice", "sr": "Odgovarajuća raspodela alata po agentima i konfiguracija tool choice-a" },
+        "knowledge": [
+          { "en": "The principle that giving an agent access to too many tools (e.g., 18 instead of 4-5) degrades tool selection reliability by increasing decision complexity", "sr": "Princip da davanje agentu previše alata (npr. 18 umesto 4–5) pogoršava pouzdanost izbora alata povećanjem složenosti odluke" },
+          { "en": "Why agents with tools outside their specialization tend to misuse them (e.g., a synthesis agent attempting web searches)", "sr": "Zašto agenti sa alatima van svoje specijalizacije teže da ih zloupotrebe (npr. agent za sintezu pokušava web pretragu)" },
+          { "en": "Scoped tool access: giving agents only the tools needed for their role, with limited cross-role tools for specific high-frequency needs", "sr": "Ograničen pristup alatima: davati agentima samo alate potrebne za njihovu ulogu, uz ograničene unakrsne alate za specifične česte potrebe" },
+          { "en": "tool_choice configuration options: \"auto\", \"any\", and forced tool selection ({\"type\": \"tool\", \"name\": \"...\"})", "sr": "Opcije tool_choice konfiguracije: \"auto\", \"any\" i prinudni izbor alata ({\"type\": \"tool\", \"name\": \"...\"})" }
+        ],
+        "skills": [
+          { "en": "Restricting each subagent's tool set to those relevant to its role, preventing cross-specialization misuse", "sr": "Ograničavanje skupa alata svakog subagenta na one relevantne za njegovu ulogu, čime se sprečava zloupotreba van specijalizacije" },
+          { "en": "Replacing generic tools with constrained alternatives (e.g., replacing fetch_url with load_document that validates document URLs)", "sr": "Zamena generičkih alata ograničenim alternativama (npr. fetch_url sa load_document koji validira URL-ove dokumenata)" },
+          { "en": "Providing scoped cross-role tools for high-frequency needs (e.g., a verify_fact tool for the synthesis agent) while routing complex cases through the coordinator", "sr": "Davanje ograničenih unakrsnih alata za česte potrebe (npr. verify_fact za agenta za sintezu) uz rutiranje složenih slučajeva kroz koordinatora" },
+          { "en": "Using tool_choice forced selection to ensure a specific tool is called first (e.g., forcing extract_metadata before enrichment tools), then processing subsequent steps in follow-up turns", "sr": "Korišćenje prinudnog tool_choice da se određeni alat pozove prvi (npr. extract_metadata pre alata za obogaćivanje), pa obrada narednih koraka u sledećim potezima" },
+          { "en": "Setting tool_choice: \"any\" to guarantee the model calls a tool rather than returning conversational text", "sr": "Postavljanje tool_choice: \"any\" da se garantuje da model poziva alat umesto da vraća konverzacioni tekst" }
+        ]
+      },
+      {
+        "id": "2.4",
+        "title": { "en": "Integrate MCP servers into Claude Code and agent workflows", "sr": "Integracija MCP servera u Claude Code i agentske tokove" },
+        "knowledge": [
+          { "en": "MCP server scoping: project-level (.mcp.json) for shared team tooling vs user-level (~/.claude.json) for personal/experimental servers", "sr": "Opseg MCP servera: nivo projekta (.mcp.json) za deljene timske alate vs nivo korisnika (~/.claude.json) za lične/eksperimentalne servere" },
+          { "en": "Environment variable expansion in .mcp.json (e.g., ${GITHUB_TOKEN}) for credential management without committing secrets", "sr": "Ekspanzija environment varijabli u .mcp.json (npr. ${GITHUB_TOKEN}) za upravljanje kredencijalima bez commit-ovanja tajni" },
+          { "en": "That tools from all configured MCP servers are discovered at connection time and available simultaneously to the agent", "sr": "Da se alati svih konfigurisanih MCP servera otkrivaju pri povezivanju i istovremeno su dostupni agentu" },
+          { "en": "MCP resources as a mechanism for exposing content catalogs (e.g., issue summaries, documentation hierarchies, database schemas) to reduce exploratory tool calls", "sr": "MCP resursi kao mehanizam za izlaganje kataloga sadržaja (npr. sažeci tiketa, hijerarhije dokumentacije, šeme baza) radi smanjenja istražnih poziva alata" }
+        ],
+        "skills": [
+          { "en": "Configuring shared MCP servers in project-scoped .mcp.json with environment variable expansion for authentication tokens", "sr": "Konfigurisanje deljenih MCP servera u .mcp.json na nivou projekta uz ekspanziju environment varijabli za autentifikacione tokene" },
+          { "en": "Configuring personal/experimental MCP servers in user-scoped ~/.claude.json", "sr": "Konfigurisanje ličnih/eksperimentalnih MCP servera u ~/.claude.json na nivou korisnika" },
+          { "en": "Enhancing MCP tool descriptions to explain capabilities and outputs in detail, preventing the agent from preferring built-in tools (like Grep) over more capable MCP tools", "sr": "Poboljšavanje opisa MCP alata da detaljno objasne mogućnosti i izlaze, čime se sprečava da agent bira ugrađene alate (poput Grep-a) umesto sposobnijih MCP alata" },
+          { "en": "Choosing existing community MCP servers over custom implementations for standard integrations (e.g., Jira), reserving custom servers for team-specific workflows", "sr": "Biranje postojećih community MCP servera umesto custom implementacija za standardne integracije (npr. Jira), uz čuvanje custom servera za timski-specifične tokove" },
+          { "en": "Exposing content catalogs as MCP resources to give agents visibility into available data without requiring exploratory tool calls", "sr": "Izlaganje kataloga sadržaja kao MCP resursa da agenti vide dostupne podatke bez istražnih poziva alata" }
+        ]
+      },
+      {
+        "id": "2.5",
+        "title": { "en": "Select and apply built-in tools (Read, Write, Edit, Bash, Grep, Glob) effectively", "sr": "Efikasan izbor i primena ugrađenih alata (Read, Write, Edit, Bash, Grep, Glob)" },
+        "knowledge": [
+          { "en": "Grep for content search (searching file contents for patterns like function names, error messages, or import statements)", "sr": "Grep za pretragu sadržaja (pretraga sadržaja fajlova za obrasce poput imena funkcija, poruka grešaka ili import naredbi)" },
+          { "en": "Glob for file path pattern matching (finding files by name or extension patterns)", "sr": "Glob za poklapanje obrazaca putanja (pronalaženje fajlova po imenu ili ekstenziji)" },
+          { "en": "Read/Write for full file operations; Edit for targeted modifications using unique text matching", "sr": "Read/Write za rad sa celim fajlovima; Edit za ciljane izmene preko jedinstvenog poklapanja teksta" },
+          { "en": "When Edit fails due to non-unique text matches, using Read + Write as a fallback for reliable file modifications", "sr": "Kad Edit padne zbog ne-jedinstvenog poklapanja, korišćenje Read + Write kao fallback za pouzdane izmene" }
+        ],
+        "skills": [
+          { "en": "Selecting Grep for searching code content across a codebase (e.g., finding all callers of a function, locating error messages)", "sr": "Izbor Grep-a za pretragu koda kroz bazu (npr. svi pozivaoci funkcije, lociranje poruka grešaka)" },
+          { "en": "Selecting Glob for finding files matching naming patterns (e.g., **/*.test.tsx)", "sr": "Izbor Glob-a za pronalaženje fajlova po obrascu imena (npr. **/*.test.tsx)" },
+          { "en": "Using Read to load full file contents followed by Write when Edit cannot find unique anchor text", "sr": "Korišćenje Read za učitavanje celog fajla pa Write kada Edit ne nađe jedinstven sidreni tekst" },
+          { "en": "Building codebase understanding incrementally: starting with Grep to find entry points, then using Read to follow imports and trace flows, rather than reading all files upfront", "sr": "Inkrementalno razumevanje baze: prvo Grep za ulazne tačke, pa Read za praćenje import-a i tokova, umesto čitanja svih fajlova odjednom" },
+          { "en": "Tracing function usage across wrapper modules by first identifying all exported names, then searching for each name across the codebase", "sr": "Praćenje upotrebe funkcije kroz wrapper module: prvo identifikovati sva eksportovana imena, pa pretražiti svako ime kroz bazu" }
+        ]
+      }
+    ]
+  }, {
+    "domain": 3,
+    "title": { "en": "Domain 3: Claude Code Configuration & Workflows", "sr": "Domen 3: Konfiguracija i tokovi rada Claude Code-a" },
+    "tasks": [
+      {
+        "id": "3.1",
+        "title": { "en": "Configure CLAUDE.md files with appropriate hierarchy, scoping, and modular organization", "sr": "Konfiguracija CLAUDE.md fajlova sa odgovarajućom hijerarhijom, opsegom i modularnom organizacijom" },
+        "knowledge": [
+          { "en": "The CLAUDE.md configuration hierarchy: user-level (~/.claude/CLAUDE.md), project-level (.claude/CLAUDE.md or root CLAUDE.md), and directory-level (subdirectory CLAUDE.md files)", "sr": "Hijerarhija CLAUDE.md konfiguracije: nivo korisnika (~/.claude/CLAUDE.md), nivo projekta (.claude/CLAUDE.md ili root CLAUDE.md) i nivo direktorijuma (CLAUDE.md u poddirektorijumima)" },
+          { "en": "That user-level settings apply only to that user—instructions in ~/.claude/CLAUDE.md are not shared with teammates via version control", "sr": "Da podešavanja na nivou korisnika važe samo za tog korisnika — instrukcije u ~/.claude/CLAUDE.md se ne dele sa timom kroz version control" },
+          { "en": "The @import syntax for referencing external files to keep CLAUDE.md modular (e.g., importing specific standards files relevant to each package)", "sr": "@import sintaksa za referenciranje spoljnih fajlova radi modularnosti CLAUDE.md (npr. import specifičnih standarda relevantnih za svaki paket)" },
+          { "en": ".claude/rules/ directory for organizing topic-specific rule files as an alternative to a monolithic CLAUDE.md", "sr": ".claude/rules/ direktorijum za organizovanje fajlova pravila po temi kao alternativa monolitnom CLAUDE.md" }
+        ],
+        "skills": [
+          { "en": "Diagnosing configuration hierarchy issues (e.g., a new team member not receiving instructions because they're in user-level rather than project-level configuration)", "sr": "Dijagnostika problema hijerarhije (npr. novi član tima ne dobija instrukcije jer su one u konfiguraciji na nivou korisnika a ne projekta)" },
+          { "en": "Using @import to selectively include relevant standards files in each package's CLAUDE.md based on maintainer domain knowledge", "sr": "Korišćenje @import-a za selektivno uključivanje relevantnih standarda u CLAUDE.md svakog paketa na osnovu znanja maintainer-a" },
+          { "en": "Splitting large CLAUDE.md files into focused topic-specific files in .claude/rules/ (e.g., testing.md, api-conventions.md, deployment.md)", "sr": "Deljenje velikih CLAUDE.md fajlova na fokusirane fajlove po temi u .claude/rules/ (npr. testing.md, api-conventions.md, deployment.md)" },
+          { "en": "Using the /memory command to verify which memory files are loaded and diagnose inconsistent behavior across sessions", "sr": "Korišćenje /memory komande za proveru koji su memory fajlovi učitani i dijagnostiku nedoslednog ponašanja kroz sesije" }
+        ]
+      },
+      {
+        "id": "3.2",
+        "title": { "en": "Create and configure custom slash commands and skills", "sr": "Kreiranje i konfiguracija custom slash komandi i skills-a" },
+        "knowledge": [
+          { "en": "Project-scoped commands in .claude/commands/ (shared via version control) vs user-scoped commands in ~/.claude/commands/ (personal)", "sr": "Komande na nivou projekta u .claude/commands/ (deljene kroz version control) vs komande na nivou korisnika u ~/.claude/commands/ (lične)" },
+          { "en": "Skills in .claude/skills/ with SKILL.md files that support frontmatter configuration including context: fork, allowed-tools, and argument-hint", "sr": "Skills u .claude/skills/ sa SKILL.md fajlovima koji podržavaju frontmatter konfiguraciju: context: fork, allowed-tools i argument-hint" },
+          { "en": "The context: fork frontmatter option for running skills in an isolated sub-agent context, preventing skill outputs from polluting the main conversation", "sr": "Opcija context: fork u frontmatter-u za pokretanje skill-a u izolovanom sub-agent kontekstu, čime se sprečava da izlazi skill-a zagade glavni razgovor" },
+          { "en": "Personal skill customization: creating personal variants in ~/.claude/skills/ with different names to avoid affecting teammates", "sr": "Lično prilagođavanje skill-a: pravljenje ličnih varijanti u ~/.claude/skills/ sa drugačijim imenima da se ne utiče na tim" }
+        ],
+        "skills": [
+          { "en": "Creating project-scoped slash commands in .claude/commands/ for team-wide availability via version control", "sr": "Kreiranje slash komandi na nivou projekta u .claude/commands/ za dostupnost celom timu kroz version control" },
+          { "en": "Using context: fork to isolate skills that produce verbose output (e.g., codebase analysis) or exploratory context (e.g., brainstorming alternatives) from the main session", "sr": "Korišćenje context: fork za izolaciju skill-a koji prave opširan izlaz (npr. analiza baze) ili istražni kontekst (npr. brainstorming alternativa) od glavne sesije" },
+          { "en": "Configuring allowed-tools in skill frontmatter to restrict tool access during skill execution (e.g., limiting to file write operations to prevent destructive actions)", "sr": "Konfigurisanje allowed-tools u frontmatter-u skill-a radi ograničavanja pristupa alatima tokom izvršavanja (npr. ograničenje na upis u fajl radi sprečavanja destruktivnih akcija)" },
+          { "en": "Using argument-hint frontmatter to prompt developers for required parameters when they invoke the skill without arguments", "sr": "Korišćenje argument-hint frontmatter-a da se developer podstakne na obavezne parametre kad pozove skill bez argumenata" },
+          { "en": "Choosing between skills (on-demand invocation for task-specific workflows) and CLAUDE.md (always-loaded universal standards)", "sr": "Biranje između skills-a (poziv na zahtev za task-specifične tokove) i CLAUDE.md (uvek učitani univerzalni standardi)" }
+        ]
+      },
+      {
+        "id": "3.3",
+        "title": { "en": "Apply path-specific rules for conditional convention loading", "sr": "Primena pravila po putanji za uslovno učitavanje konvencija" },
+        "knowledge": [
+          { "en": ".claude/rules/ files with YAML frontmatter paths fields containing glob patterns for conditional rule activation", "sr": ".claude/rules/ fajlovi sa YAML frontmatter paths poljima koja sadrže glob obrasce za uslovno aktiviranje pravila" },
+          { "en": "How path-scoped rules load only when editing matching files, reducing irrelevant context and token usage", "sr": "Kako se pravila vezana za putanju učitavaju samo pri izmeni odgovarajućih fajlova, smanjujući irelevantan kontekst i potrošnju tokena" },
+          { "en": "The advantage of glob-pattern rules over directory-level CLAUDE.md files for conventions that span multiple directories (e.g., test files spread throughout a codebase)", "sr": "Prednost pravila sa glob obrascima nad CLAUDE.md na nivou direktorijuma za konvencije koje se protežu kroz više direktorijuma (npr. test fajlovi razbacani po bazi)" }
+        ],
+        "skills": [
+          { "en": "Creating .claude/rules/ files with YAML frontmatter path scoping (e.g., paths: [\"terraform/**/*\"]) so rules load only when editing matching files", "sr": "Kreiranje .claude/rules/ fajlova sa YAML frontmatter opsegom po putanji (npr. paths: [\"terraform/**/*\"]) da se pravila učitavaju samo pri izmeni odgovarajućih fajlova" },
+          { "en": "Using glob patterns in path-specific rules to apply conventions to files by type regardless of directory location (e.g., **/*.test.tsx for all test files)", "sr": "Korišćenje glob obrazaca u pravilima po putanji da se konvencije primene na fajlove po tipu bez obzira na lokaciju (npr. **/*.test.tsx za sve test fajlove)" },
+          { "en": "Choosing path-specific rules over subdirectory CLAUDE.md files when conventions must apply to files spread across the codebase", "sr": "Biranje pravila po putanji umesto CLAUDE.md u poddirektorijumu kada konvencije moraju važiti za fajlove razbacane po bazi" }
+        ]
+      },
+      {
+        "id": "3.4",
+        "title": { "en": "Determine when to use plan mode vs direct execution", "sr": "Procena kada koristiti plan mod a kada direktno izvršavanje" },
+        "knowledge": [
+          { "en": "Plan mode is designed for complex tasks involving large-scale changes, multiple valid approaches, architectural decisions, and multi-file modifications", "sr": "Plan mod je za složene zadatke sa velikim izmenama, više validnih pristupa, arhitektonske odluke i izmene više fajlova" },
+          { "en": "Direct execution is appropriate for simple, well-scoped changes (e.g., adding a single validation check to one function)", "sr": "Direktno izvršavanje je primereno za jednostavne, jasno omeđene izmene (npr. dodavanje jedne validacione provere u jednu funkciju)" },
+          { "en": "Plan mode enables safe codebase exploration and design before committing to changes, preventing costly rework", "sr": "Plan mod omogućava bezbedno istraživanje baze i dizajn pre nego što se uđe u izmene, sprečavajući skupu doradu" },
+          { "en": "The Explore subagent for isolating verbose discovery output and returning summaries to preserve main conversation context", "sr": "Explore subagent za izolaciju opširnog izlaza istraživanja i vraćanje sažetaka radi očuvanja konteksta glavnog razgovora" }
+        ],
+        "skills": [
+          { "en": "Selecting plan mode for tasks with architectural implications (e.g., microservice restructuring, library migrations affecting 45+ files, choosing between integration approaches with different infrastructure requirements)", "sr": "Izbor plan moda za zadatke sa arhitektonskim implikacijama (npr. restrukturiranje u mikroservise, migracije biblioteka koje pogađaju 45+ fajlova, izbor između integracionih pristupa sa različitim infrastrukturnim zahtevima)" },
+          { "en": "Selecting direct execution for well-understood changes with clear scope (e.g., a single-file bug fix with a clear stack trace, adding a date validation conditional)", "sr": "Izbor direktnog izvršavanja za dobro shvaćene izmene jasnog opsega (npr. bug fix u jednom fajlu sa jasnim stack trace-om, dodavanje uslovne validacije datuma)" },
+          { "en": "Using the Explore subagent for verbose discovery phases to prevent context window exhaustion during multi-phase tasks", "sr": "Korišćenje Explore subagenta za opširne faze istraživanja radi sprečavanja iscrpljivanja context window-a u višefaznim zadacima" },
+          { "en": "Combining plan mode for investigation with direct execution for implementation (e.g., planning a library migration, then executing the planned approach)", "sr": "Kombinovanje plan moda za istraživanje sa direktnim izvršavanjem za implementaciju (npr. planiranje migracije biblioteke, pa izvršavanje isplaniranog pristupa)" }
+        ]
+      },
+      {
+        "id": "3.5",
+        "title": { "en": "Apply iterative refinement techniques for progressive improvement", "sr": "Primena tehnika iterativne dorade za postepeno poboljšanje" },
+        "knowledge": [
+          { "en": "Concrete input/output examples as the most effective way to communicate expected transformations when prose descriptions are interpreted inconsistently", "sr": "Konkretni ulaz/izlaz primeri kao najefikasniji način da se saopšti očekivana transformacija kada se prozni opisi tumače nedosledno" },
+          { "en": "Test-driven iteration: writing test suites first, then iterating by sharing test failures to guide progressive improvement", "sr": "Iteracija vođena testovima: prvo pisanje testova, pa iteracija deljenjem neuspeha testova radi postepenog poboljšanja" },
+          { "en": "The interview pattern: having Claude ask questions to surface considerations the developer may not have anticipated before implementing", "sr": "Interview obrazac: Claude postavlja pitanja da iznese razmatranja koja developer možda nije predvideo pre implementacije" },
+          { "en": "When to provide all issues in a single message (interacting problems) versus fixing them sequentially (independent problems)", "sr": "Kada dati sve probleme u jednoj poruci (problemi koji se prepliću) a kada ih rešavati redom (nezavisni problemi)" }
+        ],
+        "skills": [
+          { "en": "Providing 2-3 concrete input/output examples to clarify transformation requirements when natural language descriptions produce inconsistent results", "sr": "Davanje 2–3 konkretna ulaz/izlaz primera radi pojašnjenja zahteva transformacije kada opisi na prirodnom jeziku daju nedosledne rezultate" },
+          { "en": "Writing test suites covering expected behavior, edge cases, and performance requirements before implementation, then iterating by sharing test failures", "sr": "Pisanje testova koji pokrivaju očekivano ponašanje, edge case-ove i performansne zahteve pre implementacije, pa iteracija deljenjem neuspeha" },
+          { "en": "Using the interview pattern to surface design considerations (e.g., cache invalidation strategies, failure modes) before implementing solutions in unfamiliar domains", "sr": "Korišćenje interview obrasca da se iznesu dizajn razmatranja (npr. strategije invalidacije keša, režimi otkaza) pre implementacije u nepoznatim domenima" },
+          { "en": "Providing specific test cases with example input and expected output to fix edge case handling (e.g., null values in migration scripts)", "sr": "Davanje konkretnih test slučajeva sa primerom ulaza i očekivanim izlazom radi ispravke edge case-ova (npr. null vrednosti u migracionim skriptama)" },
+          { "en": "Addressing multiple interacting issues in a single detailed message when fixes interact, versus sequential iteration for independent issues", "sr": "Rešavanje više isprepletanih problema u jednoj detaljnoj poruci kad se ispravke prepliću, naspram sekvencijalne iteracije za nezavisne probleme" }
+        ]
+      },
+      {
+        "id": "3.6",
+        "title": { "en": "Integrate Claude Code into CI/CD pipelines", "sr": "Integracija Claude Code-a u CI/CD pipeline-e" },
+        "knowledge": [
+          { "en": "The -p (or --print) flag for running Claude Code in non-interactive mode in automated pipelines", "sr": "Flag -p (ili --print) za pokretanje Claude Code-a u neinteraktivnom režimu u automatizovanim pipeline-ima" },
+          { "en": "--output-format json and --json-schema CLI flags for enforcing structured output in CI contexts", "sr": "CLI flag-ovi --output-format json i --json-schema za sprovođenje strukturisanog izlaza u CI kontekstu" },
+          { "en": "CLAUDE.md as the mechanism for providing project context (testing standards, fixture conventions, review criteria) to CI-invoked Claude Code", "sr": "CLAUDE.md kao mehanizam za davanje projektnog konteksta (test standardi, konvencije fixture-a, kriterijumi review-a) Claude Code-u pozvanom iz CI-ja" },
+          { "en": "Session context isolation: why the same Claude session that generated code is less effective at reviewing its own changes compared to an independent review instance", "sr": "Izolacija konteksta sesije: zašto je ista Claude sesija koja je generisala kod manje efikasna u review-u sopstvenih izmena u poređenju sa nezavisnom review instancom" }
+        ],
+        "skills": [
+          { "en": "Running Claude Code in CI with the -p flag to prevent interactive input hangs", "sr": "Pokretanje Claude Code-a u CI-ju sa -p flag-om da se spreči zaglavljivanje na interaktivni unos" },
+          { "en": "Using --output-format json with --json-schema to produce machine-parseable structured findings for automated posting as inline PR comments", "sr": "Korišćenje --output-format json sa --json-schema za mašinski-čitljive strukturisane nalaze radi automatskog postavljanja kao inline PR komentari" },
+          { "en": "Including prior review findings in context when re-running reviews after new commits, instructing Claude to report only new or still-unaddressed issues to avoid duplicate comments", "sr": "Uključivanje ranijih nalaza u kontekst pri ponovnom review-u posle novih commit-a, uz uputstvo Claude-u da prijavi samo nove ili još nerešene probleme radi izbegavanja dupliranih komentara" },
+          { "en": "Providing existing test files in context so test generation avoids suggesting duplicate scenarios already covered by the test suite", "sr": "Davanje postojećih test fajlova u kontekst da generisanje testova ne predlaže scenarije već pokrivene test setom" },
+          { "en": "Documenting testing standards, valuable test criteria, and available fixtures in CLAUDE.md to improve test generation quality and reduce low-value test output", "sr": "Dokumentovanje test standarda, vrednih kriterijuma testa i dostupnih fixture-a u CLAUDE.md radi boljeg kvaliteta generisanih testova i smanjenja bezvrednih testova" }
+        ]
+      }
+    ]
+  }, {
+    "domain": 4,
+    "title": { "en": "Domain 4: Prompt Engineering & Structured Output", "sr": "Domen 4: Prompt engineering i strukturisan izlaz" },
+    "tasks": [
+      {
+        "id": "4.1",
+        "title": { "en": "Design prompts with explicit criteria to improve precision and reduce false positives", "sr": "Dizajn promptova sa eksplicitnim kriterijumima radi bolje preciznosti i manje false positive-a" },
+        "knowledge": [
+          { "en": "The importance of explicit criteria over vague instructions (e.g., \"flag comments only when claimed behavior contradicts actual code behavior\" vs \"check that comments are accurate\")", "sr": "Važnost eksplicitnih kriterijuma nad maglovitim instrukcijama (npr. „označi komentare samo kad tvrđeno ponašanje protivreči stvarnom ponašanju koda\" vs „proveri da su komentari tačni\")" },
+          { "en": "How general instructions like \"be conservative\" or \"only report high-confidence findings\" fail to improve precision compared to specific categorical criteria", "sr": "Kako opšte instrukcije poput „budi konzervativan\" ili „prijavi samo nalaze visoke pouzdanosti\" ne poboljšavaju preciznost u poređenju sa konkretnim kategorijskim kriterijumima" },
+          { "en": "The impact of false positive rates on developer trust: high false positive categories undermine confidence in accurate categories", "sr": "Uticaj stope false positive-a na poverenje developera: kategorije sa mnogo lažnih uzbuna podrivaju poverenje i u tačne kategorije" }
+        ],
+        "skills": [
+          { "en": "Writing specific review criteria that define which issues to report (bugs, security) versus skip (minor style, local patterns) rather than relying on confidence-based filtering", "sr": "Pisanje konkretnih kriterijuma review-a koji definišu koje probleme prijaviti (bagovi, bezbednost) a koje preskočiti (sitan stil, lokalni obrasci) umesto oslanjanja na filtriranje po pouzdanosti" },
+          { "en": "Temporarily disabling high false-positive categories to restore developer trust while improving prompts for those categories", "sr": "Privremeno isključivanje kategorija sa visokim false positive-om radi vraćanja poverenja, uz poboljšavanje promptova za te kategorije" },
+          { "en": "Defining explicit severity criteria with concrete code examples for each severity level to achieve consistent classification", "sr": "Definisanje eksplicitnih kriterijuma ozbiljnosti sa konkretnim primerima koda za svaki nivo radi dosledne klasifikacije" }
+        ]
+      },
+      {
+        "id": "4.2",
+        "title": { "en": "Apply few-shot prompting to improve output consistency and quality", "sr": "Primena few-shot prompting-a radi bolje doslednosti i kvaliteta izlaza" },
+        "knowledge": [
+          { "en": "Few-shot examples as the most effective technique for achieving consistently formatted, actionable output when detailed instructions alone produce inconsistent results", "sr": "Few-shot primeri kao najefikasnija tehnika za dosledno formatiran, upotrebljiv izlaz kada same detaljne instrukcije daju nedosledne rezultate" },
+          { "en": "The role of few-shot examples in demonstrating ambiguous-case handling (e.g., tool selection for ambiguous requests, branch-level test coverage gaps)", "sr": "Uloga few-shot primera u demonstriranju obrade dvosmislenih slučajeva (npr. izbor alata za dvosmislene zahteve, rupe u pokrivenosti testova po granama)" },
+          { "en": "How few-shot examples enable the model to generalize judgment to novel patterns rather than matching only pre-specified cases", "sr": "Kako few-shot primeri omogućavaju modelu da generalizuje procenu na nove obrasce umesto da poklapa samo unapred zadate slučajeve" },
+          { "en": "The effectiveness of few-shot examples for reducing hallucination in extraction tasks (e.g., handling informal measurements, varied document structures)", "sr": "Efikasnost few-shot primera u smanjenju halucinacija u zadacima ekstrakcije (npr. neformalne mere, raznolike strukture dokumenata)" }
+        ],
+        "skills": [
+          { "en": "Creating 2-4 targeted few-shot examples for ambiguous scenarios that show reasoning for why one action was chosen over plausible alternatives", "sr": "Pravljenje 2–4 ciljana few-shot primera za dvosmislene scenarije koji pokazuju rezonovanje zašto je jedna akcija izabrana nad uverljivim alternativama" },
+          { "en": "Including few-shot examples that demonstrate specific desired output format (location, issue, severity, suggested fix) to achieve consistency", "sr": "Uključivanje few-shot primera koji demonstriraju konkretan željeni format izlaza (lokacija, problem, ozbiljnost, predložena ispravka) radi doslednosti" },
+          { "en": "Providing few-shot examples distinguishing acceptable code patterns from genuine issues to reduce false positives while enabling generalization", "sr": "Davanje few-shot primera koji razlikuju prihvatljive obrasce koda od stvarnih problema radi smanjenja false positive-a uz mogućnost generalizacije" },
+          { "en": "Using few-shot examples to demonstrate correct handling of varied document structures (inline citations vs bibliographies, methodology sections vs embedded details)", "sr": "Korišćenje few-shot primera za demonstraciju pravilne obrade raznolikih struktura dokumenata (inline citati vs bibliografije, sekcije metodologije vs ugrađeni detalji)" },
+          { "en": "Adding few-shot examples showing correct extraction from documents with varied formats to address empty/null extraction of required fields", "sr": "Dodavanje few-shot primera koji pokazuju pravilnu ekstrakciju iz dokumenata raznolikih formata radi rešavanja prazne/null ekstrakcije obaveznih polja" }
+        ]
+      },
+      {
+        "id": "4.3",
+        "title": { "en": "Enforce structured output using tool use and JSON schemas", "sr": "Sprovođenje strukturisanog izlaza pomoću tool use-a i JSON šema" },
+        "knowledge": [
+          { "en": "Tool use (tool_use) with JSON schemas as the most reliable approach for guaranteed schema-compliant structured output, eliminating JSON syntax errors", "sr": "Tool use (tool_use) sa JSON šemama kao najpouzdaniji pristup za garantovano šemi-usklađen strukturisan izlaz, koji eliminiše JSON sintaksne greške" },
+          { "en": "The distinction between tool_choice: \"auto\" (model may return text instead of calling a tool), \"any\" (model must call a tool but can choose which), and forced tool selection (model must call a specific named tool)", "sr": "Razlika između tool_choice: \"auto\" (model sme da vrati tekst umesto poziva alata), \"any\" (model mora pozvati neki alat ali bira koji) i prinudnog izbora (model mora pozvati tačno imenovan alat)" },
+          { "en": "That strict JSON schemas via tool use eliminate syntax errors but do not prevent semantic errors (e.g., line items that don't sum to total, values in wrong fields)", "sr": "Da stroge JSON šeme preko tool use-a eliminišu sintaksne greške ali ne sprečavaju semantičke (npr. stavke koje se ne sabiraju u total, vrednosti u pogrešnim poljima)" },
+          { "en": "Schema design considerations: required vs optional fields, enum fields with \"other\" + detail string patterns for extensible categories", "sr": "Razmatranja dizajna šeme: obavezna vs opciona polja, enum polja sa „other\" + detail string obrascem za proširive kategorije" }
+        ],
+        "skills": [
+          { "en": "Defining extraction tools with JSON schemas as input parameters and extracting structured data from the tool_use response", "sr": "Definisanje alata za ekstrakciju sa JSON šemama kao ulaznim parametrima i vađenje strukturisanih podataka iz tool_use odgovora" },
+          { "en": "Setting tool_choice: \"any\" to guarantee structured output when multiple extraction schemas exist and the document type is unknown", "sr": "Postavljanje tool_choice: \"any\" da se garantuje strukturisan izlaz kada postoji više šema ekstrakcije a tip dokumenta je nepoznat" },
+          { "en": "Forcing a specific tool with tool_choice: {\"type\": \"tool\", \"name\": \"extract_metadata\"} to ensure a particular extraction runs before enrichment steps", "sr": "Prinuda određenog alata sa tool_choice: {\"type\": \"tool\", \"name\": \"extract_metadata\"} da se određena ekstrakcija izvrši pre koraka obogaćivanja" },
+          { "en": "Designing schema fields as optional (nullable) when source documents may not contain the information, preventing the model from fabricating values to satisfy required fields", "sr": "Dizajn polja šeme kao opcionih (nullable) kada izvorni dokumenti možda nemaju informaciju, čime se sprečava da model izmišlja vrednosti da zadovolji obavezna polja" },
+          { "en": "Adding enum values like \"unclear\" for ambiguous cases and \"other\" + detail fields for extensible categorization", "sr": "Dodavanje enum vrednosti poput „unclear\" za dvosmislene slučajeve i „other\" + detail polja za proširivu kategorizaciju" },
+          { "en": "Including format normalization rules in prompts alongside strict output schemas to handle inconsistent source formatting", "sr": "Uključivanje pravila normalizacije formata u promptove uz stroge izlazne šeme radi obrade nedoslednog formatiranja izvora" }
+        ]
+      },
+      {
+        "id": "4.4",
+        "title": { "en": "Implement validation, retry, and feedback loops for extraction quality", "sr": "Implementacija validacije, ponavljanja i feedback petlji za kvalitet ekstrakcije" },
+        "knowledge": [
+          { "en": "Retry-with-error-feedback: appending specific validation errors to the prompt on retry to guide the model toward correction", "sr": "Retry-with-error-feedback: dodavanje konkretnih validacionih grešaka u prompt pri ponavljanju da se model navede ka ispravci" },
+          { "en": "The limits of retry: retries are ineffective when the required information is simply absent from the source document (vs format or structural errors)", "sr": "Granice ponavljanja: ponavljanje je neefikasno kada tražena informacija prosto ne postoji u izvornom dokumentu (za razliku od grešaka formata ili strukture)" },
+          { "en": "Feedback loop design: tracking which code constructs trigger findings (detected_pattern field) to enable systematic analysis of dismissal patterns", "sr": "Dizajn feedback petlje: praćenje koje konstrukcije koda izazivaju nalaze (polje detected_pattern) radi sistematske analize obrazaca odbacivanja" },
+          { "en": "The difference between semantic validation errors (values don't sum, wrong field placement) and schema syntax errors (eliminated by tool use)", "sr": "Razlika između semantičkih validacionih grešaka (vrednosti se ne sabiraju, pogrešan smeštaj polja) i sintaksnih grešaka šeme (eliminisanih tool use-om)" }
+        ],
+        "skills": [
+          { "en": "Implementing follow-up requests that include the original document, the failed extraction, and specific validation errors for model self-correction", "sr": "Implementacija narednih zahteva koji uključuju originalni dokument, neuspelu ekstrakciju i konkretne validacione greške radi samoispravke modela" },
+          { "en": "Identifying when retries will be ineffective (e.g., information exists only in an external document not provided) versus when they will succeed (format mismatches, structural output errors)", "sr": "Prepoznavanje kada će ponavljanje biti neefikasno (npr. informacija postoji samo u eksternom dokumentu koji nije dat) a kada će uspeti (neslaganje formata, strukturne greške izlaza)" },
+          { "en": "Adding detected_pattern fields to structured findings to enable analysis of false positive patterns when developers dismiss findings", "sr": "Dodavanje detected_pattern polja u strukturisane nalaze radi analize obrazaca false positive-a kada developeri odbacuju nalaze" },
+          { "en": "Designing self-correction validation flows: extracting \"calculated_total\" alongside \"stated_total\" to flag discrepancies, adding \"conflict_detected\" booleans for inconsistent source data", "sr": "Dizajn samoispravljajućih validacionih tokova: vađenje „calculated_total\" pored „stated_total\" radi označavanja neslaganja, dodavanje „conflict_detected\" boolean-a za nedosledne izvorne podatke" }
+        ]
+      },
+      {
+        "id": "4.5",
+        "title": { "en": "Design efficient batch processing strategies", "sr": "Dizajn efikasnih strategija batch obrade" },
+        "knowledge": [
+          { "en": "The Message Batches API: 50% cost savings, up to 24-hour processing window, no guaranteed latency SLA", "sr": "Message Batches API: 50% uštede troškova, prozor obrade do 24h, bez garantovanog SLA za latenciju" },
+          { "en": "Batch processing is appropriate for non-blocking, latency-tolerant workloads (overnight reports, weekly audits, nightly test generation) and inappropriate for blocking workflows (pre-merge checks)", "sr": "Batch obrada je primerena za neblokirajuće, latencijski-tolerantne poslove (noćni izveštaji, nedeljni auditi, noćno generisanje testova) a neprimerena za blokirajuće tokove (pre-merge provere)" },
+          { "en": "The batch API does not support multi-turn tool calling within a single request (cannot execute tools mid-request and return results)", "sr": "Batch API ne podržava višekružne pozive alata unutar jednog zahteva (ne može izvršiti alate usred zahteva i vratiti rezultate)" },
+          { "en": "custom_id fields for correlating batch request/response pairs", "sr": "custom_id polja za uparivanje batch zahteva i odgovora" }
+        ],
+        "skills": [
+          { "en": "Matching API approach to workflow latency requirements: synchronous API for blocking pre-merge checks, batch API for overnight/weekly analysis", "sr": "Usklađivanje pristupa API-ju sa latencijskim zahtevima toka: sinhroni API za blokirajuće pre-merge provere, batch API za noćnu/nedeljnu analizu" },
+          { "en": "Calculating batch submission frequency based on SLA constraints (e.g., 4-hour windows to guarantee 30-hour SLA with 24-hour batch processing)", "sr": "Računanje učestalosti slanja batch-eva prema SLA ograničenjima (npr. prozori od 4h da se garantuje SLA od 30h uz 24h batch obrade)" },
+          { "en": "Handling batch failures: resubmitting only failed documents (identified by custom_id) with appropriate modifications (e.g., chunking documents that exceeded context limits)", "sr": "Obrada neuspelih batch-eva: ponovno slanje samo neuspelih dokumenata (identifikovanih custom_id-jem) uz primerene izmene (npr. seckanje dokumenata koji su prešli kontekst limit)" },
+          { "en": "Using prompt refinement on a sample set before batch-processing large volumes to maximize first-pass success rates and reduce iterative resubmission costs", "sr": "Dorada prompta na uzorku pre batch obrade velikih količina radi maksimizacije uspeha u prvom prolazu i smanjenja troškova ponovnog slanja" }
+        ]
+      },
+      {
+        "id": "4.6",
+        "title": { "en": "Design multi-instance and multi-pass review architectures", "sr": "Dizajn arhitektura review-a sa više instanci i više prolaza" },
+        "knowledge": [
+          { "en": "Self-review limitations: a model retains reasoning context from generation, making it less likely to question its own decisions in the same session", "sr": "Ograničenja samo-review-a: model zadržava kontekst rezonovanja iz generisanja, pa je manje sklon da preispita sopstvene odluke u istoj sesiji" },
+          { "en": "Independent review instances (without prior reasoning context) are more effective at catching subtle issues than self-review instructions or extended thinking", "sr": "Nezavisne review instance (bez prethodnog konteksta rezonovanja) bolje hvataju suptilne probleme nego instrukcije za samo-review ili extended thinking" },
+          { "en": "Multi-pass review: splitting large reviews into per-file local analysis passes plus cross-file integration passes to avoid attention dilution and contradictory findings", "sr": "Review u više prolaza: deljenje velikih review-a na lokalne prolaze po fajlu plus cross-file integracione prolaze radi izbegavanja attention dilution-a i protivrečnih nalaza" }
+        ],
+        "skills": [
+          { "en": "Using a second independent Claude instance to review generated code without the generator's reasoning context", "sr": "Korišćenje druge nezavisne Claude instance za review generisanog koda bez konteksta rezonovanja generatora" },
+          { "en": "Splitting large multi-file reviews into focused per-file passes for local issues plus separate integration passes for cross-file data flow analysis", "sr": "Deljenje velikih višefajl review-a na fokusirane prolaze po fajlu za lokalne probleme plus zasebne integracione prolaze za analizu protoka podataka između fajlova" },
+          { "en": "Running verification passes where the model self-reports confidence alongside each finding to enable calibrated review routing", "sr": "Pokretanje verifikacionih prolaza gde model uz svaki nalaz sam prijavljuje pouzdanost radi kalibrisanog rutiranja review-a" }
+        ]
+      }
+    ]
+  }, {
+    "domain": 5,
+    "title": { "en": "Domain 5: Context Management & Reliability", "sr": "Domen 5: Upravljanje kontekstom i pouzdanost" },
+    "tasks": [
+      {
+        "id": "5.1",
+        "title": { "en": "Manage conversation context to preserve critical information across long interactions", "sr": "Upravljanje kontekstom razgovora radi očuvanja ključnih informacija kroz duge interakcije" },
+        "knowledge": [
+          { "en": "Progressive summarization risks: condensing numerical values, percentages, dates, and customer-stated expectations into vague summaries", "sr": "Rizici progresivnog sažimanja: sažimanje brojeva, procenata, datuma i očekivanja koja je korisnik naveo u maglovite sažetke" },
+          { "en": "The \"lost in the middle\" effect: models reliably process information at the beginning and end of long inputs but may omit findings from middle sections", "sr": "Efekat „lost in the middle\": modeli pouzdano obrađuju informacije na početku i kraju dugih ulaza ali mogu izostaviti nalaze iz sredine" },
+          { "en": "How tool results accumulate in context and consume tokens disproportionately to their relevance (e.g., 40+ fields per order lookup when only 5 are relevant)", "sr": "Kako se rezultati alata gomilaju u kontekstu i troše tokene nesrazmerno svojoj relevantnosti (npr. 40+ polja po lookup-u porudžbine kada je samo 5 relevantno)" },
+          { "en": "The importance of passing complete conversation history in subsequent API requests to maintain conversational coherence", "sr": "Važnost prosleđivanja kompletne istorije razgovora u narednim API zahtevima radi održavanja koherentnosti razgovora" }
+        ],
+        "skills": [
+          { "en": "Extracting transactional facts (amounts, dates, order numbers, statuses) into a persistent \"case facts\" block included in each prompt, outside summarized history", "sr": "Izdvajanje transakcionih činjenica (iznosi, datumi, brojevi porudžbina, statusi) u trajan „case facts\" blok koji se uključuje u svaki prompt, van sažete istorije" },
+          { "en": "Extracting and persisting structured issue data (order IDs, amounts, statuses) into a separate context layer for multi-issue sessions", "sr": "Izdvajanje i čuvanje strukturisanih podataka o problemu (ID porudžbina, iznosi, statusi) u zaseban sloj konteksta za sesije sa više problema" },
+          { "en": "Trimming verbose tool outputs to only relevant fields before they accumulate in context (e.g., keeping only return-relevant fields from order lookups)", "sr": "Skraćivanje opširnih izlaza alata na samo relevantna polja pre nego što se nagomilaju u kontekstu (npr. čuvanje samo polja relevantnih za povraćaj iz lookup-a porudžbine)" },
+          { "en": "Placing key findings summaries at the beginning of aggregated inputs and organizing detailed results with explicit section headers to mitigate position effects", "sr": "Postavljanje sažetaka ključnih nalaza na početak agregiranih ulaza i organizovanje detaljnih rezultata sa eksplicitnim naslovima sekcija radi ublažavanja pozicionih efekata" },
+          { "en": "Requiring subagents to include metadata (dates, source locations, methodological context) in structured outputs to support accurate downstream synthesis", "sr": "Zahtevanje da subagenti uključe metapodatke (datumi, lokacije izvora, metodološki kontekst) u strukturisane izlaze radi tačne dalje sinteze" },
+          { "en": "Modifying upstream agents to return structured data (key facts, citations, relevance scores) instead of verbose content and reasoning chains when downstream agents have limited context budgets", "sr": "Izmena upstream agenata da vraćaju strukturisane podatke (ključne činjenice, citate, ocene relevantnosti) umesto opširnog sadržaja i lanaca rezonovanja kada downstream agenti imaju ograničen budžet konteksta" }
+        ]
+      },
+      {
+        "id": "5.2",
+        "title": { "en": "Design effective escalation and ambiguity resolution patterns", "sr": "Dizajn efikasnih obrazaca eskalacije i razrešavanja dvosmislenosti" },
+        "knowledge": [
+          { "en": "Appropriate escalation triggers: customer requests for a human, policy exceptions/gaps (not just complex cases), and inability to make meaningful progress", "sr": "Pravi okidači eskalacije: zahtev korisnika za čoveka, izuzeci/rupe u pravilima (ne samo složeni slučajevi) i nemogućnost smislenog napretka" },
+          { "en": "The distinction between escalating immediately when a customer explicitly demands it versus offering to resolve when the issue is straightforward", "sr": "Razlika između trenutne eskalacije kada korisnik to izričito traži i nuđenja da se reši kada je problem jednostavan" },
+          { "en": "Why sentiment-based escalation and self-reported confidence scores are unreliable proxies for actual case complexity", "sr": "Zašto su eskalacija po sentimentu i samoprijavljene ocene pouzdanosti nepouzdani pokazatelji stvarne složenosti slučaja" },
+          { "en": "How multiple customer matches require clarification (requesting additional identifiers) rather than heuristic selection", "sr": "Kako više poklapanja korisnika traži pojašnjenje (traženje dodatnih identifikatora) umesto heurističkog biranja" }
+        ],
+        "skills": [
+          { "en": "Adding explicit escalation criteria with few-shot examples to the system prompt demonstrating when to escalate versus resolve autonomously", "sr": "Dodavanje eksplicitnih kriterijuma eskalacije sa few-shot primerima u sistemski prompt koji pokazuju kada eskalirati a kada rešiti samostalno" },
+          { "en": "Honoring explicit customer requests for human agents immediately without first attempting investigation", "sr": "Trenutno poštovanje izričitog zahteva korisnika za čoveka bez prethodnog pokušaja istrage" },
+          { "en": "Acknowledging frustration while offering resolution when the issue is within the agent's capability, escalating only if the customer reiterates their preference", "sr": "Priznavanje frustracije uz nuđenje rešenja kada je problem u domenu agenta, uz eskalaciju samo ako korisnik ponovi svoju želju" },
+          { "en": "Escalating when policy is ambiguous or silent on the customer's specific request (e.g., competitor price matching when policy only addresses own-site adjustments)", "sr": "Eskalacija kada je politika dvosmislena ili ćuti o konkretnom zahtevu (npr. izjednačavanje cene sa konkurencijom kada politika pokriva samo korekcije na sopstvenom sajtu)" },
+          { "en": "Instructing the agent to ask for additional identifiers when tool results return multiple matches, rather than selecting based on heuristics", "sr": "Uputstvo agentu da traži dodatne identifikatore kada alat vrati više poklapanja, umesto biranja po heuristici" }
+        ]
+      },
+      {
+        "id": "5.3",
+        "title": { "en": "Implement error propagation strategies across multi-agent systems", "sr": "Implementacija strategija propagacije grešaka kroz multi-agent sisteme" },
+        "knowledge": [
+          { "en": "Structured error context (failure type, attempted query, partial results, alternative approaches) as enabling intelligent coordinator recovery decisions", "sr": "Strukturisan kontekst greške (tip otkaza, pokušani upit, parcijalni rezultati, alternativni pristupi) kao osnova za inteligentne odluke koordinatora o oporavku" },
+          { "en": "The distinction between access failures (timeouts needing retry decisions) and valid empty results (successful queries with no matches)", "sr": "Razlika između grešaka pristupa (timeout-i koji traže odluku o ponavljanju) i validnih praznih rezultata (uspešni upiti bez pogodaka)" },
+          { "en": "Why generic error statuses (\"search unavailable\") hide valuable context from the coordinator", "sr": "Zašto generički status greške („search unavailable\") sakriva vredan kontekst od koordinatora" },
+          { "en": "Why silently suppressing errors (returning empty results as success) or terminating entire workflows on single failures are both anti-patterns", "sr": "Zašto su i tiho gušenje grešaka (vraćanje praznih rezultata kao uspeha) i obaranje celog toka na jedan otkaz oba anti-paterni" }
+        ],
+        "skills": [
+          { "en": "Returning structured error context including failure type, what was attempted, partial results, and potential alternatives to enable coordinator recovery", "sr": "Vraćanje strukturisanog konteksta greške: tip otkaza, šta je pokušano, parcijalni rezultati i moguće alternative radi oporavka koordinatora" },
+          { "en": "Distinguishing access failures from valid empty results in error reporting so the coordinator can make appropriate decisions", "sr": "Razlikovanje grešaka pristupa od validnih praznih rezultata u izveštavanju o greškama da koordinator donese ispravnu odluku" },
+          { "en": "Having subagents implement local recovery for transient failures and only propagate errors they cannot resolve, including what was attempted and partial results", "sr": "Da subagenti implementiraju lokalni oporavak za tranzijentne otkaze i prosleđuju samo greške koje ne mogu rešiti, uz ono što je pokušano i parcijalne rezultate" },
+          { "en": "Structuring synthesis output with coverage annotations indicating which findings are well-supported versus which topic areas have gaps due to unavailable sources", "sr": "Strukturiranje izlaza sinteze sa anotacijama pokrivenosti koje ukazuju koji nalazi su dobro potkrepljeni a koje teme imaju rupe zbog nedostupnih izvora" }
+        ]
+      },
+      {
+        "id": "5.4",
+        "title": { "en": "Manage context effectively in large codebase exploration", "sr": "Efikasno upravljanje kontekstom u istraživanju velikih kodnih baza" },
+        "knowledge": [
+          { "en": "Context degradation in extended sessions: models start giving inconsistent answers and referencing \"typical patterns\" rather than specific classes discovered earlier", "sr": "Degradacija konteksta u dugim sesijama: modeli počinju da daju nedosledne odgovore i pominju „tipične obrasce\" umesto konkretnih klasa otkrivenih ranije" },
+          { "en": "The role of scratchpad files for persisting key findings across context boundaries", "sr": "Uloga scratchpad fajlova za čuvanje ključnih nalaza preko granica konteksta" },
+          { "en": "Subagent delegation for isolating verbose exploration output while the main agent coordinates high-level understanding", "sr": "Delegiranje subagentima za izolaciju opširnog izlaza istraživanja dok glavni agent koordiniše razumevanje na visokom nivou" },
+          { "en": "Structured state persistence for crash recovery: each agent exports state to a known location, and the coordinator loads a manifest on resume", "sr": "Strukturisano čuvanje stanja za oporavak od pada: svaki agent izvozi stanje na poznatu lokaciju, a koordinator pri nastavku učitava manifest" }
+        ],
+        "skills": [
+          { "en": "Spawning subagents to investigate specific questions (e.g., \"find all test files,\" \"trace refund flow dependencies\") while the main agent preserves high-level coordination", "sr": "Pokretanje subagenata za konkretna pitanja (npr. „nađi sve test fajlove\", „prati zavisnosti toka povraćaja\") dok glavni agent čuva koordinaciju na visokom nivou" },
+          { "en": "Having agents maintain scratchpad files recording key findings, referencing them for subsequent questions to counteract context degradation", "sr": "Da agenti vode scratchpad fajlove sa ključnim nalazima i pozivaju se na njih za naredna pitanja radi suzbijanja degradacije konteksta" },
+          { "en": "Summarizing key findings from one exploration phase before spawning sub-agents for the next phase, injecting summaries into initial context", "sr": "Sažimanje ključnih nalaza jedne faze istraživanja pre pokretanja subagenata za sledeću fazu, uz ubacivanje sažetaka u početni kontekst" },
+          { "en": "Designing crash recovery using structured agent state exports (manifests) that the coordinator loads on resume and injects into agent prompts", "sr": "Dizajn oporavka od pada preko strukturisanih izvoza stanja agenta (manifesti) koje koordinator učitava pri nastavku i ubacuje u promptove agenata" },
+          { "en": "Using /compact to reduce context usage during extended exploration sessions when context fills with verbose discovery output", "sr": "Korišćenje /compact za smanjenje potrošnje konteksta u dugim sesijama istraživanja kada se kontekst napuni opširnim izlazom" }
+        ]
+      },
+      {
+        "id": "5.5",
+        "title": { "en": "Design human review workflows and confidence calibration", "sr": "Dizajn tokova ljudskog review-a i kalibracije pouzdanosti" },
+        "knowledge": [
+          { "en": "The risk that aggregate accuracy metrics (e.g., 97% overall) may mask poor performance on specific document types or fields", "sr": "Rizik da agregatne metrike tačnosti (npr. 97% ukupno) maskiraju lošu tačnost na određenim tipovima dokumenata ili poljima" },
+          { "en": "Stratified random sampling for measuring error rates in high-confidence extractions and detecting novel error patterns", "sr": "Stratifikovano nasumično uzorkovanje za merenje stope grešaka u ekstrakcijama visoke pouzdanosti i otkrivanje novih obrazaca grešaka" },
+          { "en": "Field-level confidence scores calibrated using labeled validation sets for routing review attention", "sr": "Ocene pouzdanosti na nivou polja, kalibrisane labelovanim validacionim setovima, za usmeravanje pažnje review-a" },
+          { "en": "The importance of validating accuracy by document type and field segment before automating high-confidence extractions", "sr": "Važnost validacije tačnosti po tipu dokumenta i segmentu polja pre automatizacije ekstrakcija visoke pouzdanosti" }
+        ],
+        "skills": [
+          { "en": "Implementing stratified random sampling of high-confidence extractions for ongoing error rate measurement and novel pattern detection", "sr": "Implementacija stratifikovanog uzorkovanja ekstrakcija visoke pouzdanosti za stalno merenje stope grešaka i otkrivanje novih obrazaca" },
+          { "en": "Analyzing accuracy by document type and field to verify consistent performance across all segments before reducing human review", "sr": "Analiza tačnosti po tipu dokumenta i polju radi provere dosledne tačnosti na svim segmentima pre smanjenja ljudskog review-a" },
+          { "en": "Having models output field-level confidence scores, then calibrating review thresholds using labeled validation sets", "sr": "Da modeli daju ocene pouzdanosti na nivou polja, pa kalibracija pragova review-a labelovanim validacionim setovima" },
+          { "en": "Routing extractions with low model confidence or ambiguous/contradictory source documents to human review, prioritizing limited reviewer capacity", "sr": "Rutiranje ekstrakcija sa niskom pouzdanošću ili dvosmislenim/protivrečnim izvorima ka ljudskom review-u, uz prioritizaciju ograničenog kapaciteta recenzenata" }
+        ]
+      },
+      {
+        "id": "5.6",
+        "title": { "en": "Preserve information provenance and handle uncertainty in multi-source synthesis", "sr": "Očuvanje provenijencije informacija i obrada nesigurnosti u sintezi iz više izvora" },
+        "knowledge": [
+          { "en": "How source attribution is lost during summarization steps when findings are compressed without preserving claim-source mappings", "sr": "Kako se atribucija izvora gubi tokom sažimanja kada se nalazi kompresuju bez očuvanja mapiranja tvrdnja–izvor" },
+          { "en": "The importance of structured claim-source mappings that the synthesis agent must preserve and merge when combining findings", "sr": "Važnost strukturisanih mapiranja tvrdnja–izvor koje agent za sintezu mora očuvati i spojiti pri kombinovanju nalaza" },
+          { "en": "How to handle conflicting statistics from credible sources: annotating conflicts with source attribution rather than arbitrarily selecting one value", "sr": "Kako obraditi protivrečne statistike iz pouzdanih izvora: anotiranje sukoba sa atribucijom izvora umesto proizvoljnog biranja jedne vrednosti" },
+          { "en": "Temporal data: requiring publication/collection dates in structured outputs to prevent temporal differences from being misinterpreted as contradictions", "sr": "Vremenski podaci: zahtevanje datuma objave/prikupljanja u strukturisanim izlazima da se vremenske razlike ne protumače kao protivrečnosti" }
+        ],
+        "skills": [
+          { "en": "Requiring subagents to output structured claim-source mappings (source URLs, document names, relevant excerpts) that downstream agents preserve through synthesis", "sr": "Zahtevanje da subagenti daju strukturisana mapiranja tvrdnja–izvor (URL izvora, imena dokumenata, relevantni isečci) koje downstream agenti čuvaju kroz sintezu" },
+          { "en": "Structuring reports with explicit sections distinguishing well-established findings from contested ones, preserving original source characterizations and methodological context", "sr": "Strukturiranje izveštaja sa eksplicitnim sekcijama koje razdvajaju dobro utvrđene nalaze od spornih, uz očuvanje originalnih karakterizacija izvora i metodološkog konteksta" },
+          { "en": "Completing document analysis with conflicting values included and explicitly annotated, letting the coordinator decide how to reconcile before passing to synthesis", "sr": "Završavanje analize dokumenta sa uključenim i eksplicitno anotiranim protivrečnim vrednostima, prepuštajući koordinatoru da odluči kako da ih pomiri pre prosleđivanja sintezi" },
+          { "en": "Requiring subagents to include publication or data collection dates in structured outputs to enable correct temporal interpretation", "sr": "Zahtevanje da subagenti uključe datume objave ili prikupljanja u strukturisane izlaze radi ispravnog vremenskog tumačenja" },
+          { "en": "Rendering different content types appropriately in synthesis outputs—financial data as tables, news as prose, technical findings as structured lists—rather than converting everything to a uniform format", "sr": "Primereno prikazivanje različitih tipova sadržaja u sintezi — finansijski podaci kao tabele, vesti kao proza, tehnički nalazi kao strukturisane liste — umesto svođenja svega na jedinstven format" }
+        ]
+      }
+    ]
+  }],
+  "sample_questions": {
+    "title": { "en": "Sample Questions", "sr": "Primeri pitanja" },
+    "intro": { "en": "The following sample questions illustrate the format and difficulty level of the exam. These are drawn from the practice test and include explanations to aid learning.", "sr": "Sledeća primer-pitanja ilustruju format i nivo težine ispita. Preuzeta su iz probnog testa i sadrže objašnjenja radi učenja." },
+    "items": [{
+      "n": 1,
+      "scenario": { "en": "Customer Support Resolution Agent", "sr": "Agent za korisničku podršku" },
+      "question": { "en": "Production data shows that in 12% of cases, your agent skips get_customer entirely and calls lookup_order using only the customer's stated name, occasionally leading to misidentified accounts and incorrect refunds. What change would most effectively address this reliability issue?", "sr": "Produkcioni podaci pokazuju da u 12% slučajeva agent potpuno preskoči get_customer i pozove lookup_order koristeći samo ime koje je korisnik naveo, što povremeno vodi pogrešno identifikovanim nalozima i netačnim povraćajima. Koja izmena bi najefikasnije rešila ovaj problem pouzdanosti?" },
+      "options": {
+        "A": { "en": "Add a programmatic prerequisite that blocks lookup_order and process_refund calls until get_customer has returned a verified customer ID.", "sr": "Dodaj programski preduslov koji blokira pozive lookup_order i process_refund dok get_customer ne vrati verifikovan ID korisnika." },
+        "B": { "en": "Enhance the system prompt to state that customer verification via get_customer is mandatory before any order operations.", "sr": "Dopuni sistemski prompt da je verifikacija korisnika preko get_customer obavezna pre bilo koje operacije sa porudžbinom." },
+        "C": { "en": "Add few-shot examples showing the agent always calling get_customer first, even when customers volunteer order details.", "sr": "Dodaj few-shot primere koji pokazuju da agent uvek prvo poziva get_customer, čak i kad korisnik sam navede detalje porudžbine." },
+        "D": { "en": "Implement a routing classifier that analyzes each request and enables only the subset of tools appropriate for that request type.", "sr": "Implementiraj routing klasifikator koji analizira svaki zahtev i omogućava samo podskup alata primeren tom tipu zahteva." }
+      },
+      "correct": "A",
+      "explanation": { "en": "When a specific tool sequence is required for critical business logic (like verifying customer identity before processing refunds), programmatic enforcement provides deterministic guarantees that prompt-based approaches cannot. Options B and C rely on probabilistic LLM compliance, which is insufficient when errors have financial consequences. Option D addresses tool availability rather than tool ordering, which is not the actual problem.", "sr": "Kada je za kritičnu poslovnu logiku potreban tačan redosled alata (kao verifikacija identiteta pre povraćaja), programsko sprovođenje daje determinističku garanciju koju prompt ne može. B i C se oslanjaju na probabilističku poslušnost modela, što je nedovoljno kad greške imaju finansijske posledice. D rešava dostupnost alata, a ne redosled — što nije stvarni problem." }
+    },
+    {
+      "n": 2,
+      "scenario": { "en": "Customer Support Resolution Agent", "sr": "Agent za korisničku podršku" },
+      "question": { "en": "Production logs show the agent frequently calls get_customer when users ask about orders (e.g., \"check my order #12345\"), instead of calling lookup_order. Both tools have minimal descriptions (\"Retrieves customer information\" / \"Retrieves order details\") and accept similar identifier formats. What's the most effective first step to improve tool selection reliability?", "sr": "Logovi pokazuju da agent često poziva get_customer kada korisnici pitaju o porudžbinama (npr. „proveri moju porudžbinu #12345\"), umesto lookup_order. Oba alata imaju minimalne opise („Retrieves customer information\" / „Retrieves order details\") i prihvataju slične formate identifikatora. Koji je najefikasniji prvi korak za poboljšanje pouzdanosti izbora alata?" },
+      "options": {
+        "A": { "en": "Add few-shot examples to the system prompt demonstrating correct tool selection patterns, with 5-8 examples showing order-related queries routing to lookup_order.", "sr": "Dodaj few-shot primere u sistemski prompt koji demonstriraju ispravan izbor alata, sa 5–8 primera gde upiti o porudžbinama idu na lookup_order." },
+        "B": { "en": "Expand each tool's description to include input formats it handles, example queries, edge cases, and boundaries explaining when to use it versus similar tools.", "sr": "Proširi opis svakog alata da uključi formate ulaza koje obrađuje, primere upita, edge case-ove i granice koje objašnjavaju kada ga koristiti naspram sličnih alata." },
+        "C": { "en": "Implement a routing layer that parses user input before each turn and pre-selects the appropriate tool based on detected keywords and identifier patterns.", "sr": "Implementiraj routing sloj koji parsira korisnički unos pre svakog poteza i unapred bira odgovarajući alat na osnovu detektovanih ključnih reči i obrazaca identifikatora." },
+        "D": { "en": "Consolidate both tools into a single lookup_entity tool that accepts any identifier and internally determines which backend to query.", "sr": "Spoji oba alata u jedan lookup_entity koji prihvata bilo koji identifikator i interno odlučuje koji backend da upita." }
+      },
+      "correct": "B",
+      "explanation": { "en": "Tool descriptions are the primary mechanism LLMs use for tool selection. When descriptions are minimal, models lack the context to differentiate between similar tools. Option B directly addresses this root cause with a low-effort, high-leverage fix. Few-shot examples (A) add token overhead without fixing the underlying issue. A routing layer (C) is over-engineered and bypasses the LLM's natural language understanding. Consolidating tools (D) is a valid architectural choice but requires more effort than a \"first step\" warrants when the immediate problem is inadequate descriptions.", "sr": "Opisi alata su primarni mehanizam za izbor alata. Kad su minimalni, modelu nedostaje kontekst da razlikuje slične alate. B direktno rešava taj koren uz mali trud i veliki efekat. Few-shot (A) dodaje potrošnju tokena bez rešavanja uzroka. Routing sloj (C) je preterano inženjerstvo i zaobilazi razumevanje prirodnog jezika. Spajanje alata (D) je validno ali traži više truda nego što „prvi korak\" nalaže kad je neposredni problem loš opis." }
+    },
+    {
+      "n": 3,
+      "scenario": { "en": "Customer Support Resolution Agent", "sr": "Agent za korisničku podršku" },
+      "question": { "en": "Your agent achieves 55% first-contact resolution, well below the 80% target. Logs show it escalates straightforward cases (standard damage replacements with photo evidence) while attempting to autonomously handle complex situations requiring policy exceptions. What's the most effective way to improve escalation calibration?", "sr": "Agent postiže 55% rešavanja u prvom kontaktu, znatno ispod cilja od 80%. Logovi pokazuju da eskalira jednostavne slučajeve (standardne zamene oštećene robe sa foto-dokazom) dok pokušava sam da reši složene situacije koje traže izuzetke od politike. Koji je najefikasniji način da se poboljša kalibracija eskalacije?" },
+      "options": {
+        "A": { "en": "Add explicit escalation criteria to your system prompt with few-shot examples demonstrating when to escalate versus resolve autonomously.", "sr": "Dodaj eksplicitne kriterijume eskalacije u sistemski prompt sa few-shot primerima koji pokazuju kada eskalirati a kada rešiti samostalno." },
+        "B": { "en": "Have the agent self-report a confidence score (1-10) before each response and automatically route requests to humans when confidence falls below a threshold.", "sr": "Neka agent pre svakog odgovora sam prijavi ocenu pouzdanosti (1–10) i automatski prosledi čoveku kad pouzdanost padne ispod praga." },
+        "C": { "en": "Deploy a separate classifier model trained on historical tickets to predict which requests need escalation before the main agent begins processing.", "sr": "Postavi zaseban klasifikatorski model treniran na istorijskim tiketima da predvidi koji zahtevi traže eskalaciju pre nego što glavni agent počne obradu." },
+        "D": { "en": "Implement sentiment analysis to detect customer frustration levels and automatically escalate when negative sentiment exceeds a threshold.", "sr": "Implementiraj analizu sentimenta za detekciju nivoa frustracije korisnika i automatski eskaliraj kad negativan sentiment pređe prag." }
+      },
+      "correct": "A",
+      "explanation": { "en": "Adding explicit escalation criteria with few-shot examples directly addresses the root cause: unclear decision boundaries. This is the proportionate first response before adding infrastructure. Option B fails because LLM self-reported confidence is poorly calibrated—the agent is already incorrectly confident on hard cases. Option C is over-engineered, requiring labeled data and ML infrastructure when prompt optimization hasn't been tried. Option D solves a different problem entirely; sentiment doesn't correlate with case complexity, which is the actual issue.", "sr": "Eksplicitni kriterijumi eskalacije sa few-shot primerima direktno rešavaju koren: nejasne granice odlučivanja. To je srazmeran prvi odgovor pre dodavanja infrastrukture. B pada jer je samoprijavljena pouzdanost loše kalibrisana — agent je već pogrešno siguran na teškim slučajevima. C je preterano (traži labelovane podatke i ML infrastrukturu pre nego što je proba optimizacije prompta). D rešava sasvim drugi problem; sentiment ne korelira sa složenošću slučaja, što je stvarni problem." }
+    },
+    {
+      "n": 4,
+      "scenario": { "en": "Code Generation with Claude Code", "sr": "Generisanje koda sa Claude Code-om" },
+      "question": { "en": "You want to create a custom /review slash command that runs your team's standard code review checklist. This command should be available to every developer when they clone or pull the repository. Where should you create this command file?", "sr": "Želiš da napraviš custom /review slash komandu koja pokreće standardni checklist code review-a tvog tima. Komanda treba da bude dostupna svakom developeru kad klonira ili pull-uje repozitorijum. Gde treba da napraviš fajl komande?" },
+      "options": {
+        "A": { "en": "In the .claude/commands/ directory in the project repository", "sr": "U .claude/commands/ direktorijumu u projektnom repozitorijumu" },
+        "B": { "en": "In ~/.claude/commands/ in each developer's home directory", "sr": "U ~/.claude/commands/ u home direktorijumu svakog developera" },
+        "C": { "en": "In the CLAUDE.md file at the project root", "sr": "U CLAUDE.md fajlu u korenu projekta" },
+        "D": { "en": "In a .claude/config.json file with a commands array", "sr": "U .claude/config.json fajlu sa commands nizom" }
+      },
+      "correct": "A",
+      "explanation": { "en": "Project-scoped custom slash commands should be stored in the .claude/commands/ directory within the repository. These commands are version-controlled and automatically available to all developers when they clone or pull the repo. Option B (~/.claude/commands/) is for personal commands that aren't shared via version control. Option C (CLAUDE.md) is for project instructions and context, not command definitions. Option D describes a configuration mechanism that doesn't exist in Claude Code.", "sr": "Slash komande na nivou projekta idu u .claude/commands/ unutar repozitorijuma. One su pod version control-om i automatski dostupne svima pri kloniranju/pull-u. B (~/.claude/commands/) je za lične komande koje se ne dele. C (CLAUDE.md) je za instrukcije i kontekst projekta, ne za definicije komandi. D opisuje konfiguracioni mehanizam koji ne postoji u Claude Code-u." }
+    },
+    {
+      "n": 5,
+      "scenario": { "en": "Code Generation with Claude Code", "sr": "Generisanje koda sa Claude Code-om" },
+      "question": { "en": "You've been assigned to restructure the team's monolithic application into microservices. This will involve changes across dozens of files and requires decisions about service boundaries and module dependencies. Which approach should you take?", "sr": "Dobio si zadatak da restrukturiraš monolitnu aplikaciju tima u mikroservise. To uključuje izmene u desetinama fajlova i traži odluke o granicama servisa i zavisnostima modula. Koji pristup treba da izabereš?" },
+      "options": {
+        "A": { "en": "Enter plan mode to explore the codebase, understand dependencies, and design an implementation approach before making changes.", "sr": "Uđi u plan mod da istražiš bazu, razumeš zavisnosti i dizajniraš pristup implementaciji pre izmena." },
+        "B": { "en": "Start with direct execution and make changes incrementally, letting the implementation reveal the natural service boundaries.", "sr": "Kreni direktnim izvršavanjem i menjaj inkrementalno, puštajući da implementacija otkrije prirodne granice servisa." },
+        "C": { "en": "Use direct execution with comprehensive upfront instructions detailing exactly how each service should be structured.", "sr": "Koristi direktno izvršavanje sa sveobuhvatnim instrukcijama unapred koje tačno opisuju kako svaki servis treba da bude struktuiran." },
+        "D": { "en": "Begin in direct execution mode and only switch to plan mode if you encounter unexpected complexity during implementation.", "sr": "Počni u direktnom izvršavanju i pređi u plan mod samo ako naiđeš na neočekivanu složenost tokom implementacije." }
+      },
+      "correct": "A",
+      "explanation": { "en": "Plan mode is designed for complex tasks involving large-scale changes, multiple valid approaches, and architectural decisions—exactly what monolith-to-microservices restructuring requires. It enables safe codebase exploration and design before committing to changes. Option B risks costly rework when dependencies are discovered late. Option C assumes you already know the right structure without exploring the code. Option D ignores that the complexity is already stated in the requirements, not something that might emerge later.", "sr": "Plan mod je za složene zadatke sa velikim izmenama, više validnih pristupa i arhitektonskim odlukama — baš ono što traži prelazak monolit→mikroservisi. Omogućava bezbedno istraživanje i dizajn pre izmena. B rizikuje skupu doradu kad se zavisnosti otkriju kasno. C pretpostavlja da već znaš pravu strukturu bez istraživanja koda. D ignoriše da je složenost već navedena u zahtevima, a ne nešto što tek može da iskrsne." }
+    },
+    {
+      "n": 6,
+      "scenario": { "en": "Code Generation with Claude Code", "sr": "Generisanje koda sa Claude Code-om" },
+      "question": { "en": "Your codebase has distinct areas with different coding conventions: React components use functional style with hooks, API handlers use async/await with specific error handling, and database models follow a repository pattern. Test files are spread throughout the codebase alongside the code they test (e.g., Button.test.tsx next to Button.tsx), and you want all tests to follow the same conventions regardless of location. What's the most maintainable way to ensure Claude automatically applies the correct conventions when generating code?", "sr": "Tvoja baza ima različite oblasti sa različitim konvencijama: React komponente koriste funkcionalni stil sa hook-ovima, API handler-i async/await sa specifičnim error handling-om, a database modeli repository obrazac. Test fajlovi su razbacani po bazi uz kod koji testiraju (npr. Button.test.tsx pored Button.tsx), i želiš da svi testovi prate iste konvencije bez obzira na lokaciju. Koji je najodrživiji način da Claude automatski primeni ispravne konvencije pri generisanju koda?" },
+      "options": {
+        "A": { "en": "Create rule files in .claude/rules/ with YAML frontmatter specifying glob patterns to conditionally apply conventions based on file paths", "sr": "Napravi fajlove pravila u .claude/rules/ sa YAML frontmatter-om koji zadaje glob obrasce da se konvencije uslovno primene prema putanjama fajlova" },
+        "B": { "en": "Consolidate all conventions in the root CLAUDE.md file under headers for each area, relying on Claude to infer which section applies", "sr": "Objedini sve konvencije u root CLAUDE.md pod naslovima za svaku oblast, oslanjajući se na to da Claude zaključi koja sekcija važi" },
+        "C": { "en": "Create skills in .claude/skills/ for each code type that include the relevant conventions in their SKILL.md files", "sr": "Napravi skills u .claude/skills/ za svaki tip koda koji u svojim SKILL.md fajlovima sadrže relevantne konvencije" },
+        "D": { "en": "Place a separate CLAUDE.md file in each subdirectory containing that area's specific conventions", "sr": "Stavi zaseban CLAUDE.md u svaki poddirektorijum sa specifičnim konvencijama te oblasti" }
+      },
+      "correct": "A",
+      "explanation": { "en": "Option A is correct because .claude/rules/ with glob patterns (e.g., **/*.test.tsx) allows conventions to be automatically applied based on file paths regardless of directory location—essential for test files spread throughout the codebase. Option B relies on inference rather than explicit matching, making it unreliable. Option C requires manual skill invocation or relies on Claude choosing to load them, contradicting the need for deterministic \"automatic\" application based on file paths. Option D can't easily handle files spread across many directories since CLAUDE.md files are directory-bound.", "sr": "A je tačno jer .claude/rules/ sa glob obrascima (npr. **/*.test.tsx) primenjuje konvencije automatski prema putanji bez obzira na direktorijum — ključno za test fajlove razbacane po bazi. B se oslanja na zaključivanje umesto na eksplicitno poklapanje, pa je nepouzdano. C traži ručni poziv skill-a ili da ih Claude sam učita, što protivreči potrebi za determinističkom „automatskom\" primenom po putanji. D teško pokriva fajlove razbacane po mnogo direktorijuma jer su CLAUDE.md fajlovi vezani za direktorijum." }
+    },
+    {
+      "n": 7,
+      "scenario": { "en": "Multi-Agent Research System", "sr": "Multi-agent istraživački sistem" },
+      "question": { "en": "After running the system on the topic \"impact of AI on creative industries,\" you observe that each subagent completes successfully: the web search agent finds relevant articles, the document analysis agent summarizes papers correctly, and the synthesis agent produces coherent output. However, the final reports cover only visual arts, completely missing music, writing, and film production. When you examine the coordinator's logs, you see it decomposed the topic into three subtasks: \"AI in digital art creation,\" \"AI in graphic design,\" and \"AI in photography.\" What is the most likely root cause?", "sr": "Nakon pokretanja sistema na temi „uticaj AI na kreativne industrije\", primećuješ da svaki subagent uspešno završava: web pretraga nalazi relevantne članke, analiza dokumenata ispravno sažima radove, a sinteza daje koherentan izlaz. Ipak, finalni izveštaji pokrivaju samo vizuelne umetnosti, potpuno izostavljajući muziku, pisanje i film. U logovima koordinatora vidiš da je temu razložio na tri podzadatka: „AI u digitalnoj umetnosti\", „AI u grafičkom dizajnu\" i „AI u fotografiji\". Koji je najverovatniji uzrok?" },
+      "options": {
+        "A": { "en": "The synthesis agent lacks instructions for identifying coverage gaps in the findings it receives from other agents.", "sr": "Agentu za sintezu nedostaju instrukcije za prepoznavanje rupa u pokrivenosti u nalazima koje dobija od drugih agenata." },
+        "B": { "en": "The coordinator agent's task decomposition is too narrow, resulting in subagent assignments that don't cover all relevant domains of the topic.", "sr": "Dekompozicija zadatka kod koordinatora je preuska, pa zadaci subagentima ne pokrivaju sve relevantne domene teme." },
+        "C": { "en": "The web search agent's queries are not comprehensive enough and need to be expanded to cover more creative industry sectors.", "sr": "Upiti agenta za web pretragu nisu dovoljno sveobuhvatni i treba ih proširiti na više sektora kreativnih industrija." },
+        "D": { "en": "The document analysis agent is filtering out sources related to non-visual creative industries due to overly restrictive relevance criteria.", "sr": "Agent za analizu dokumenata filtrira izvore vezane za nevizuelne kreativne industrije zbog previše restriktivnih kriterijuma relevantnosti." }
+      },
+      "correct": "B",
+      "explanation": { "en": "The coordinator's logs reveal the root cause directly: it decomposed \"creative industries\" into only visual arts subtasks (digital art, graphic design, photography), completely omitting music, writing, and film. The subagents executed their assigned tasks correctly—the problem is what they were assigned. Options A, C, and D incorrectly blame downstream agents that are working correctly within their assigned scope.", "sr": "Logovi koordinatora direktno otkrivaju uzrok: „kreativne industrije\" je razložio samo na vizuelne (digitalna umetnost, grafički dizajn, fotografija), izostavivši muziku, pisanje i film. Subagenti su tačno izvršili dodeljeno — problem je u tome ŠTA im je dodeljeno. A, C i D pogrešno krive downstream agente koji rade ispravno u okviru dodeljenog opsega." }
+    },
+    {
+      "n": 8,
+      "scenario": { "en": "Multi-Agent Research System", "sr": "Multi-agent istraživački sistem" },
+      "question": { "en": "The web search subagent times out while researching a complex topic. You need to design how this failure information flows back to the coordinator agent. Which error propagation approach best enables intelligent recovery?", "sr": "Subagent za web pretragu doživi timeout tokom istraživanja složene teme. Treba da dizajniraš kako ta informacija o otkazu stiže nazad do koordinatora. Koji pristup propagaciji greške najbolje omogućava inteligentan oporavak?" },
+      "options": {
+        "A": { "en": "Return structured error context to the coordinator including the failure type, the attempted query, any partial results, and potential alternative approaches.", "sr": "Vrati koordinatoru strukturisan kontekst greške: tip otkaza, pokušani upit, eventualne parcijalne rezultate i moguće alternativne pristupe." },
+        "B": { "en": "Implement automatic retry logic with exponential backoff within the subagent, returning a generic \"search unavailable\" status only after all retries are exhausted.", "sr": "Implementiraj automatski retry sa exponential backoff-om unutar subagenta, vraćajući generički status „search unavailable\" tek kad se svi pokušaji iscrpe." },
+        "C": { "en": "Catch the timeout within the subagent and return an empty result set marked as successful.", "sr": "Uhvati timeout u subagentu i vrati prazan skup rezultata označen kao uspešan." },
+        "D": { "en": "Propagate the timeout exception directly to a top-level handler that terminates the entire research workflow.", "sr": "Prosledi timeout izuzetak direktno top-level handler-u koji obara ceo istraživački tok." }
+      },
+      "correct": "A",
+      "explanation": { "en": "Structured error context gives the coordinator the information it needs to make intelligent recovery decisions—whether to retry with a modified query, try an alternative approach, or proceed with partial results. Option B's generic status hides valuable context from the coordinator, preventing informed decisions. Option C suppresses the error by marking failure as success, which prevents any recovery and risks incomplete research outputs. Option D terminates the entire workflow unnecessarily when recovery strategies could succeed.", "sr": "Strukturisan kontekst greške daje koordinatoru informacije za inteligentnu odluku o oporavku — da li da ponovi sa izmenjenim upitom, proba alternativu ili nastavi sa parcijalnim rezultatima. Generički status (B) sakriva vredan kontekst i sprečava informisanu odluku. C guši grešku označavajući otkaz kao uspeh, što sprečava oporavak i rizikuje nepotpune rezultate. D nepotrebno obara ceo tok kad bi oporavak mogao da uspe." }
+    },
+    {
+      "n": 9,
+      "scenario": { "en": "Multi-Agent Research System", "sr": "Multi-agent istraživački sistem" },
+      "question": { "en": "During testing, you observe that the synthesis agent frequently needs to verify specific claims while combining findings. Currently, when verification is needed, the synthesis agent returns control to the coordinator, which invokes the web search agent, then re-invokes synthesis with results. This adds 2-3 round trips per task and increases latency by 40%. Your evaluation shows that 85% of these verifications are simple fact-checks (dates, names, statistics) while 15% require deeper investigation. What's the most effective approach to reduce overhead while maintaining system reliability?", "sr": "Tokom testiranja primećuješ da agent za sintezu često mora da proveri konkretne tvrdnje dok kombinuje nalaze. Trenutno, kad treba provera, sinteza vraća kontrolu koordinatoru, koji poziva web pretragu, pa ponovo poziva sintezu sa rezultatima. To dodaje 2–3 obilaska po zadatku i povećava latenciju za 40%. Evaluacija pokazuje da je 85% ovih provera prosto proveravanje činjenica (datumi, imena, statistike), a 15% traži dublju istragu. Koji je najefikasniji pristup da se smanji overhead uz očuvanje pouzdanosti?" },
+      "options": {
+        "A": { "en": "Give the synthesis agent a scoped verify_fact tool for simple lookups, while complex verifications continue delegating to the web search agent through the coordinator.", "sr": "Daj agentu za sintezu ograničen verify_fact alat za jednostavne provere, dok složene provere i dalje idu na web pretragu kroz koordinatora." },
+        "B": { "en": "Have the synthesis agent accumulate all verification needs and return them as a batch to the coordinator at the end of its pass, which then sends them all to the web search agent at once.", "sr": "Neka agent za sintezu sakupi sve potrebe za proverom i vrati ih koordinatoru kao batch na kraju prolaza, koji ih sve odjednom šalje web pretrazi." },
+        "C": { "en": "Give the synthesis agent access to all web search tools so it can handle any verification need directly without round-trips through the coordinator.", "sr": "Daj agentu za sintezu pristup svim alatima web pretrage da svaku proveru reši direktno bez obilazaka kroz koordinatora." },
+        "D": { "en": "Have the web search agent proactively cache extra context around each source during initial research, anticipating what the synthesis agent might need to verify.", "sr": "Neka web pretraga proaktivno kešira dodatni kontekst oko svakog izvora tokom početnog istraživanja, predviđajući šta bi sinteza mogla da proverava." }
+      },
+      "correct": "A",
+      "explanation": { "en": "Option A applies the principle of least privilege by giving the synthesis agent only what it needs for the 85% common case (simple fact verification) while preserving the existing coordination pattern for complex cases. Option B's batching approach creates blocking dependencies since synthesis steps may depend on earlier verified facts. Option C over-provisions the synthesis agent, violating separation of concerns. Option D relies on speculative caching that cannot reliably predict what the synthesis agent will need to verify.", "sr": "A primenjuje princip najmanjih privilegija — daje sintezi tačno ono što treba za 85% čestih slučajeva (prosta provera), uz očuvanje postojećeg obrasca koordinacije za složene. Batch (B) stvara blokirajuće zavisnosti jer koraci sinteze mogu zavisiti od ranije proverenih činjenica. C preopremu agenta za sintezu, kršeći separation of concerns. D se oslanja na spekulativni keš koji ne može pouzdano da predvidi šta će sinteza proveravati." }
+    },
+    {
+      "n": 10,
+      "scenario": { "en": "Claude Code for Continuous Integration", "sr": "Claude Code za CI" },
+      "question": { "en": "Your pipeline script runs claude \"Analyze this pull request for security issues\" but the job hangs indefinitely. Logs indicate Claude Code is waiting for interactive input. What's the correct approach to run Claude Code in an automated pipeline?", "sr": "Tvoja pipeline skripta pokreće claude \"Analyze this pull request for security issues\" ali se posao zaglavi unedogled. Logovi pokazuju da Claude Code čeka interaktivni unos. Koji je ispravan pristup za pokretanje Claude Code-a u automatizovanom pipeline-u?" },
+      "options": {
+        "A": { "en": "Add the -p flag: claude -p \"Analyze this pull request for security issues\"", "sr": "Dodaj -p flag: claude -p \"Analyze this pull request for security issues\"" },
+        "B": { "en": "Set the environment variable CLAUDE_HEADLESS=true before running the command", "sr": "Postavi environment varijablu CLAUDE_HEADLESS=true pre pokretanja komande" },
+        "C": { "en": "Redirect stdin from /dev/null: claude \"Analyze this pull request for security issues\" < /dev/null", "sr": "Preusmeri stdin sa /dev/null: claude \"Analyze this pull request for security issues\" < /dev/null" },
+        "D": { "en": "Add the --batch flag: claude --batch \"Analyze this pull request for security issues\"", "sr": "Dodaj --batch flag: claude --batch \"Analyze this pull request for security issues\"" }
+      },
+      "correct": "A",
+      "explanation": { "en": "The -p (or --print) flag is the documented way to run Claude Code in non-interactive mode. It processes the prompt, outputs the result to stdout, and exits without waiting for user input—exactly what CI/CD pipelines require. The other options reference non-existent features (CLAUDE_HEADLESS environment variable, --batch flag) or use Unix workarounds that don't properly address Claude Code's command syntax.", "sr": "Flag -p (ili --print) je dokumentovani način za neinteraktivni režim. Obradi prompt, ispiše rezultat na stdout i izađe bez čekanja na unos — baš ono što CI/CD traži. Ostale opcije pominju nepostojeće funkcije (CLAUDE_HEADLESS varijabla, --batch flag) ili koriste Unix zaobilaznice koje ne rešavaju sintaksu komande Claude Code-a." }
+    },
+    {
+      "n": 11,
+      "scenario": { "en": "Claude Code for Continuous Integration", "sr": "Claude Code za CI" },
+      "question": { "en": "Your team wants to reduce API costs for automated analysis. Currently, real-time Claude calls power two workflows: (1) a blocking pre-merge check that must complete before developers can merge, and (2) a technical debt report generated overnight for review the next morning. Your manager proposes switching both to the Message Batches API for its 50% cost savings. How should you evaluate this proposal?", "sr": "Tim želi da smanji API troškove za automatsku analizu. Trenutno real-time Claude pozivi pokreću dva toka: (1) blokirajuću pre-merge proveru koja mora da se završi pre merge-a, i (2) izveštaj o tehničkom dugu generisan preko noći za pregled sledećeg jutra. Menadžer predlaže da se oba prebace na Message Batches API zbog 50% uštede. Kako treba da proceniš taj predlog?" },
+      "options": {
+        "A": { "en": "Use batch processing for the technical debt reports only; keep real-time calls for pre-merge checks.", "sr": "Koristi batch obradu samo za izveštaje o tehničkom dugu; zadrži real-time pozive za pre-merge provere." },
+        "B": { "en": "Switch both workflows to batch processing with status polling to check for completion.", "sr": "Prebaci oba toka na batch obradu uz polling statusa radi provere završetka." },
+        "C": { "en": "Keep real-time calls for both workflows to avoid batch result ordering issues.", "sr": "Zadrži real-time pozive za oba toka da izbegneš probleme sa redosledom batch rezultata." },
+        "D": { "en": "Switch both to batch processing with a timeout fallback to real-time if batches take too long.", "sr": "Prebaci oba na batch uz timeout fallback na real-time ako batch-evi predugo traju." }
+      },
+      "correct": "A",
+      "explanation": { "en": "The Message Batches API offers 50% cost savings but has processing times up to 24 hours with no guaranteed latency SLA. This makes it unsuitable for blocking pre-merge checks where developers wait for results, but ideal for overnight batch jobs like technical debt reports. Option B is wrong because relying on \"often faster\" completion isn't acceptable for blocking workflows. Option C reflects a misconception—batch results can be correlated using custom_id fields. Option D adds unnecessary complexity when the simpler solution is matching each API to its appropriate use case.", "sr": "Message Batches API daje 50% uštede ali ima obradu do 24h bez garantovanog SLA za latenciju. Zato nije pogodan za blokirajuće pre-merge provere gde developeri čekaju rezultat, ali je idealan za noćne poslove kao izveštaj o tehničkom dugu. B je pogrešno jer oslanjanje na „često brže\" nije prihvatljivo za blokirajuće tokove. C je zabluda — batch rezultati se uparuju preko custom_id polja. D dodaje nepotrebnu složenost kad je jednostavnije uskladiti svaki API sa svojom namenom." }
+    },
+    {
+      "n": 12,
+      "scenario": { "en": "Claude Code for Continuous Integration", "sr": "Claude Code za CI" },
+      "question": { "en": "A pull request modifies 14 files across the stock tracking module. Your single-pass review analyzing all files together produces inconsistent results: detailed feedback for some files but superficial comments for others, obvious bugs missed, and contradictory feedback—flagging a pattern as problematic in one file while approving identical code elsewhere in the same PR. How should you restructure the review?", "sr": "Pull request menja 14 fajlova u modulu za praćenje zaliha. Tvoj review u jednom prolazu (svi fajlovi zajedno) daje nedosledne rezultate: detaljan feedback za neke fajlove a površan za druge, propuštene očigledne bagove i protivrečan feedback — označavanje obrasca kao problematičnog u jednom fajlu uz odobravanje identičnog koda na drugom mestu u istom PR-u. Kako treba da restrukturiraš review?" },
+      "options": {
+        "A": { "en": "Split into focused passes: analyze each file individually for local issues, then run a separate integration-focused pass examining cross-file data flow.", "sr": "Podeli na fokusirane prolaze: analiziraj svaki fajl pojedinačno za lokalne probleme, pa pokreni zaseban integracioni prolaz koji ispituje protok podataka između fajlova." },
+        "B": { "en": "Require developers to split large PRs into smaller submissions of 3-4 files before the automated review runs.", "sr": "Zahtevaj da developeri podele velike PR-ove na manje od 3–4 fajla pre automatskog review-a." },
+        "C": { "en": "Switch to a higher-tier model with a larger context window to give all 14 files adequate attention in one pass.", "sr": "Pređi na jači model sa većim context window-om da svih 14 fajlova dobije adekvatnu pažnju u jednom prolazu." },
+        "D": { "en": "Run three independent review passes on the full PR and only flag issues that appear in at least two of the three runs.", "sr": "Pokreni tri nezavisna prolaza review-a nad celim PR-om i označi samo probleme koji se pojave u bar dva od tri prolaza." }
+      },
+      "correct": "A",
+      "explanation": { "en": "Splitting reviews into focused passes directly addresses the root cause: attention dilution when processing many files at once. File-by-file analysis ensures consistent depth, while a separate integration pass catches cross-file issues. Option B shifts burden to developers without improving the system. Option C misunderstands that larger context windows don't solve attention quality issues. Option D would actually suppress detection of real bugs by requiring consensus on issues that may only be caught intermittently.", "sr": "Deljenje review-a na fokusirane prolaze direktno rešava koren: attention dilution pri obradi mnogo fajlova odjednom. Analiza fajl-po-fajl daje doslednu dubinu, a zaseban integracioni prolaz hvata probleme između fajlova. B prebacuje teret na developere bez popravke sistema. C pogrešno veruje da veći context window rešava kvalitet pažnje. D bi zapravo ugušio detekciju stvarnih bagova tražeći konsenzus o problemima koji se hvataju samo povremeno." }
+    }]
+  },
+  "exercises": {
+    "title": { "en": "Preparation Exercises", "sr": "Vežbe za pripremu" },
+    "intro": { "en": "Complete these hands-on exercises to build practical familiarity with the topics covered on the exam. Each exercise is designed to reinforce knowledge across one or more exam domains.", "sr": "Uradi ove praktične vežbe da izgradiš praktičnu prisnost sa temama ispita. Svaka vežba učvršćuje znanje iz jednog ili više domena." },
+    "items": [{
+      "n": 1,
+      "title": { "en": "Build a Multi-Tool Agent with Escalation Logic", "sr": "Napravi multi-tool agenta sa logikom eskalacije" },
+      "objective": { "en": "Practice designing an agentic loop with tool integration, structured error handling, and escalation patterns.", "sr": "Vežbaj dizajn agentske petlje sa integracijom alata, strukturisanim error handling-om i obrascima eskalacije." },
+      "steps": [
+        { "en": "Define 3-4 MCP tools with detailed descriptions that clearly differentiate each tool's purpose, expected inputs, and boundary conditions. Include at least two tools with similar functionality that require careful description to avoid selection confusion.", "sr": "Definiši 3–4 MCP alata sa detaljnim opisima koji jasno razlikuju svrhu, očekivane ulaze i granične uslove. Uključi bar dva alata slične funkcije koji traže pažljiv opis da se izbegne zabuna pri izboru." },
+        { "en": "Implement an agentic loop that checks stop_reason to determine whether to continue tool execution or present the final response. Handle both \"tool_use\" and \"end_turn\" stop reasons correctly.", "sr": "Implementiraj agentsku petlju koja proverava stop_reason da odluči da li nastavlja izvršavanje alata ili daje finalni odgovor. Ispravno obradi i \"tool_use\" i \"end_turn\"." },
+        { "en": "Add structured error responses to your tools: include errorCategory (transient/validation/permission), isRetryable boolean, and human-readable descriptions. Test that the agent handles each error type appropriately (retrying transient errors, explaining business errors to the user).", "sr": "Dodaj strukturisane greške alatima: errorCategory (transient/validation/permission), isRetryable boolean i ljudski-čitljiv opis. Testiraj da agent primereno obrađuje svaki tip (ponavlja tranzijentne, objašnjava poslovne korisniku)." },
+        { "en": "Implement a programmatic hook that intercepts tool calls to enforce a business rule (e.g., blocking operations above a threshold amount), redirecting to an escalation workflow when triggered.", "sr": "Implementiraj programski hook koji presreće pozive alata radi sprovođenja poslovnog pravila (npr. blokiranje operacija iznad praga), uz preusmeravanje na tok eskalacije kad se okine." },
+        { "en": "Test with multi-concern messages (e.g., requests involving multiple issues) and verify the agent decomposes the request, handles each concern, and synthesizes a unified response.", "sr": "Testiraj sa višeproblemskim porukama (npr. zahtevi sa više stavki) i proveri da agent razloži zahtev, obradi svaku stavku i sintetiše jedinstven odgovor." }
+      ],
+      "domains_reinforced": { "en": "Domain 1 (Agentic Architecture & Orchestration), Domain 2 (Tool Design & MCP Integration), Domain 5 (Context Management & Reliability)", "sr": "Domen 1 (Agentska arhitektura), Domen 2 (Dizajn alata i MCP), Domen 5 (Kontekst i pouzdanost)" }
+    },
+    {
+      "n": 2,
+      "title": { "en": "Configure Claude Code for a Team Development Workflow", "sr": "Konfiguriši Claude Code za timski razvojni tok" },
+      "objective": { "en": "Practice configuring CLAUDE.md hierarchies, custom slash commands, path-specific rules, and MCP server integration for a multi-developer project.", "sr": "Vežbaj konfiguraciju CLAUDE.md hijerarhija, custom slash komandi, pravila po putanji i integracije MCP servera za projekat sa više developera." },
+      "steps": [
+        { "en": "Create a project-level CLAUDE.md with universal coding standards and testing conventions. Verify that instructions placed at the project level are consistently applied across all team members.", "sr": "Napravi CLAUDE.md na nivou projekta sa univerzalnim standardima koda i konvencijama testiranja. Proveri da se instrukcije na nivou projekta dosledno primenjuju kod svih članova tima." },
+        { "en": "Create .claude/rules/ files with YAML frontmatter glob patterns for different code areas (e.g., paths: [\"src/api/**/*\"] for API conventions, paths: [\"**/*.test.*\"] for testing conventions). Test that rules load only when editing matching files.", "sr": "Napravi .claude/rules/ fajlove sa YAML frontmatter glob obrascima za različite oblasti koda (npr. paths: [\"src/api/**/*\"] za API konvencije, paths: [\"**/*.test.*\"] za testove). Testiraj da se pravila učitavaju samo pri izmeni odgovarajućih fajlova." },
+        { "en": "Create a project-scoped skill in .claude/skills/ with context: fork and allowed-tools restrictions. Verify the skill runs in isolation without polluting the main conversation context.", "sr": "Napravi skill na nivou projekta u .claude/skills/ sa context: fork i allowed-tools ograničenjima. Proveri da se skill izvršava izolovano bez zagađivanja glavnog konteksta." },
+        { "en": "Configure an MCP server in .mcp.json with environment variable expansion for credentials. Add a personal experimental MCP server in ~/.claude.json and verify both are available simultaneously.", "sr": "Konfiguriši MCP server u .mcp.json sa ekspanzijom environment varijabli za kredencijale. Dodaj lični eksperimentalni MCP server u ~/.claude.json i proveri da su oba istovremeno dostupna." },
+        { "en": "Test plan mode versus direct execution on tasks of varying complexity: a single-file bug fix, a multi-file library migration, and a new feature with multiple valid implementation approaches. Observe when plan mode provides value.", "sr": "Testiraj plan mod naspram direktnog izvršavanja na zadacima različite složenosti: bug fix u jednom fajlu, migracija biblioteke kroz više fajlova i nova funkcija sa više validnih pristupa. Posmatraj kada plan mod donosi vrednost." }
+      ],
+      "domains_reinforced": { "en": "Domain 3 (Claude Code Configuration & Workflows), Domain 2 (Tool Design & MCP Integration)", "sr": "Domen 3 (Konfiguracija Claude Code-a), Domen 2 (Dizajn alata i MCP)" }
+    },
+    {
+      "n": 3,
+      "title": { "en": "Build a Structured Data Extraction Pipeline", "sr": "Napravi pipeline za ekstrakciju strukturisanih podataka" },
+      "objective": { "en": "Practice designing JSON schemas, using tool_use for structured output, implementing validation-retry loops, and designing batch processing strategies.", "sr": "Vežbaj dizajn JSON šema, korišćenje tool_use za strukturisan izlaz, validation-retry petlje i strategije batch obrade." },
+      "steps": [
+        { "en": "Define an extraction tool with a JSON schema containing required and optional fields, an enum with an \"other\" + detail string pattern, and nullable fields for information that may not exist in source documents. Process documents where some fields are absent and verify the model returns null rather than fabricating values.", "sr": "Definiši alat za ekstrakciju sa JSON šemom koja ima obavezna i opciona polja, enum sa „other\" + detail string obrascem i nullable polja za informacije koje možda ne postoje u izvoru. Obradi dokumente gde nedostaju neka polja i proveri da model vrati null umesto da izmišlja vrednosti." },
+        { "en": "Implement a validation-retry loop: when Pydantic or JSON schema validation fails, send a follow-up request including the document, the failed extraction, and the specific validation error. Track which errors are resolvable via retry (format mismatches) versus which are not (information absent from source).", "sr": "Implementiraj validation-retry petlju: kad Pydantic ili JSON validacija padne, pošalji naredni zahtev sa dokumentom, neuspelom ekstrakcijom i konkretnom greškom. Prati koje su greške rešive ponavljanjem (neslaganje formata) a koje nisu (informacija ne postoji u izvoru)." },
+        { "en": "Add few-shot examples demonstrating extraction from documents with varied formats (e.g., inline citations vs bibliographies, narrative descriptions vs structured tables) and verify improved handling of structural variety.", "sr": "Dodaj few-shot primere koji demonstriraju ekstrakciju iz dokumenata raznolikih formata (npr. inline citati vs bibliografije, narativni opisi vs strukturisane tabele) i proveri bolju obradu strukturne raznolikosti." },
+        { "en": "Design a batch processing strategy: submit a batch of 100 documents using the Message Batches API, handle failures by custom_id, resubmit failed documents with modifications (e.g., chunking oversized documents), and calculate total processing time relative to SLA constraints.", "sr": "Dizajniraj strategiju batch obrade: pošalji batch od 100 dokumenata preko Message Batches API-ja, obradi neuspehe po custom_id, ponovo pošalji neuspele uz izmene (npr. seckanje prevelikih dokumenata) i izračunaj ukupno vreme obrade u odnosu na SLA ograničenja." },
+        { "en": "Implement a human review routing strategy: have the model output field-level confidence scores, route low-confidence extractions to human review, and analyze accuracy by document type and field to verify consistent performance.", "sr": "Implementiraj strategiju rutiranja ka ljudskom review-u: neka model daje ocene pouzdanosti po polju, rutiraj ekstrakcije niske pouzdanosti ka čoveku i analiziraj tačnost po tipu dokumenta i polju radi provere dosledne tačnosti." }
+      ],
+      "domains_reinforced": { "en": "Domain 4 (Prompt Engineering & Structured Output), Domain 5 (Context Management & Reliability)", "sr": "Domen 4 (Prompt engineering i strukturisan izlaz), Domen 5 (Kontekst i pouzdanost)" }
+    },
+    {
+      "n": 4,
+      "title": { "en": "Design and Debug a Multi-Agent Research Pipeline", "sr": "Dizajniraj i debaguj multi-agent istraživački pipeline" },
+      "objective": { "en": "Practice orchestrating subagents, managing context passing, implementing error propagation, and handling synthesis with provenance tracking.", "sr": "Vežbaj orkestraciju subagenata, upravljanje prenosom konteksta, propagaciju grešaka i sintezu sa praćenjem provenijencije." },
+      "steps": [
+        { "en": "Build a coordinator agent that delegates to at least two subagents (e.g., web search and document analysis). Ensure the coordinator's allowedTools includes \"Task\" and that each subagent receives its research findings directly in its prompt rather than relying on automatic context inheritance.", "sr": "Napravi koordinatora koji delegira bar dvama subagentima (npr. web pretraga i analiza dokumenata). Obezbedi da allowedTools koordinatora sadrži \"Task\" i da svaki subagent dobije svoje nalaze direktno u promptu, bez oslanjanja na automatsko nasleđivanje konteksta." },
+        { "en": "Implement parallel subagent execution by having the coordinator emit multiple Task tool calls in a single response. Measure the latency improvement compared to sequential execution.", "sr": "Implementiraj paralelno izvršavanje subagenata tako što koordinator emituje više Task poziva u jednom odgovoru. Izmeri poboljšanje latencije u odnosu na sekvencijalno izvršavanje." },
+        { "en": "Design structured output for subagents that separates content from metadata: each finding should include a claim, evidence excerpt, source URL/document name, and publication date. Verify that the synthesis subagent preserves source attribution when combining findings.", "sr": "Dizajniraj strukturisan izlaz subagenata koji odvaja sadržaj od metapodataka: svaki nalaz sadrži tvrdnju, isečak dokaza, URL/ime dokumenta i datum objave. Proveri da subagent za sintezu čuva atribuciju izvora pri kombinovanju nalaza." },
+        { "en": "Implement error propagation: simulate a subagent timeout and verify the coordinator receives structured error context (failure type, attempted query, partial results). Test that the coordinator can proceed with partial results and annotate the final output with coverage gaps.", "sr": "Implementiraj propagaciju grešaka: simuliraj timeout subagenta i proveri da koordinator dobija strukturisan kontekst greške (tip otkaza, pokušani upit, parcijalni rezultati). Testiraj da koordinator može da nastavi sa parcijalnim rezultatima i anotira finalni izlaz rupama u pokrivenosti." },
+        { "en": "Test with conflicting source data (e.g., two credible sources with different statistics) and verify the synthesis output preserves both values with source attribution rather than arbitrarily selecting one, and structures the report to distinguish well-established from contested findings.", "sr": "Testiraj sa protivrečnim izvorima (npr. dva pouzdana izvora sa različitim statistikama) i proveri da sinteza čuva obe vrednosti sa atribucijom umesto proizvoljnog biranja jedne, i da izveštaj razdvaja dobro utvrđene od spornih nalaza." }
+      ],
+      "domains_reinforced": { "en": "Domain 1 (Agentic Architecture & Orchestration), Domain 2 (Tool Design & MCP Integration), Domain 5 (Context Management & Reliability)", "sr": "Domen 1 (Agentska arhitektura), Domen 2 (Dizajn alata i MCP), Domen 5 (Kontekst i pouzdanost)" }
+    }]
+  },
+  "appendix": {
+    "title": { "en": "Appendix", "sr": "Dodatak" },
+    "technologies": {
+      "title": { "en": "Technologies and Concepts", "sr": "Tehnologije i koncepti" },
+      "intro": { "en": "The following list contains technologies and concepts that might appear on the exam:", "sr": "Sledeća lista sadrži tehnologije i koncepte koji se mogu pojaviti na ispitu:" },
+      "items": [
+        { "name": "Claude Agent SDK", "en": "Agent definitions, agentic loops, stop_reason handling, hooks (PostToolUse, tool call interception), subagent spawning via Task tool, allowedTools configuration", "sr": "Definicije agenata, agentske petlje, obrada stop_reason-a, hook-ovi (PostToolUse, presretanje poziva alata), pokretanje subagenata preko Task alata, allowedTools konfiguracija" },
+        { "name": "Model Context Protocol (MCP)", "en": "MCP servers, MCP tools, MCP resources, isError flag, tool descriptions, tool distribution, .mcp.json configuration, environment variable expansion", "sr": "MCP serveri, MCP alati, MCP resursi, isError flag, opisi alata, raspodela alata, .mcp.json konfiguracija, ekspanzija environment varijabli" },
+        { "name": "Claude Code", "en": "CLAUDE.md configuration hierarchy (user/project/directory), .claude/rules/ with YAML frontmatter path-scoping, .claude/commands/ for slash commands, .claude/skills/ with SKILL.md frontmatter (context: fork, allowed-tools, argument-hint), plan mode, direct execution, /memory command, /compact, --resume, fork_session, Explore subagent", "sr": "Hijerarhija CLAUDE.md (korisnik/projekat/direktorijum), .claude/rules/ sa YAML frontmatter opsegom po putanji, .claude/commands/ za slash komande, .claude/skills/ sa SKILL.md frontmatter-om (context: fork, allowed-tools, argument-hint), plan mod, direktno izvršavanje, /memory komanda, /compact, --resume, fork_session, Explore subagent" },
+        { "name": "Claude Code CLI", "en": "-p / --print flag for non-interactive mode, --output-format json, --json-schema for structured CI output", "sr": "-p / --print flag za neinteraktivni režim, --output-format json, --json-schema za strukturisan CI izlaz" },
+        { "name": "Claude API", "en": "tool_use with JSON schemas, tool_choice options (\"auto\", \"any\", forced tool selection), stop_reason values (\"tool_use\", \"end_turn\"), max_tokens, system prompts", "sr": "tool_use sa JSON šemama, tool_choice opcije (\"auto\", \"any\", prinudni izbor alata), stop_reason vrednosti (\"tool_use\", \"end_turn\"), max_tokens, sistemski promptovi" },
+        { "name": "Message Batches API", "en": "50% cost savings, up to 24-hour processing window, custom_id for request/response correlation, polling for completion, no multi-turn tool calling support", "sr": "50% uštede, prozor obrade do 24h, custom_id za uparivanje zahteva/odgovora, polling za završetak, bez podrške za višekružne pozive alata" },
+        { "name": "JSON Schema", "en": "Required vs optional fields, enum types, nullable fields, \"other\" + detail string patterns, strict mode for syntax error elimination", "sr": "Obavezna vs opciona polja, enum tipovi, nullable polja, „other\" + detail string obrasci, strict mod za eliminaciju sintaksnih grešaka" },
+        { "name": "Pydantic", "en": "Schema validation, semantic validation errors, validation-retry loops", "sr": "Validacija šeme, semantičke validacione greške, validation-retry petlje" },
+        { "name": "Built-in tools", "en": "Read, Write, Edit, Bash, Grep, Glob — their purposes and selection criteria", "sr": "Read, Write, Edit, Bash, Grep, Glob — njihove svrhe i kriterijumi izbora" },
+        { "name": "Few-shot prompting", "en": "Targeted examples for ambiguous scenarios, format demonstration, generalization to novel patterns", "sr": "Ciljani primeri za dvosmislene scenarije, demonstracija formata, generalizacija na nove obrasce" },
+        { "name": "Prompt chaining", "en": "Sequential task decomposition into focused passes", "sr": "Sekvencijalna dekompozicija zadatka na fokusirane prolaze" },
+        { "name": "Context window management", "en": "Token budgets, progressive summarization, lost-in-the-middle effects, context extraction, scratchpad files", "sr": "Budžeti tokena, progresivno sažimanje, lost-in-the-middle efekti, ekstrakcija konteksta, scratchpad fajlovi" },
+        { "name": "Session management", "en": "Session resumption, fork_session, named sessions, session context isolation", "sr": "Nastavak sesije, fork_session, imenovane sesije, izolacija konteksta sesije" },
+        { "name": "Confidence scoring", "en": "Field-level confidence, calibration with labeled validation sets, stratified sampling for error rate measurement", "sr": "Pouzdanost na nivou polja, kalibracija labelovanim validacionim setovima, stratifikovano uzorkovanje za merenje stope grešaka" }
+      ]
+    },
+    "in_scope": {
+      "title": { "en": "In-Scope Topics", "sr": "Teme u opsegu (ulaze na ispit)" },
+      "intro": { "en": "The following topics are explicitly tested on the exam:", "sr": "Sledeće teme se eksplicitno proveravaju na ispitu:" },
+      "items": [
+        { "name": "Agentic loop implementation", "en": "Control flow based on stop_reason, tool result handling, loop termination conditions", "sr": "Kontrola toka na osnovu stop_reason-a, obrada rezultata alata, uslovi zaustavljanja petlje" },
+        { "name": "Multi-agent orchestration", "en": "Coordinator-subagent patterns, task decomposition, parallel subagent execution, iterative refinement loops", "sr": "Obrasci koordinator-subagent, dekompozicija zadataka, paralelno izvršavanje subagenata, iterativne petlje dorade" },
+        { "name": "Subagent context management", "en": "Explicit context passing, structured state persistence, crash recovery using manifests", "sr": "Eksplicitan prenos konteksta, strukturisano čuvanje stanja, oporavak od pada preko manifesta" },
+        { "name": "Tool interface design", "en": "Writing effective tool descriptions, splitting vs consolidating tools, tool naming to reduce ambiguity", "sr": "Pisanje efektivnih opisa alata, razbijanje vs spajanje alata, imenovanje alata radi smanjenja dvosmislenosti" },
+        { "name": "MCP tool and resource design", "en": "Resources for content catalogs, tools for actions, description quality for adoption", "sr": "Resursi za kataloge sadržaja, alati za akcije, kvalitet opisa radi usvajanja" },
+        { "name": "MCP server configuration", "en": "Project vs user scope, environment variable expansion, multi-server simultaneous access", "sr": "Opseg projekat vs korisnik, ekspanzija environment varijabli, istovremen pristup više servera" },
+        { "name": "Error handling and propagation", "en": "Structured error responses, transient vs business vs permission errors, local recovery before escalation", "sr": "Strukturisane greške, tranzijentne vs poslovne vs dozvolne greške, lokalni oporavak pre eskalacije" },
+        { "name": "Escalation decision-making", "en": "Explicit criteria, honoring customer preferences, policy gap identification", "sr": "Eksplicitni kriterijumi, poštovanje želja korisnika, identifikacija rupa u politici" },
+        { "name": "CLAUDE.md configuration", "en": "Hierarchy (user/project/directory), @import patterns, .claude/rules/ with glob patterns", "sr": "Hijerarhija (korisnik/projekat/direktorijum), @import obrasci, .claude/rules/ sa glob obrascima" },
+        { "name": "Custom commands and skills", "en": "Project vs user scope, context: fork, allowed-tools, argument-hint frontmatter", "sr": "Opseg projekat vs korisnik, context: fork, allowed-tools, argument-hint frontmatter" },
+        { "name": "Plan mode vs direct execution", "en": "Complexity assessment, architectural decisions, single-file changes", "sr": "Procena složenosti, arhitektonske odluke, izmene jednog fajla" },
+        { "name": "Iterative refinement", "en": "Input/output examples, test-driven iteration, interview pattern, sequential vs parallel issue resolution", "sr": "Ulaz/izlaz primeri, iteracija vođena testovima, interview obrazac, sekvencijalno vs paralelno rešavanje problema" },
+        { "name": "Structured output via tool_use", "en": "Schema design, tool_choice configuration, nullable fields to prevent hallucination", "sr": "Dizajn šeme, tool_choice konfiguracija, nullable polja radi sprečavanja halucinacija" },
+        { "name": "Few-shot prompting", "en": "Ambiguous scenario targeting, format consistency, false positive reduction", "sr": "Ciljanje dvosmislenih scenarija, doslednost formata, smanjenje false positive-a" },
+        { "name": "Batch processing", "en": "Message Batches API appropriateness, latency tolerance assessment, failure handling by custom_id", "sr": "Primerenost Message Batches API-ja, procena tolerancije latencije, obrada neuspeha po custom_id" },
+        { "name": "Context window optimization", "en": "Trimming verbose tool outputs, structured fact extraction, position-aware input ordering", "sr": "Skraćivanje opširnih izlaza alata, ekstrakcija strukturisanih činjenica, redosled ulaza svestan pozicije" },
+        { "name": "Human review workflows", "en": "Confidence calibration, stratified sampling, accuracy segmentation by document type and field", "sr": "Kalibracija pouzdanosti, stratifikovano uzorkovanje, segmentacija tačnosti po tipu dokumenta i polju" },
+        { "name": "Information provenance", "en": "Claim-source mappings, temporal data handling, conflict annotation, coverage gap reporting", "sr": "Mapiranja tvrdnja–izvor, obrada vremenskih podataka, anotacija sukoba, izveštavanje o rupama u pokrivenosti" }
+      ]
+    },
+    "out_of_scope": {
+      "title": { "en": "Out-of-Scope Topics", "sr": "Teme van opsega (NE ulaze na ispit)" },
+      "intro": { "en": "The following related topics will NOT appear on the exam:", "sr": "Sledeće srodne teme se NEĆE pojaviti na ispitu:" },
+      "items": [
+        { "en": "Fine-tuning Claude models or training custom models", "sr": "Fine-tuning Claude modela ili treniranje custom modela" },
+        { "en": "Claude API authentication, billing, or account management", "sr": "Autentifikacija Claude API-ja, naplata ili upravljanje nalogom" },
+        { "en": "Detailed implementation of specific programming languages or frameworks (beyond what's needed for tool and schema configuration)", "sr": "Detaljna implementacija konkretnih programskih jezika ili frejmvorka (van onoga što treba za konfiguraciju alata i šema)" },
+        { "en": "Deploying or hosting MCP servers (infrastructure, networking, container orchestration)", "sr": "Deploy ili hosting MCP servera (infrastruktura, mreža, orkestracija kontejnera)" },
+        { "en": "Claude's internal architecture, training process, or model weights", "sr": "Interna arhitektura Claude-a, proces treniranja ili težine modela" },
+        { "en": "Constitutional AI, RLHF, or safety training methodologies", "sr": "Constitutional AI, RLHF ili metodologije safety treniranja" },
+        { "en": "Embedding models or vector database implementation details", "sr": "Embedding modeli ili detalji implementacije vektorskih baza" },
+        { "en": "Computer use (browser automation, desktop interaction)", "sr": "Computer use (automatizacija browser-a, interakcija sa desktopom)" },
+        { "en": "Vision/image analysis capabilities", "sr": "Mogućnosti analize slike/vizije" },
+        { "en": "Streaming API implementation or server-sent events", "sr": "Implementacija streaming API-ja ili server-sent events" },
+        { "en": "Rate limiting, quotas, or API pricing calculations", "sr": "Rate limiting, kvote ili kalkulacije cena API-ja" },
+        { "en": "OAuth, API key rotation, or authentication protocol details", "sr": "OAuth, rotacija API ključeva ili detalji protokola autentifikacije" },
+        { "en": "Specific cloud provider configurations (AWS, GCP, Azure)", "sr": "Konfiguracije konkretnih cloud provajdera (AWS, GCP, Azure)" },
+        { "en": "Performance benchmarking or model comparison metrics", "sr": "Benchmarking performansi ili metrike poređenja modela" },
+        { "en": "Prompt caching implementation details (beyond knowing it exists)", "sr": "Detalji implementacije prompt caching-a (van toga da postoji)" },
+        { "en": "Token counting algorithms or tokenization specifics", "sr": "Algoritmi brojanja tokena ili specifičnosti tokenizacije" }
+      ]
+    },
+    "recommendations": {
+      "title": { "en": "Exam Preparation Recommendations", "sr": "Preporuke za pripremu ispita" },
+      "intro": { "en": "To prepare for this certification exam:", "sr": "Za pripremu ovog sertifikacionog ispita:" },
+      "items": [
+        { "en": "Build an agent with the Claude Agent SDK: Implement a complete agentic loop with tool calling, error handling, and session management. Practice spawning subagents and passing context between them.", "sr": "Napravi agenta sa Claude Agent SDK-om: implementiraj kompletnu agentsku petlju sa pozivima alata, error handling-om i upravljanjem sesijom. Vežbaj pokretanje subagenata i prenos konteksta među njima." },
+        { "en": "Configure Claude Code for a real project: Set up CLAUDE.md with a configuration hierarchy, create path-specific rules in .claude/rules/, build custom skills with frontmatter options (context: fork, allowed-tools), and integrate at least one MCP server.", "sr": "Konfiguriši Claude Code za stvaran projekat: postavi CLAUDE.md sa hijerarhijom, napravi pravila po putanji u .claude/rules/, izgradi custom skills sa frontmatter opcijama (context: fork, allowed-tools) i integriši bar jedan MCP server." },
+        { "en": "Design and test MCP tools: Write tool descriptions that clearly differentiate similar tools. Implement structured error responses with error categories and retryable flags. Test tool selection reliability with ambiguous requests.", "sr": "Dizajniraj i testiraj MCP alate: piši opise koji jasno razlikuju slične alate. Implementiraj strukturisane greške sa kategorijama i retryable flag-ovima. Testiraj pouzdanost izbora alata na dvosmislenim zahtevima." },
+        { "en": "Build a structured data extraction pipeline: Use tool_use with JSON schemas, implement validation-retry loops, design schemas with optional/nullable fields, and practice batch processing with the Message Batches API.", "sr": "Napravi pipeline za ekstrakciju strukturisanih podataka: koristi tool_use sa JSON šemama, implementiraj validation-retry petlje, dizajniraj šeme sa opcionim/nullable poljima i vežbaj batch obradu Message Batches API-jem." },
+        { "en": "Practice prompt engineering techniques: Write few-shot examples for ambiguous scenarios. Define explicit review criteria to reduce false positives. Design multi-pass review architectures for large code reviews.", "sr": "Vežbaj tehnike prompt engineering-a: piši few-shot primere za dvosmislene scenarije. Definiši eksplicitne kriterijume review-a radi smanjenja false positive-a. Dizajniraj arhitekture review-a u više prolaza za velike code review-e." },
+        { "en": "Study context management patterns: Practice extracting structured facts from verbose tool outputs, implementing scratchpad files for long sessions, and designing subagent delegation to manage context limits.", "sr": "Uči obrasce upravljanja kontekstom: vežbaj izdvajanje strukturisanih činjenica iz opširnih izlaza alata, scratchpad fajlove za duge sesije i delegiranje subagentima radi upravljanja kontekst limitima." },
+        { "en": "Review escalation and human-in-the-loop patterns: Understand when to escalate (policy gaps, customer requests, inability to progress) versus resolve autonomously. Practice designing human review workflows with confidence-based routing.", "sr": "Pregledaj obrasce eskalacije i human-in-the-loop: razumi kada eskalirati (rupe u politici, zahtevi korisnika, nemogućnost napretka) a kada rešiti samostalno. Vežbaj dizajn tokova ljudskog review-a sa rutiranjem po pouzdanosti." },
+        { "en": "Complete the Practice Exam: Before sitting for the real exam, complete the practice exam (the link will be provided separately). The practice exam covers the same scenarios and question format as the real exam and shows explanations after each answer to help reinforce your understanding.", "sr": "Uradi probni ispit: pre izlaska na pravi ispit, uradi probni (link se dostavlja posebno). Probni pokriva iste scenarije i format pitanja kao pravi i prikazuje objašnjenja posle svakog odgovora radi učvršćivanja razumevanja." }
+      ]
+    }
+  }
+}
