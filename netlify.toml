@@ -1,0 +1,4 @@
+# Staticki sajt, bez build koraka. Servira se ceo repo iz root-a.
+[build]
+  publish = "."
+  command = ""

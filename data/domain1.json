@@ -1,0 +1,21 @@
+[
+  {
+    "id": "d1-q001",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "You are implementing an agentic loop. Claude returns a response and your code must decide whether to continue the loop or stop. Which signal is the correct, reliable basis for this decision?",
+    "options": {
+      "A": "Parse the assistant's text content for phrases like 'I'm done' or 'task complete'",
+      "B": "Inspect the stop_reason field: continue while it is 'tool_use', terminate when it is 'end_turn'",
+      "C": "Set a fixed cap of 10 iterations and always stop there",
+      "D": "Check whether the response contains any assistant text at all"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanation": "The agentic loop should be controlled by the structured stop_reason field. While stop_reason is 'tool_use', Claude requests a tool and the loop continues; when it is 'end_turn', Claude has finished. Parsing natural language (A, D) and arbitrary iteration caps (C) are explicit anti-patterns.",
+    "claude_notes": "Kljuc: stop_reason je STRUKTURIRANO polje koje API vraca - ne pogadjas iz teksta. 'tool_use' = Claude trazi alat, nastavi petlju i vrati mu rezultat. 'end_turn' = gotovo. Iteration cap (C) sme samo kao sigurnosna kocnica, NIKAD kao glavni mehanizam zaustavljanja.",
+    "glossary_refs": ["agentic loop", "stop_reason", "tool_use", "end_turn"],
+    "tags": ["agentic-loop", "control-flow", "anti-patterns"]
+  }
+]

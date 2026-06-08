@@ -1,0 +1,16 @@
+[
+  {
+    "term": "stop_reason",
+    "en": "A structured field in the Claude API response indicating why the model stopped generating. Key values: 'tool_use' (model wants to call a tool) and 'end_turn' (model finished its turn).",
+    "sr": "Strukturirano polje u odgovoru Claude API-ja koje govori zasto je model stao. Vazne vrednosti: 'tool_use' (model hoce da pozove alat) i 'end_turn' (model je zavrsio).",
+    "domain": 1,
+    "seen_in": ["d1-q001"]
+  },
+  {
+    "term": "agentic loop",
+    "en": "The cycle of sending a request to Claude, checking stop_reason, executing requested tools, appending results to history, and iterating until end_turn.",
+    "sr": "Ciklus: posalji zahtev Claude-u, proveri stop_reason, izvrsi trazene alate, dodaj rezultate u istoriju, ponavljaj dok ne dodje end_turn.",
+    "domain": 1,
+    "seen_in": ["d1-q001"]
+  }
+]
