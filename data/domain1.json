@@ -572,7 +572,7 @@
       "task-completion-tool-not-end-turn"
     ],
     "disputed": {
-      "reason": "Kviz daje konfliktne zvanične ključeve za isti stem (isto pitanje, izmešane opcije). U jednoj instanci (Q2/ovaj unos) tačan je completion tool; u drugoj (Q7) tačan je stop_reason==end_turn, a completion tool je eksplicitno označen netačnim.",
+      "reason": "Kviz daje konfliktne zvanične ključeve za isti stem (isto pitanje, izmešane opcije). U jednoj instanci (Q2/ovaj unos) tačan je completion tool; u drugoj (Q7) tačan je stop_reason==end_turn, a completion tool je eksplicitno označen netačnim. POTVRĐENO same-set kontradikcijom: u JEDNOM istom setu od 10 pitanja jedna instanca (Q4) nagradila stop_reason==end_turn i completion tool označila netačnim, dok je druga instanca (Q6) nagradila completion tool i end_turn eksplicitno označila netačnim (uz Anthropic obrazloženje da stop_reason ne signalizira završetak ZADATKA, nego da treba dedicated tool poziv research_complete()) — isti kviz, isti set, dva suprotna ključa. Učvršćuje naš verdikt: completion tool.",
       "official_answers_seen": [
         "completion tool: model poziva research_complete() da signalizira završetak zadatka (nagrađen u Q2 instanci)",
         "stop_reason == end_turn (nagrađen u Q7 instanci; tamo je completion tool označen netačnim)"
@@ -1079,6 +1079,236 @@
       "match-hook-to-job",
       "deterministic-needs-hook-not-prompt",
       "fix-root-cause-not-symptom"
+    ]
+  },
+  {
+    "id": "d1-q029",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "An e-commerce customer support bot employs a Coordinator agent and three subagents: OrderTracking, RefundProcessing, and ProductRecommendations. Currently, every user message triggers the Coordinator to invoke all three subagents in parallel, after which the Coordinator synthesizes their outputs. While this ensures comprehensive answers, the system is experiencing massive token waste and high latency for simple queries like \"Where is my package?\". How should you optimize this architecture?",
+    "options": {
+      "A": "Chain the subagents sequentially, starting with OrderTracking, so that the pipeline can terminate early if a subagent successfully resolves the query without invoking the others.",
+      "B": "Fine-tune a single large language model on historical support data to handle all three tasks natively, which would deprecate the existing multi-agent architecture entirely.",
+      "C": "Implement a router subagent that executes after the parallel subagent invocation to filter irrelevant responses, using a relevance score to select the best output for synthesis.",
+      "D": "Redesign the Coordinator to analyze the query requirements upfront and dynamically select and invoke only the necessary subagent(s) based on query complexity."
+    },
+    "correct": "D",
+    "my_answer": "A",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Sequential chaining forces each subagent to wait for the previous one, which typically increases overall latency compared to targeted invocation. Although early termination is possible, it is less efficient and complicates control flow and error handling.",
+      "B": "Incorrect. Replacing the multi-agent system with a single fine-tuned model sacrifices the benefits of specialized agents, modularity, and maintainability. It is an architectural retreat rather than an optimization of the existing orchestrator pattern.",
+      "C": "Incorrect. Adding a router after all subagents have already been invoked does not reduce token waste or latency, because the system still processes every subagent for each query. The filtering happens too late to save resources.",
+      "D": "Correct. By analyzing the query upfront, the Coordinator can dynamically select and invoke only the necessary subagent(s), avoiding unnecessary parallel calls. This directly reduces token consumption and latency for simple queries while preserving the modular multi-agent design."
+    },
+    "claude_notes": "Subdomain 1.2, coordinator-subagent orkestracija. Korisnik odgovorio A (netačno), tačno je D. KLJUČNA POUKA: kad coordinator radi fan-out (paralelno zove SVE subagente) na svaki upit, rešenje je da coordinator RUTIRA PRE poziva - analizira upit i dinamički pozove samo neophodne subagente ('Gde mi je paket?' -> samo OrderTracking). Ušteda se postiže time što se nepotreban posao NIKAD ne pokrene (route-by-complexity-not-fixed-pipeline). Zamke: A sekvencijalno lančanje sa ranim prekidom - redosled je proizvoljan (zašto OrderTracking prvi?), uvodi serijsku latenciju i couple-uje subagente u krut pipeline; rani prekid je dobar instinkt ali rešenje je rutiranje po sadržaju, ne nagađanje redosleda. B fine-tune jednog modela = arhitektonski nazadak, gubi modularnost/specijalizaciju, ne optimizuje nego ruši dizajn. C router POSLE paralelnog poziva = najjača zamka: tokeni i latencija su VEĆ potrošeni, filtriranje izlaza relevance score-om ne vraća resurse - presretni PRE, ne posle (intercept-before-not-after).",
+    "glossary_refs": [
+      "coordinator",
+      "subagent",
+      "routing"
+    ],
+    "tags": [
+      "multi-agent",
+      "coordinator-subagent",
+      "routing",
+      "fan-out"
+    ],
+    "pattern_refs": [
+      "route-by-complexity-not-fixed-pipeline",
+      "intercept-before-not-after"
+    ]
+  },
+  {
+    "id": "d1-q030",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "A developer built an agentic loop expecting Claude to always use a sql_query tool immediately. If Claude instead asks a clarifying question (e.g., 'Which database table should I query?'), the application crashes because it attempts to parse a non-existent tool_use block. How should the loop control flow be fixed?",
+    "options": {
+      "A": "Change the loop condition to `while not tool_used:` to ensure it keeps running and prompting Claude until a tool is called.",
+      "B": "Update the loop to check if stop_reason is end_turn, and if so, gracefully break the loop and return the assistant's text content to the user.",
+      "C": "Add a system prompt instructing Claude to never ask questions and only use tools, ensuring the loop never encounters plain text.",
+      "D": "Inject a synthetic tool_result into the context to force Claude to trigger the sql_query tool regardless of missing information."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Changing the loop condition to `while not tool_used:` risks creating an infinite loop if the assistant continues to ask for clarification. It also fails to address the parsing error that occurs when the response contains text instead of a tool call.",
+      "B": "Correct. In a robust agentic loop, the application must differentiate between stop_reason: 'tool_use' (where a tool should be executed) and stop_reason: 'end_turn' (where the model has provided a text-based response). Handling the end_turn reason allows the application to return the assistant's text to the user, effectively handling clarifying questions or final answers without crashing.",
+      "C": "Incorrect. Relying solely on system prompts to suppress conversational behavior is brittle and does not address the underlying architectural failure. LLMs may still produce text output if instructions are ambiguous or if the model deems a question necessary for safety or context.",
+      "D": "Incorrect. Injecting synthetic tool_result data is unsafe and can lead to incorrect or misleading information being processed. It subverts the model's intent to clarify missing information and can result in execution errors or logical hallucinations."
+    },
+    "claude_notes": "Subdomain 1.1, kontrolni tok agentic petlje. Korisnik TAČNO odgovorio B. KLJUČNA POUKA: petlja MORA da grana po strukturiranom signalu stop_reason, ne da pretpostavlja jedan ishod. stop_reason='tool_use' => izvrši alat; stop_reason='end_turn' => model je svesno završio potez tekstom (klarifikaciono pitanje ili finalni odgovor) => graciozno prekini petlju i vrati tekst korisniku. Bug u zadatku: kod pretpostavlja UVEK tool_use pa pokušava da parsira nepostojeći tool_use blok kad Claude vrati end_turn => crash. Klarifikaciono pitanje je VALIDAN ishod, ne greška (structured-signals-over-text). Zamke: A `while not tool_used:` tera petlju da pinga model dok ne pozove alat => rizik beskonačne petlje (model uporno pita) + i dalje ne vraća tekst ni ne rešava parsing. C system prompt 'nikad ne pitaj' je nepouzdana garancija (prompt ne sprečava deterministički end_turn; model i dalje može vratiti tekst) i suzbija korisno ponašanje. D ubacivanje sintetičkog tool_result da PRINUDI sql_query bez potrebne informacije = nebezbedno, fabrikuje podatke, model izvrši pogrešan upit (logical hallucination); subvertira nameru modela da pribavi informaciju. A i D dele istu grešku: prinuda modela na fiksnu putanju umesto obrade njegovog ishoda.",
+    "glossary_refs": [
+      "stop_reason",
+      "end_turn",
+      "tool_use",
+      "agentic loop"
+    ],
+    "tags": [
+      "agentic-loop",
+      "stop_reason",
+      "end_turn",
+      "control-flow"
+    ],
+    "pattern_refs": [
+      "structured-signals-over-text"
+    ]
+  },
+  {
+    "id": "d1-q031",
+    "domain": 1,
+    "subdomain": "1.7",
+    "question": "A developer spent Tuesday documenting half of an API using an agentic workflow. They plan to finish the second half on Wednesday. Which session management strategy is most efficient for continuing the task, assuming the codebase hasn't changed?",
+    "options": {
+      "A": "Use --resume to continue the session on Wednesday, because the prior context is entirely valid and no tool results have become stale.",
+      "B": "Use fork_session on Wednesday to create a parallel branch for the second half of the documentation.",
+      "C": "Start a fresh session on Wednesday with a structured summary of what was documented so far, to avoid context window limits.",
+      "D": "Start a new session and re-upload the entire API codebase, asking Claude to identify what is missing from the previous day's work."
+    },
+    "correct": "A",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Correct. Using session resumption (like a --resume flag or state loading) is the most efficient approach. It preserves the conversation state, reasoning path, and prior tool outputs, ensuring continuity and avoiding the overhead of re-uploading artifacts or re-explaining the task.",
+      "B": "Incorrect. Forking is designed for exploring alternative paths, parallel scenarios, or experimentation. It is unnecessary for a linear task like continuing documentation and adds complexity in managing different session branches.",
+      "C": "Incorrect. While summarizing can help manage context window limits, it discards the original session state, incremental reasoning, and tool execution history. If the prior context is still valid and within limits, resuming is preferable to maintain the agent's chain-of-thought.",
+      "D": "Incorrect. This is the least efficient method. It forces the model to re-process the entire codebase and re-identify work already done, leading to redundant computation, potential inconsistencies, and unnecessary token consumption."
+    },
+    "claude_notes": "Subdomain 1.7, session resumption. Korisnik odgovorio C (netačno), tačno je A. KLJUČNA POUKA: isti developer nastavlja ISTI linearni zadatak, codebase NEPROMENJEN => raniji kontekst je i dalje validan (tool rezultati nisu stale) => --resume je najefikasnije: čuva conversation state, reasoning path i prethodne tool izlaze, nula ponovnog setup-a. Zamke: C fresh session + strukturirani sažetak namerno ODBACUJE validan bogat kontekst za lossy sažetak (gubiš detalje/odluke/ivične slučajeve); ima smisla SAMO kad je kontekst stale/preobiman ili pri handoff-u DRUGOM ČOVEKU (to je d1-q018) - 'context window limits' je lažni razlog za pola API dokumentacije. B fork_session pravi PARALELNU granu (za divergentan/eksperimentalni rad), nepotrebno za sekvencijalni nastavak + dodaje kompleksnost upravljanja granama. D re-upload celog codebase-a + 'nađi šta fali' = najgore: ponavlja setup, redundantna obrada, trošenje tokena, baca sačuvanu sesiju. DISKRIMINATOR: isti čovek + isti zadatak + nepromenjen codebase = kontekst validan => resume; suprotno od d1-q018 (predaja DRUGOM čoveku => summarize+isolate).",
+    "glossary_refs": [
+      "session resumption",
+      "fork-based session",
+      "session state"
+    ],
+    "tags": [
+      "session-management",
+      "session-resumption",
+      "resume",
+      "forking",
+      "context-continuity"
+    ],
+    "pattern_refs": [
+      "resume-dont-fork-or-restart-for-linear-continuation"
+    ]
+  },
+  {
+    "id": "d1-q032",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "An agentic loop is executing a long-running data analysis task. After the agent calls the fetch_data tool, the application detects that the user has clicked a \"Cancel\" button on the frontend. The developer wants to gracefully interrupt the agent's current plan and instruct it to summarize what it has found so far, rather than continuing to analyze. How should the architect inject this interruption instruction into the active agentic loop?",
+    "options": {
+      "A": "Include a text content block containing the interruption instruction alongside the tool_result block within the next user message.",
+      "B": "Call the /v1/messages/cancel endpoint to terminate the current loop, then start a completely new conversation thread asking for a summary.",
+      "C": "Modify the stop_reason of the previous API response to user_cancelled before appending it to the conversation history.",
+      "D": "Replace the tool_result block entirely with a text block containing the instruction, as sending a tool_result will force the model to continue its original plan."
+    },
+    "correct": "A",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "This is the standard and most effective pattern for human-in-the-loop intervention in Anthropic agentic workflows. By providing both the tool_result (to satisfy the API requirements and provide the data) and a text block (containing the new 'summarize' instruction) in the same user turn, the architect can pivot the model's behavior while maintaining the full context of the session.",
+      "B": "There is no standard /v1/messages/cancel API endpoint that handles loop redirection. While one could stop an active HTTP request, starting a completely new thread would lose the conversation history and the context of the data already fetched, preventing the agent from summarizing its current progress.",
+      "C": "The stop_reason is a read-only metadata field returned by the Claude API (e.g., end_turn, tool_use, max_tokens) to explain why generation stopped. It is not an input parameter for the Messages API, and modifying it in the message history will not influence the model's future logic or handle a user interruption.",
+      "D": "Replacing the tool_result block entirely violates the Claude Messages API protocol, which expects a corresponding tool_result for every tool_use content block. Removing the expected tool result can cause API errors or lead the model to assume the tool failed to execute without explanation, which is less graceful than providing the result and a redirection."
+    },
+    "claude_notes": "Subdomain 1.1, steerovanje (human-in-the-loop prekid) aktivne petlje. Korisnik odgovorio C (netačno), tačno je A. KLJUČNA POUKA: petlju usmeravaš kroz SADRŽAJ sledeće user poruke - vrati obavezni tool_result (poštuješ tool_use<->tool_result pairing, isti tool_use_id) i u ISTU poruku dodaj TEXT content blok sa novom instrukcijom ('stani i sažmi'); model čita oba i pivotira ponašanje uz pun kontekst. Zamke: C 'izmeni stop_reason na user_cancelled' = falsifikovanje API metapodatka; stop_reason je READ-ONLY polje koje API postavlja (end_turn/tool_use/max_tokens), NIJE ulazni parametar, i model ga NE čita unazad - vodi se messages sadržajem, pa prepravka ne utiče na ponašanje. B '/v1/messages/cancel' = izmišljen endpoint + nov thread BACA istoriju/kontekst već dohvaćenih podataka (a baš to treba sažeti). D 'zameni tool_result text blokom' = krši Messages API protokol (svaki tool_use traži tool_result sa istim tool_use_id; izostavljanje => API greška ili model misli da je alat pao); obrazloženje da tool_result 'tera' nastavak je netačno - možeš poslati tool_result I text instrukciju zajedno (= A). DISKRIMINATOR: model se steeruje sadržajem poruke, ne metapodacima ni nepostojećim endpoint-ima; ne lomi pairing.",
+    "glossary_refs": [
+      "tool_result",
+      "tool_use_id",
+      "message alternation",
+      "stop_reason",
+      "human-in-the-loop"
+    ],
+    "tags": [
+      "agentic-loop",
+      "steering",
+      "human-in-the-loop",
+      "tool-result",
+      "messages-api",
+      "interruption"
+    ],
+    "pattern_refs": [
+      "steer-loop-via-next-user-message",
+      "distractor-invents-a-mechanism"
+    ]
+  },
+  {
+    "id": "d1-q033",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "A legal compliance system reviews corporate policies against international labor laws. The Coordinator delegates the review to a US_LawAgent, an EU_LawAgent, and an APAC_LawAgent. A SynthesisAgent compiles the final report. However, the final report frequently contains placeholders like \"[Insufficient data to determine compliance for remote workers in Germany].\" Logs show the EU_LawAgent has the capability to find this information if prompted specifically about remote workers. Which orchestration pattern should the architect implement to eliminate these specific data gaps?",
+    "options": {
+      "A": "Route the \"insufficient data\" flags directly to a human-in-the-loop (HITL) queue, as multi-agent systems cannot dynamically adjust their search parameters post-execution.",
+      "B": "Change the architecture from a hub-and-spoke model to a sequential chain so the EU_LawAgent can see what the US_LawAgent researched before beginning its own search.",
+      "C": "Implement an iterative refinement loop where the Coordinator parses the SynthesisAgent's output for \"insufficient data\" flags, dynamically generates a targeted query about the missing topic, and re-invokes the relevant subagent.",
+      "D": "Increase the context window of the EU_LawAgent so it can proactively download and process the entire German labor code during its initial pass."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "While Human-in-the-loop (HITL) is useful for high-stakes validation, it should not be the first line of defense for a gap the system is capable of resolving itself. Since logs confirm the EU_LawAgent can find the data when prompted correctly, automating the refinement loop is a more scalable and efficient solution than manual intervention.",
+      "B": "Sequential chains are useful when one agent's output is required as input for another (e.g., US laws informing EU laws). In this context, labor laws are geographically distinct; the EU_LawAgent's failure to find specific German remote-work data is a matter of query depth, not a lack of visibility into the US_LawAgent's research.",
+      "C": "Correct. This implements an iterative refinement loop: the Coordinator inspects the synthesized output, detects the \"insufficient data\" flags, dynamically generates a targeted follow-up query about the specific missing topic, and re-invokes the capable subagent. This addresses the root cause (an insufficiently specific prompt) and closes the feedback loop without manual intervention or wasteful re-architecture.",
+      "D": "Increasing the context window or scaling resource capacity is inefficient and does not address the core orchestration issue. The problem is not a lack of processing space or data access, but the lack of a targeted instruction to retrieve a specific subset of data that the agent is otherwise skipping."
+    },
+    "claude_notes": "Subdomain 1.2, iterativna refinement petlja u orkestraciji. Korisnik TAČNO odgovorio C. KLJUČNA POUKA: kad subagent vrati nepotpun rezultat ('insufficient data') a logovi pokazuju da BI našao podatak uz precizniji prompt => koren je nedovoljno precizan PROMPT. Coordinator NE prihvata rupu pasivno: parsira SynthesisAgent izlaz, detektuje flag, dinamički generiše CILJANI follow-up upit o tačnom nedostajućem podatku i PONOVO poziva relevantnog subagenta (feedback petlja, zatvara se dok rupe ne nestanu). Zamke: A ruta na HITL + lažna premisa 'multi-agent ne može dinamički da prilagodi pretragu posle izvršenja' (može, baš kroz re-invoke = C); HITL je za high-stakes validaciju, ne prva linija za rupu koju sistem sam rešava (fix-root-cause-not-symptom). B promena hub-and-spoke -> sekvencijalni lanac promašuje problem: labor zakoni su geografski RAZLIČITI, EU rupa je pitanje DUBINE UPITA, ne vidljivosti US istraživanja; uz to napušta hub-and-spoke i nepotrebno couple-uje agente. D povećanje context window-a = brute force koji meša VELIČINU konteksta sa PRECIZNOŠĆU upita; problem je ciljana instrukcija, ne procesni prostor/pristup podacima. DISKRIMINATOR: agent IMA sposobnost, fali mu precizan prompt => detektuj rupu + re-query, ne eskaliraj/ne menjaj topologiju/ne naduvavaj kontekst.",
+    "glossary_refs": [
+      "coordinator",
+      "subagent",
+      "synthesizer agent",
+      "hub-and-spoke",
+      "human-in-the-loop"
+    ],
+    "tags": [
+      "multi-agent",
+      "coordinator-subagent",
+      "iterative-refinement",
+      "feedback-loop",
+      "synthesis"
+    ],
+    "pattern_refs": [
+      "coordinator-refine-loop-on-gap",
+      "fix-root-cause-not-symptom"
+    ]
+  },
+  {
+    "id": "d1-q034",
+    "domain": 1,
+    "subdomain": "1.5",
+    "question": "A travel application uses a Claude-powered agent to call a search_flights tool. The external flight API requires the date parameter to be in a strict YYYY-MM-DD format and will fail otherwise. Despite prompt engineering, the model occasionally provides natural language dates (e.g., 'tomorrow'). Which of the following is the most robust and recommended method to ensure the model provides a correctly formatted date string to the tool?",
+    "options": {
+      "A": "Implement a PostToolUse hook that catches the API crash, parses the natural language date into the correct format, and automatically re-triggers the search_flights tool call.",
+      "B": "In the tool's input_schema, define the date parameter with a type of string and a pattern property containing a regex for YYYY-MM-DD. To guarantee compliance, also set strict: true in the tool definition.",
+      "C": "In the application code, implement a validation function that checks the date format *after* receiving the tool call from Claude but *before* calling the external API. If validation fails, return an error message to the model.",
+      "D": "Refine the system prompt with a stronger negative constraint, such as: 'CRITICAL: The date parameter must always be in YYYY-MM-DD format. Failure to comply will result in an error.'"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. This is a complex and brittle error-handling strategy. It relies on the external API failing in a predictable way and requires building and maintaining custom parsing logic for various natural language formats. It is far more robust and efficient to enforce the correct format proactively at the model generation step using the strict: true tool property.",
+      "B": "Correct. According to Anthropic's documentation, setting strict: true on a tool definition guarantees that Claude's tool inputs will match the provided JSON Schema. This is achieved by constraining the model's token sampling to only generate schema-valid outputs. This is the most robust and recommended method as it prevents the invalid tool call from ever being generated, ensuring reliability without extra application logic.",
+      "C": "Incorrect. While this is a valid defensive programming pattern, it is not the most robust or efficient method. This approach is reactive, requiring an additional round-trip with the model to correct the error after it has already occurred. This increases latency and cost, whereas using strict: true prevents the error proactively.",
+      "D": "Incorrect. The scenario explicitly states that prompt engineering has already proven insufficient. While providing clear instructions and examples in the prompt is a best practice, it does not provide a hard guarantee of compliance. The strict: true tool property is the recommended mechanism for enforcing schema adherence."
+    },
+    "claude_notes": "Subdomain 1.5, garantovanje formata tool INPUT-a. Korisnik TAČNO odgovorio B. KOREKCIJA: pri tutorskom toku Claude je pogrešno tvrdio da je 'strict: true' izmišljen i da je tačno C - to je NETAČNO; činjenica provereno preko claude-api skilla. KLJUČNA POUKA: garancija da tool input prati šemu dolazi od API PARAMETRA strict:true (Structured Outputs / Strict Tool Use), ne od prompta - strict:true ograničava token sampling modela na schema-validne izlaze (constrained decoding, kao OpenAI strict), pa nevažeći poziv NIKAD ne nastane. Podržano na Opus 4.8 / Sonnet 4.6 / Haiku 4.5 (i legacy Opus 4.5/4.1). SUPTILNOST (ne menja odgovor): strict podržava format/enum/const/anyOf/$ref/additionalProperties:false ali NE 'pattern' regex ni minLength/maxLength (string constraints se uklanjaju/validiraju klijentski); idiomatičan datum je type:string + format:'date' uz strict:true. Zamke: A PostToolUse hook 'hvata crash' = reaktivno (pušta poziv da padne pa krpi), krhko, custom NL parsiranje. C validacija u kodu + error nazad modelu = validan defanzivni obrazac ALI reaktivan: traži dodatni round-trip da model ispravi POSLE greške (latencija+tokeni); strict:true sprečava proaktivno - zato C nije 'most robust'. D jači negativni prompt - stem eksplicitno kaže da prompt inženjering već pada; prompt ne daje determinističku garanciju (guarantee-with-api-param-not-prompt).",
+    "glossary_refs": [
+      "strict tool use",
+      "structured output",
+      "tool_choice"
+    ],
+    "tags": [
+      "tool-design",
+      "structured-output",
+      "strict",
+      "input-schema",
+      "constrained-decoding",
+      "json-schema"
+    ],
+    "pattern_refs": [
+      "guarantee-with-api-param-not-prompt"
     ]
   }
 ]

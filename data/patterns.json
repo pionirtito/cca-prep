@@ -10,7 +10,8 @@
       "d1-q008",
       "d1-q023",
       "d1-q027",
-      "d1-q028"
+      "d1-q028",
+      "d2-q008"
     ]
   },
   {
@@ -23,7 +24,10 @@
       "d1-q002",
       "d1-q008",
       "d1-q023",
-      "d1-q027"
+      "d1-q027",
+      "d1-q029",
+      "d2-q012",
+      "d2-q019"
     ]
   },
   {
@@ -34,7 +38,8 @@
     "lesson_en": "Drive control flow (e.g. agentic loop termination) via structured signals, never by parsing natural language from the response. Text parsing (a phrase, an XML tag) and fixed iteration caps are anti-patterns; even a stop_sequence is poor because it still depends on NL generation. BUT mind WHICH structured signal: stop_reason is for turn/loop control (continue while tool_use, stop on end_turn), whereas for explicit TASK completion the right signal is a dedicated completion tool, not end_turn (see task-completion-tool-not-end-turn).",
     "seen_in": [
       "d1-q001",
-      "d1-q015"
+      "d1-q015",
+      "d1-q030"
     ]
   },
   {
@@ -65,7 +70,8 @@
     "lesson_sr": "Kad pitanje traži da se GARANTUJE / 'always' ponašanje modela, rešenje je strukturni parametar u API zahtevu, ne prompt instrukcija. Za iznuđivanje poziva alata to je tool_choice ('any' = mora neki alat, 'tool'+name = mora baš taj). Zamke: temperature kontroliše nasumičnost izlaza, NE tip izlaza (tekst vs tool_use); prompt instrukcija je probabilistička (model 'uglavnom' posluša); i pazi na opcije koje izmišljaju nepostojeći 'native feature'. Isti deterministički koren kao [[deterministic-needs-hook-not-prompt]].",
     "lesson_en": "When a question asks to GUARANTEE / 'always' a model behavior, the answer is a structured parameter in the API request, not a prompt instruction. To force a tool call that is tool_choice ('any' = must use some tool, 'tool'+name = must use that one). Traps: temperature controls output randomness, NOT output type (text vs tool_use); a prompt instruction is probabilistic (the model 'usually' complies); and watch for options inventing a nonexistent 'native feature'. Same deterministic root as deterministic-needs-hook-not-prompt.",
     "seen_in": [
-      "d1-q004"
+      "d1-q004",
+      "d1-q034"
     ]
   },
   {
@@ -89,7 +95,15 @@
     "seen_in": [
       "d1-q005",
       "d1-q026",
-      "d1-q028"
+      "d1-q028",
+      "d1-q033",
+      "d2-q004",
+      "d2-q005",
+      "d2-q009",
+      "d2-q013",
+      "d2-q021",
+      "d2-q022",
+      "d2-q024"
     ]
   },
   {
@@ -125,7 +139,11 @@
       "d1-q010",
       "d1-q016",
       "d1-q018",
-      "d1-q025"
+      "d1-q025",
+      "d1-q032",
+      "d2-q002",
+      "d2-q003",
+      "d2-q010"
     ]
   },
   {
@@ -212,7 +230,9 @@
     "lesson_sr": "Kad fiksni pipeline provlači SVAKI upit kroz sve subagente (skupo i sporo za proste slučajeve - npr. prost upit ide kroz sve specijaliste pre sinteze), lek je dinamičko RUTIRANJE/triage: Coordinator unapred proceni složenost/nameru i pošalje upit SAMO relevantnom subagentu ('fast path'), bypass ostalih -> uklanja nepotrebne pozive na izvoru, smanjuje I latenciju I compute, a tačnost ostaje. Zamke: (1) 'broadcast svima + prvi odgovor pobeđuje' = brže na papiru ALI žrtvuje tačnost (prvi odgovor != tačan u QA; specijalizovan agent može vratiti generičan/nepotpun odgovor brže; nedeterminizam) i i dalje troši sve subagente, ne dira koren; (2) jači hardver = kapacitet ne leči ARHITEKTURU (pipeline i dalje vrti sve nepotrebne pozive); (3) mikro-optimizacija pojedinog koraka (subagent brže vrati prazan string) = optimizuješ otpad umesto da ga UKLONIŠ. ŠIRA POUKA: čuvaj se opcije koja optimizuje baš TRAŽENU metriku (latenciju) ali žrtvuje tačnost - 'brzo ali pogrešno'. Linkuje [[match-decomposition-to-task-nature]] (taj bira fiksnu/dinamičku dekompoziciju po prirodi zadatka; ovaj kaže rutiraj po složenosti umesto fiksnog punog pipeline-a) i [[decompose-overloaded-agent-not-scale-it]] (oba: reši STRUKTURU, ne bacaj kapacitet/hardver).",
     "lesson_en": "When a fixed pipeline pushes EVERY query through all subagents (expensive and slow for simple cases - e.g. a trivial query traverses all specialists before synthesis), the fix is dynamic ROUTING/triage: the Coordinator evaluates complexity/intent upfront and sends the query to ONLY the relevant subagent ('fast path'), bypassing the rest -> eliminates unnecessary calls at the source, cutting both latency and compute while preserving accuracy. Traps: (1) 'broadcast to all + take the first response' = fast on paper BUT sacrifices accuracy (first response != correct in QA; a specialized agent may return a generic/incomplete answer faster; non-determinism) and still spends all subagents, not addressing the root; (2) faster hardware = capacity does not cure ARCHITECTURE (the pipeline still runs all the unnecessary calls); (3) micro-optimizing a single step (a subagent returns an empty string faster) = optimizing the waste instead of removing it. BROADER LESSON: beware the option that optimizes the very metric asked for (latency) while sacrificing accuracy - 'fast but wrong'. Links match-decomposition-to-task-nature (that one picks fixed/dynamic decomposition by task nature; this one says route by complexity instead of a fixed full pipeline) and decompose-overloaded-agent-not-scale-it (both: fix the STRUCTURE, don't throw capacity/hardware at it).",
     "seen_in": [
-      "d1-q017"
+      "d1-q017",
+      "d1-q029",
+      "d2-q001"
     ]
   },
   {
@@ -273,6 +293,264 @@
     "lesson_en": "Adding a tool to allowedTools makes it AVAILABLE, not USED. If the model narrates intent ('I will transfer you') instead of calling the tool, the system prompt lacks explicit guidance on when to invoke it. The fix is prompt guidance, not a new tool or an invented config field. Contrast with [[deterministic-needs-hook-not-prompt]]: that covers a rule that must ALWAYS hold (enforce via hook/code, not prompt); here invocation is a judgment call about an available capability -> prompt is the right lever. Often paired with [[distractor-invents-a-mechanism]] (decoy options invent fork/Escalate tool/trigger_intent).",
     "seen_in": [
       "d1-q025"
+    ]
+  },
+  {
+    "id": "resume-dont-fork-or-restart-for-linear-continuation",
+    "title": "Nastavak istog zadatka = --resume (ne fork, ne restart sa sažetkom)",
+    "domain": 1,
+    "lesson_sr": "Kad ISTI agent nastavlja ISTI linearni zadatak a raniji kontekst je i dalje validan (codebase nepromenjen → tool rezultati nisu stale), koristi --resume: čuva conversation state, reasoning path i prethodne tool izlaze bez ponovnog setup-a. fork_session je za PARALELNE/divergentne grane, ne za sekvencijalni nastavak. Fresh session + sažetak je za STALE/preobiman kontekst ili handoff DRUGOM ČOVEKU (lossy — gubiš detalje). Re-upload svega je najmanje efikasno (redundantna obrada).",
+    "lesson_en": "When the SAME agent resumes the SAME linear task and prior context is still valid (codebase unchanged → tool results not stale), use --resume: it preserves conversation state, reasoning path, and prior tool outputs with no re-setup. fork_session is for PARALLEL/divergent branches, not sequential continuation. A fresh session + summary is for stale/bloated context or HUMAN handoff (lossy). Re-uploading everything is least efficient (redundant computation).",
+    "seen_in": [
+      "d1-q031"
+    ]
+  },
+  {
+    "id": "steer-loop-via-next-user-message",
+    "title": "Petlju steeruješ kroz sledeću user poruku (text uz tool_result)",
+    "domain": 1,
+    "lesson_sr": "Da prekineš/preusmeriš aktivnu agentic petlju (human-in-the-loop), instrukciju ubaci kao TEXT content blok PORED obaveznog tool_result-a u sledećoj user poruci. Tako poštuješ tool_use<->tool_result pairing (svaki tool_use mora dobiti tool_result sa istim tool_use_id), zadržavaš pun kontekst i model usvoji novu instrukciju. NE prepravljaj API metapodatke (stop_reason je read-only i model ga ne čita unazad), NE izmišljaj cancel endpoint-e, NE briši tool_result (lomi protokol). Model se vodi SADRŽAJEM messages, ne metapodacima.",
+    "lesson_en": "To interrupt/redirect an active agentic loop (human-in-the-loop), inject the instruction as a TEXT content block ALONGSIDE the required tool_result in the next user message. This honors the tool_use<->tool_result pairing (every tool_use needs a tool_result with the same tool_use_id), preserves full context, and the model adopts the new instruction. Do NOT rewrite API metadata (stop_reason is read-only and the model doesn't read it back), do NOT invent cancel endpoints, do NOT drop the tool_result (breaks the protocol). The model is steered by message CONTENT, not metadata.",
+    "seen_in": [
+      "d1-q032"
+    ]
+  },
+  {
+    "id": "coordinator-refine-loop-on-gap",
+    "title": "Coordinator detektuje rupu u izlazu → ciljani re-query (iterativna refinement petlja)",
+    "domain": 1,
+    "lesson_sr": "Kad subagent vrati nepotpun rezultat ('insufficient data') a ima sposobnost da nađe podatak uz precizniji prompt, Coordinator NE prihvata rupu pasivno: parsira izlaz, detektuje flag, dinamički generiše CILJANI follow-up upit o tačnom nedostajućem podatku i PONOVO poziva relevantnog subagenta (iterativna refinement / feedback petlja). Koren je nedovoljno precizan PROMPT, ne topologija, ne veličina konteksta, ne ljudski operater. Ne eskaliraj na HITL prvo (to je za high-stakes validaciju, ne za rupu koju sistem ume sam), ne menjaj hub-and-spoke u lanac, ne naduvavaj context window.",
+    "lesson_en": "When a subagent returns an incomplete result ('insufficient data') but is capable of finding the data with a more precise prompt, the Coordinator does NOT accept the gap passively: it parses the output, detects the flag, dynamically generates a TARGETED follow-up query about the exact missing item, and RE-INVOKES the relevant subagent (iterative refinement / feedback loop). The root cause is an insufficiently specific PROMPT, not topology, context size, or a human operator. Don't escalate to HITL first, don't change hub-and-spoke into a chain, don't bloat the context window.",
+    "seen_in": [
+      "d1-q033"
+    ]
+  },
+  {
+    "id": "distribute-tools-to-specialized-subagents",
+    "title": "Mali fokusiran skup alata po subagentu (ne 20 u jednom agentu)",
+    "domain": 2,
+    "lesson_sr": "Kad jedan agent ima previše alata (npr. 20), decision complexity raste i model bira pogrešan. Rešenje NIJE tool_choice ni jedan mega-alat, nego RASPODELA: Supervisor/koordinator nema domenske alate - samo čita upit i rutira ga specijalizovanom subagentu; svaki subagent nosi 2-3 logički srodna alata (grupisana po domenu, ne po popularnosti). Time se izbor 'koji alat' deli na lak izbor rute gore + izbor među par kandidata dole. tool_choice:'any' samo forsira da se pozove NEKI alat, ne smanjuje broj kandidata. Generički search_all samo premešta kompleksnost unutar alata i gubi specijalizaciju i precizne param-šeme.",
+    "lesson_en": "When a single agent holds too many tools (e.g. 20), decision complexity rises and the model picks the wrong one. The fix is NOT tool_choice or a single mega-tool, but DISTRIBUTION: the Supervisor/coordinator holds no domain tools - it just reads the query and routes to a specialized subagent; each subagent carries 2-3 logically related tools (grouped by domain, not popularity). This splits 'which tool' into an easy route choice up top plus a choice among a few candidates below. tool_choice:'any' only forces SOME tool call; it doesn't shrink the candidate set. A generic search_all merely moves complexity inside the tool and loses specialization and precise parameter schemas.",
+    "seen_in": [
+      "d2-q001",
+      "d2-q007",
+      "d2-q008"
+    ]
+  },
+  {
+    "id": "mcp-parallel-persistent-connections",
+    "title": "MCP serveri iz .mcp.json se povezuju paralelno i ostaju trajno dostupni (nema switching latencije)",
+    "domain": 2,
+    "lesson_sr": "MCP host/klijent drži ZASEBNU TRAJNU konekciju ka SVAKOM konfigurisanom serveru ISTOVREMENO. Pri pokretanju sesije čita .mcp.json, poveže se na sve servere, uradi handshake (initialize) i discovery - alati svih servera se skupe u jedan namespace i ostaju dostupni kroz ceo workflow. Nema 'dropovanja' jedne konekcije da bi se otvorila druga, niti uspostavljanja konekcije pred svaki poziv alata. Zato je svaka 'switching latency' premisa pogrešna. Transport je stdio ili HTTP/SSE, handshake jednom pri init - ne per-tool.",
+    "lesson_en": "The MCP host/client holds a SEPARATE PERSISTENT connection to EACH configured server SIMULTANEOUSLY. On session start it reads .mcp.json, connects to all servers, performs the initialize handshake and tool discovery - tools from all servers aggregate into one namespace and stay available across the whole workflow. There is no 'dropping' one connection to open another, and no connection setup before each tool call. Any 'switching latency' premise is therefore false. Transport is stdio or HTTP/SSE, with the handshake done once at init - not per tool.",
+    "seen_in": [
+      "d2-q002"
+    ]
+  },
+  {
+    "id": "mcp-error-needs-iserror-not-empty-success",
+    "title": "MCP alat na grešku vraća isError:true sa porukom, nikad 'uspeh + prazan rezultat'",
+    "domain": 2,
+    "lesson_sr": "Kad MCP alat ne uspe (auth fail, timeout, backend greška), MORA vratiti isError: true sa opisnom porukom - strukturni error odgovor koji modelu daje signal da reaguje (retry, eskalacija, obavesti korisnika). Gutanje izuzetaka i vraćanje {\"isError\": false, \"results\": []} 'da agent ne padne' briše razliku između legitimno praznog rezultata i tihog neuspeha → false negative: model čita 'nema nalaza' iako je operacija pala. Posebno opasno u security/threat-hunting (maskiran access failure izgleda kao čisto stanje). MCP protokol samo PRENOSI ono što alat vrati - ne detektuje skrivene greške i ne pregazuje isError. Veži sa [[structured-tool-result-not-plain-text]] (oba o ispravnom strukturisanju tool rezultata). Obrnuti smer je jednako pogrešan: označiti legitimno prazan rezultat (uspešan upit sa nula poklapanja) kao isError:true tera agenta da halucinira kvar (npr. 'baza je pala'); validan prazan ishod = isError:false + prazna lista [] + poruka, jasno odvojen od access failure-a. Suština: isError mora TAČNO odražavati stvaran neuspeh u OBA smera.",
+    "lesson_en": "When an MCP tool fails (auth failure, timeout, backend error), it MUST return isError: true with a descriptive message - a structured error response that signals the model to react (retry, escalate, inform the user). Swallowing exceptions and returning {\"isError\": false, \"results\": []} 'to keep the agent from crashing' erases the distinction between a legitimately empty result and a silent failure → a false negative: the model reads 'no findings' when the operation actually failed. Especially dangerous in security/threat-hunting (a masked access failure looks like an all-clear). The MCP protocol only TRANSPORTS what the tool returns - it does not detect hidden errors or override isError. Relate to structured-tool-result-not-plain-text (both about correctly structuring tool results). The reverse is equally wrong: flagging a legitimately empty result (a successful query with zero matches) as isError:true makes the agent hallucinate a failure (e.g. 'the database is down'); a valid empty outcome = isError:false + empty list [] + message, clearly separated from an access failure. The point: isError must ACCURATELY reflect real failure in BOTH directions.",
+    "seen_in": [
+      "d2-q003",
+      "d2-q016",
+      "d2-q023"
+    ]
+  },
+  {
+    "id": "chain-tools-to-fetch-data-not-invent",
+    "title": "Ne teraj model da izmišlja podatak koji ne zna - daj alat da ga pribavi (tool chaining)",
+    "domain": 2,
+    "lesson_sr": "Kad model halucinira ulaz koji objektivno ne može da zna (npr. precizne koordinate iz ulice), rešenje NIJE labaviti šemu (skidanje strukturne granice poziva JOŠ više halucinacija) niti odbijati zahtev (loš UX, prebacuje teret na korisnika), nego dati NAMENSKI deterministički alat (geocode_address) i uputiti model da ga pozove prvi, pa izlaz ulanči u sledeći alat (geocode_address → calculate_distance) = tool chaining. Plus: izoštri tool description i daj input_examples za ispravan poziv. Anthropic-native pristup je osnažiti model da sam bira i lanča alate, ne zaobići ga app preprocessing-om van tool-use interfejsa. Veži sa [[fix-root-cause-not-symptom]] i [[distribute-tools-to-specialized-subagents]].",
+    "lesson_en": "When the model hallucinates an input it cannot objectively know (e.g. precise coordinates from a street address), the fix is NOT to loosen the schema (dropping the structured boundary invites MORE hallucination) nor to reject the request (poor UX, pushes the burden onto the user), but to give a DEDICATED deterministic tool (geocode_address) and instruct the model to call it first, chaining its output into the next tool (geocode_address → calculate_distance) = tool chaining. Plus: sharpen the tool description and provide input_examples of correct usage. The Anthropic-native approach is to empower the model to select and chain tools itself, not to bypass it with app-side preprocessing outside the tool-use interface. Relate to fix-root-cause-not-symptom and distribute-tools-to-specialized-subagents.",
+    "seen_in": [
+      "d2-q004",
+      "d2-q011"
+    ]
+  },
+  {
+    "id": "prompt-wording-primes-tool-selection",
+    "title": "Reči u promptu primaju izbor alata (keyword-sensitive associations)",
+    "domain": 2,
+    "lesson_sr": "Formulacija system prompta može nenamerno usmeriti izbor alata - ključne reči ('Execute...') primiraju alate sa istom rečju u imenu (execute_live_trade), pa model bira pogrešan alat SISTEMATSKI (ne nasumično). To NIJE problem temperature (stohastika - ali ponašanje je vezano za formulaciju, ne random), ni preimenovanja imena ka istim rečima (to pogoršava dvosmislenost), ni samo odsustva negativnog constraint-a (flaster). Rešenje: jasni strukturirani promptovi (XML tagovi), precizni razlikujući opisi alata, eksplicitno uputstvo kada koji alat - REVIDIRAJ prompt, ne usklađuj alate sa lošim promptom. Veži sa [[fix-root-cause-not-symptom]].",
+    "lesson_en": "System prompt wording can unintentionally steer tool selection - keyword-sensitive phrases ('Execute...') prime tools that share that word in their name (execute_live_trade), so the model picks the wrong tool SYSTEMATICALLY (not randomly). This is NOT a temperature issue (stochastic - but the behavior is tied to wording, not randomness), nor a naming fix toward matching words (that increases ambiguity), nor merely a missing negative constraint (a band-aid). The fix: clear structured prompts (XML tags), precise differentiating tool descriptions, explicit guidance on when to use each tool - REVISE the prompt, don't align tools to a flawed prompt. Relate to fix-root-cause-not-symptom.",
+    "seen_in": [
+      "d2-q005",
+      "d2-q022"
+    ]
+  },
+  {
+    "id": "reuse-community-mcp-build-custom-only-for-proprietary",
+    "title": "Reuse community MCP servere za standardne SaaS, gradi custom samo za proprietarno (ne monolit)",
+    "domain": 2,
+    "lesson_sr": "Kad treba MIN dev vremena + robusnost preko više sistema, ne gradi sve iz nule i ne pravi monolit. Za mainstream SaaS (Shopify, Zendesk) koristi gotove community MCP servere (testirani, brza isporuka); custom razvoj usmeri tamo gde stvarno treba - proprietarni/legacy sistemi (AS/400 mainframe) bez gotove integracije, gde generički REST wrapper ne daje robusnost (legacy traži specijalizovan protokol/adaptere). Zaseban modularni server po sistemu, NE monolit (monolit = nepotrebno kuplovanje nesrodnih sistema, single point of failure, teži test/održavanje, ne koristi community resurse). Veži sa [[mcp-parallel-persistent-connections]] (modularni nezavisni serveri).",
+    "lesson_en": "When you need MIN dev time + robustness across several systems, don't build everything from scratch and don't build a monolith. For mainstream SaaS (Shopify, Zendesk) reuse existing community MCP servers (tested, fast delivery); focus custom development where it's truly needed - proprietary/legacy systems (an AS/400 mainframe) with no pre-built integration, where a generic REST wrapper isn't robust (legacy needs specialized protocols/adapters). One modular server per system, NOT a monolith (a monolith = unnecessary coupling of unrelated systems, single point of failure, harder to test/maintain, ignores community resources). Relate to mcp-parallel-persistent-connections (modular independent servers).",
+    "seen_in": [
+      "d2-q006"
+    ]
+  },
+  {
+    "id": "scoped-tool-for-high-frequency-need-route-complex",
+    "title": "Uzak scoped alat za čestu sitnu potrebu lokalno; kompleksno rutiraj specijalisti",
+    "domain": 2,
+    "lesson_sr": "Kad agent ima ČESTU SITNU potrebu van svog domena (npr. Writer treba da proveri datum) a trenutni put je skup round-trip kroz Coordinatora (3-4 turn-a, latencija), NE sipaj mu pun skup alata specijaliste (over-provisioning → decision complexity, context bloat, rizik zloupotrebe; prompt-restrikcija je krhka vs pravo tool scoping), NE forsiraj tool_choice:{\"type\":\"any\"} (forsira poziv i kad ne treba, a ne DAJE sposobnost ako alata nema), i NE spajaj agente u monolit (bloated agent, gubi separation of concerns, diže cognitive load, mnogo nerelevantnih alata na prostim zadacima). Reši: daj JEDAN uzak, namenski (scoped) alat baš za tu high-frequency, low-complexity potrebu → rešava lokalno, smanjuje latenciju; kompleksno istraživanje i dalje deleguj specijalisti. Veži sa [[distribute-tools-to-specialized-subagents]].",
+    "lesson_en": "When an agent has a HIGH-FREQUENCY MINOR need outside its domain (e.g. a Writer needing to verify a date) and the current path is an expensive round-trip via the Coordinator (3-4 turns, latency), do NOT dump the specialist's full tool suite on it (over-provisioning → decision complexity, context bloat, misuse risk; prompt restriction is fragile vs proper tool scoping), do NOT force tool_choice:{\"type\":\"any\"} (forces a call even when unneeded and does NOT grant capability if the tool is absent), and do NOT merge agents into a monolith (bloated agent, loses separation of concerns, raises cognitive load, many irrelevant tools on simple tasks). Fix: give ONE narrow, purpose-built (scoped) tool for exactly that high-frequency, low-complexity need → resolves locally, cuts latency; complex research is still delegated to the specialist. Relate to distribute-tools-to-specialized-subagents.",
+    "seen_in": [
+      "d2-q007"
+    ]
+  },
+  {
+    "id": "remove-tool-that-doesnt-belong-route-to-specialist",
+    "title": "Alat koji ne pripada domenu agenta → ukloni i rutiraj specijalisti (ne prompt, ne merge, ne tool_choice)",
+    "domain": 2,
+    "lesson_sr": "Kad agent zloupotrebljava alat dat van njegove odgovornosti (npr. Code Writer pokreće integraciene testove pre nego što završi kod → pipeline failures), fix je ARHITEKTONSKI: ukloni alat iz njegovog skupa i rutiraj taj posao pravom specijalisti (QA Tester) - separation of concerns / Generate-Validate Pattern (jedan generiše, drugi validira). NE prompt-upozorenje u opisu alata (ponašanje je non-deterministicko, može ignorisati - flaster za deterministički redosled), NE merge agenata u jedan (monolit, gubi specijalizaciju, složeniji prompt/logika), NE tool_choice:{\"type\":\"any\"} (forsira poziv alata ali ne rešava POGREŠAN REDOSLED). DISKRIMINATOR vs [[scoped-tool-for-high-frequency-need-route-complex]]: ako agent ima čestu LEGITIMNU sitnu potrebu → daj uzak scoped alat lokalno; ako alat PRIPADA drugom agentu i njegovo prisustvo lomi tok → ukloni + rutiraj. Veži i sa [[deterministic-needs-hook-not-prompt]] (zašto B/prompt-kontrola pada).",
+    "lesson_en": "When an agent misuses a tool given outside its responsibility (e.g. a Code Writer running integration tests before finishing code → pipeline failures), the fix is ARCHITECTURAL: remove the tool from its toolset and route that work to the right specialist (QA Tester) - separation of concerns / Generate-Validate Pattern (one generates, another validates). NOT a warning in the tool description (behavior is non-deterministic, it may ignore it - a band-aid for deterministic ordering), NOT merging the agents into one (monolith, loses specialization, more complex prompt/logic), NOT tool_choice:{\"type\":\"any\"} (forces a tool call but doesn't fix the WRONG ORDER). DISCRIMINATOR vs scoped-tool-for-high-frequency-need-route-complex: if the agent has a frequent LEGITIMATE minor need → give a narrow scoped tool locally; if the tool BELONGS to another agent and its presence breaks the flow → remove it + route. Relate to deterministic-needs-hook-not-prompt (why B/prompt control fails).",
+    "seen_in": [
+      "d2-q008"
+    ]
+  },
+  {
+    "id": "force-tool-first-turn-then-relax-to-auto",
+    "title": "tool_choice je per-request: forsiraj na 1. turn, relaksiraj na auto da agent izađe iz petlje",
+    "domain": 2,
+    "lesson_sr": "tool_choice se postavlja po SVAKOM API zahtevu i HARD je constraint. Ako forsiraš isti alat (type:\"tool\", name:X) na SVIM turn-ovima, agent je zaključan na njega → kad alat vrati grešku, ne može ništa drugo (pozvati drugi alat, generisati NL pitanje, eskalirati) → beskonačna petlja sa istim payload-om. Reši: forsiraj alat SAMO na turn-u gde korak MORA da se desi (npr. validacija na turn 1), pa naredni zahtev pređe na {\"type\":\"auto\"} → agent slobodan da rezonuje o ishodu i izabere sledeću akciju. NE prompt preko zadržanog forsiranja (prompt ne bije hard API constraint - vidi [[guarantee-with-api-param-not-prompt]]), NE brisanje koraka validacije (data corruption), NE menjanje PRVOG turn-a na \"any\" (podriva garantovani prvi korak i ne dotiče petlju). Veži sa [[fix-root-cause-not-symptom]].",
+    "lesson_en": "tool_choice is set per API REQUEST and is a HARD constraint. If you force the same tool (type:\"tool\", name:X) on ALL turns, the agent is locked to it → when the tool returns an error it can do nothing else (call another tool, generate an NL question, escalate) → an infinite loop with the same payload. Fix: force the tool ONLY on the turn where the step MUST happen (e.g. validation on turn 1), then switch the subsequent request to {\"type\":\"auto\"} → the agent is free to reason about the outcome and choose the next action. NOT a prompt layered over kept-forcing (a prompt can't beat the hard API constraint - see guarantee-with-api-param-not-prompt), NOT removing the validation step (data corruption), NOT changing the FIRST turn to \"any\" (undermines the guaranteed first step and doesn't touch the loop). Relate to fix-root-cause-not-symptom.",
+    "seen_in": [
+      "d2-q009"
+    ]
+  },
+  {
+    "id": "grep-to-entry-point-read-sequentially-not-bulk",
+    "title": "U velikom repou: Grep do ulazne tačke pa Read sekvencijalno (ne bulk-read sve odjednom)",
+    "domain": 2,
+    "lesson_sr": "U velikom/nepoznatom codebase-u NE čitaj sve „relevantne\" fajlove unapred - bulk-read zatrpava context window, degradira performanse i diže token usage. Koristi Grep (pretraga SADRŽAJA) da lociraš ulaznu tačku (npr. login/auth logiku), pa Read selektivno/sekvencijalno prateći import-e i pozive funkcija = progresivno građenje konteksta. Discovery PRE modifikacije (ne Edit-uj pre razumevanja - rizično/invazivno). KLJUČNA RAZLIKA alata: Glob = ime/putanja fajla, Grep = SADRŽAJ fajla - zato bulk Read po Glob/find rezultatu (po imenu) pati od istog context-overflow-a. Veži sa context management obrascima (Domain 5).",
+    "lesson_en": "In a large/unfamiliar codebase, do NOT read all 'relevant' files upfront - bulk reading overwhelms the context window, degrades performance, and raises token usage. Use Grep (CONTENT search) to locate an entry point (e.g. the login/auth logic), then Read selectively/sequentially by following imports and function calls = progressive context building. Discovery BEFORE modification (don't Edit before understanding - risky/invasive). KEY tool distinction: Glob = file name/path, Grep = file CONTENT - so bulk Read over a Glob/find result (by name) suffers the same context overflow. Relate to context-management patterns (Domain 5).",
+    "seen_in": [
+      "d2-q010",
+      "d2-q020",
+      "d2-q027"
+    ]
+  },
+  {
+    "id": "expose-reference-data-as-mcp-resource-not-explore-or-stuff",
+    "title": "Referentni read-only podatak izloži kao MCP resource (source of truth), ne eksplorativni pozivi / pogađanje / stuffing prompta",
+    "domain": 2,
+    "lesson_sr": "Kad agentu treba veliki referentni metapodatak (npr. schema katalog 800+ tabela) i on ili halucinira ili troši desetine eksplorativnih poziva (DESCRIBE TABLE) da ga otkrije, izloži taj podatak kao MCP resource - strukturisan, read-only, authoritative source of truth dostupan na uvid → nema eksplorativnih poziva ni halucinacije. NE arbitrarno sakaćenje pristupa (whitelist 10 tabela - lomi funkcionalnost, ne skalira), NE pogađanje šeme manjim LLM-om (pojačava halucinaciju; data eng traži apsolutnu tačnost), NE stuffing celog schema u system prompt (context bloat/overflow, token cost, latencija, gubitak fokusa). Resource = izvor na uvid po potrebi; prompt-stuffing = trajno zatrpavanje. MCP izlaže tools, resources i prompts. Veži sa [[chain-tools-to-fetch-data-not-invent]] (pribavi stvarni podatak, ne izmišljaj).",
+    "lesson_en": "When an agent needs large reference metadata (e.g. an 800+ table schema catalog) and either hallucinates or burns dozens of exploratory calls (DESCRIBE TABLE) to discover it, expose that data as an MCP resource - structured, read-only, an authoritative source of truth available on demand → no exploratory calls, no hallucination. NOT arbitrary scope restriction (a 10-table whitelist - breaks functionality, doesn't scale), NOT guessing the schema with a smaller LLM (worsens hallucination; data engineering needs absolute accuracy), NOT stuffing the whole schema into the system prompt (context bloat/overflow, token cost, latency, loss of focus). A resource is a source consulted on demand; prompt-stuffing is permanent context flooding. MCP exposes tools, resources, and prompts. Relate to chain-tools-to-fetch-data-not-invent (fetch real data, don't invent it).",
+    "seen_in": [
+      "d2-q011"
+    ]
+  },
+  {
+    "id": "claude-code-blocks-disable-of-depended-on-plugin",
+    "title": "Claude Code odbija disable plugina od kog zavisi enabled plugin (proaktivno + chained command)",
+    "domain": 2,
+    "lesson_sr": "Claude Code je dependency-aware (plugin deklariše `dependencies` u .claude-plugin/plugin.json). `claude plugin disable X` PADA ako neki enabled plugin zavisi od X; greška eksplicitno imenuje zavisne pluginove i nudi 'chained command' koja ih isključuje pravim redosledom. NIJE kaskada tihog auto-disable zavisnih (nijedan se ne isključi automatski), NIJE uspeh-pa-runtime-pad (zaštita je PRE akcije, proaktivna provera integriteta - ne reaktivno), NIJE prompt za mock/alternativu (izmišljeno). Veži sa [[intercept-before-not-after]] (prevencija hvata PRE akcije, ne posle). Metodološki: za dokumentovano Claude Code ponašanje verifikuj zvaničnu dokumentaciju, ne odgovaraj iz pamćenja.",
+    "lesson_en": "Claude Code is dependency-aware (a plugin declares `dependencies` in .claude-plugin/plugin.json). `claude plugin disable X` FAILS if an enabled plugin depends on X; the error explicitly names the dependent plugins and offers a 'chained command' that disables them in the right order. It is NOT a silent cascade auto-disable of dependents (nothing is disabled automatically), NOT success-then-runtime-failure (the protection is BEFORE the action, a proactive integrity check - not reactive), NOT a prompt for a mock/alternative (invented). Relate to intercept-before-not-after (prevention catches BEFORE the action, not after). Methodological note: for documented Claude Code behavior, verify the official docs rather than answering from memory.",
+    "seen_in": [
+      "d2-q012"
+    ]
+  },
+  {
+    "id": "constrain-tool-interface-to-prevent-bad-input",
+    "title": "Suzi interfejs alata da loš argument bude strukturno nemoguć (hard guardrail), ne upozoravaj promptom",
+    "domain": 2,
+    "lesson_sr": "Kad generički alat povremeno prima loš/haluciniran argument (npr. fetch_url prima bilo koji URL), zameni ga uskim alatom čiji interfejs fizički ne dozvoljava grešku (load_internal_document(id) + validacija prema dozvoljenom skupu). Hard guardrail (interfejs) > soft guardrail (opis/upozorenje koji model može da ignoriše) > eksterni validacioni sloj (drugi agent + krhki regex = overengineering, ne dira uzrok). Anthropic: „External knowledge restriction\" by design. Veži sa [[scoped-tool-for-high-frequency-need-route-complex]] (takođe sužavanje alata, druga motivacija) i [[fix-root-cause-not-symptom]] (ukloni uzrok = preširok interfejs).",
+    "lesson_en": "When a generic tool occasionally receives a bad/hallucinated argument (e.g. fetch_url accepts any URL), replace it with a narrow tool whose interface physically forbids the error (load_internal_document(id) + validation against an allowed set). Hard guardrail (interface) > soft guardrail (description/warning the model can ignore) > external validation layer (extra agent + brittle regex = overengineering that doesn't address the root cause). Anthropic calls this \"External knowledge restriction\" by design. Links to [[scoped-tool-for-high-frequency-need-route-complex]] (also tool-narrowing, different motivation) and [[fix-root-cause-not-symptom]] (remove the cause = over-broad interface).",
+    "seen_in": [
+      "d2-q013",
+      "d2-q019",
+      "d2-q021",
+      "d2-q024"
+    ]
+  },
+  {
+    "id": "errors-must-be-typed-for-recovery",
+    "title": "Strukturiran error mora biti i GRANULAREN/TIPIZOVAN da agent izabere strategiju oporavka",
+    "domain": 2,
+    "lesson_sr": "Vraćanje isError:true je tek prvi korak — ako alat spljošti SVE izuzetke (rate limit, nevažeći input, unauthorized) u jedan uniforman odgovor ({\"isError\":true,\"message\":\"API Request Failed\"}), gubi se ACTIONABLE kontekst i agent ne može da bira reakciju. Različite greške traže različite strategije: PROLAZNA (transient — rate limit, timeout) → sačekaj pa retry; TERMINALNA (terminal — nevažeći ticker, 4xx input greška) → traži pojašnjenje korisnika; auth/config (401/403) → eskaliraj/prekini. Bez tipa greške agent ili uludo retry-uje nepopravljivo ili prerano odustaje od popravljivog. Rešenje: granularne/tipizovane greške (error_type / kod) u strukturiranom odgovoru. Veži sa [[mcp-error-needs-iserror-not-empty-success]] (isError:true je preduslov — ovo je sledeći sloj: i poruka mora nositi tip) i [[handle-errors-outside-model-loop]] (prolazni retry najbolje živi u determinističkom kodu, a tip greške određuje da li je retry uopšte primeren).",
+    "lesson_en": "Returning isError:true is only step one — if the tool collapses ALL exceptions (rate limit, invalid input, unauthorized) into one uniform response ({\"isError\":true,\"message\":\"API Request Failed\"}), the actionable context is lost and the agent cannot choose a reaction. Different errors need different strategies: TRANSIENT (rate limit, timeout) → wait and retry; TERMINAL (invalid ticker, 4xx input error) → ask the user for clarification; auth/config (401/403) → escalate/abort. Without the error type the agent either wastes retries on the unrecoverable or prematurely fails on the recoverable. Fix: granular/typed errors (error_type / code) inside the structured response. Relate to mcp-error-needs-iserror-not-empty-success (isError:true is the prerequisite — this is the next layer: the message must also carry the type) and handle-errors-outside-model-loop (transient retry best lives in deterministic code, and the error type decides whether retry is appropriate at all).",
+    "seen_in": [
+      "d2-q014",
+      "d2-q015",
+      "d2-q016"
+    ]
+  },
+  {
+    "id": "error-type-must-be-accurate-not-just-present",
+    "title": "Tip greške (npr. isRetryable) mora biti TAČAN — pogrešan flag je štetan kao i nedostatak flag-a",
+    "domain": 2,
+    "lesson_sr": "Agent posluša mašinski flag (npr. isRetryable) bukvalno — ne preispituje ga zdravim razumom. Ako tool označi prolaznu (transient: kapacitet, 429, timeout) grešku kao terminalnu (isRetryable:false), agent odustaje i gubi moguć oporavak; obrnuto, terminalnu (validacija, 401/403) označiti kao retryable → beskorisni retry loop. Tačnost klasifikacije je odgovornost DIZAJNA tool-a, ne agenta. Sledeći sloj iznad [[errors-must-be-typed-for-recovery]]: taj kaže DA tipiziraš grešku; ovaj kaže da tip mora biti i TAČAN. Retry/backoff logika koja čita flag živi u determinisom kodu — vidi [[handle-errors-outside-model-loop]].",
+    "lesson_en": "The agent obeys a machine-readable flag (e.g. isRetryable) literally — it does not second-guess it with common sense. If a tool labels a transient error (capacity, 429, timeout) as terminal (isRetryable:false), the agent gives up and loses a possible recovery; conversely, labeling a terminal error (validation, 401/403) as retryable yields a useless retry loop. Classification accuracy is the tool's design responsibility, not the agent's. This is the layer above [[errors-must-be-typed-for-recovery]]: that says DO type the error; this says the type must also be CORRECT. The retry/backoff logic that reads the flag lives in deterministic code — see [[handle-errors-outside-model-loop]].",
+    "seen_in": [
+      "d2-q015",
+      "d2-q016",
+      "d2-q023",
+      "d2-q025"
+    ]
+  },
+  {
+    "id": "parse-format-dont-text-match",
+    "title": "Za strukturisane podatke koristi alat koji PARSIRA format (jq za JSON), ne tekstualnu zamenu (sed/str_replace)",
+    "domain": 2,
+    "lesson_sr": "Tekstualni alati (sed, str_replace, naivni grep) vide samo karaktere — pucaju na promenu formatiranja i mogu pogoditi pogrešan unos. Za strukturisan format koristi alat koji ga PARSIRA (jq za JSON) — cilja tačno polje tačnog objekta, otporno na indent/whitespace/minifikaciju. Ako alat nema in-place edit: upiši u temp fajl pa atomično prebriše sa mv (integritet, nema korumpiranog fajla). Veza: [[structured-signals-over-text]] (isti meta-princip „struktura > tekst\", drugi kontekst).",
+    "lesson_en": "Text-based tools (sed, str_replace, naive grep) see only characters, so they break on formatting changes and may hit the wrong entry. For structured formats use a tool that PARSES the format (jq for JSON) so it targets the exact field of the exact object, robust to indentation/whitespace/minification. If the tool has no in-place edit, write to a temp file then atomically replace with mv (integrity, no corrupted file).",
+    "seen_in": [
+      "d2-q017",
+      "d2-q018"
+    ]
+  },
+  {
+    "id": "right-size-tool-to-task",
+    "title": "Prilagodi „težinu\" alata zadatku — ne posegni za flagship mehanizmom (PTC) kad jednolinijski alat (jq) rešava",
+    "domain": 2,
+    "lesson_sr": "Moćniji/„flagship\" mehanizam nije automatski tačan odgovor. PTC (Claude piše i izvršava kôd u sandbox-u) je po Anthropic docs JAK izbor za fan-out preko mnogo stavki i velike rezultate, a SLAB za mali broj poziva sa malim odgovorima (overhead container-a/skripte premašuje uštedu). Za jednu malu strukturnu izmenu (jedno polje u JSON-u) jq preko Bash-a je jednostavniji, strukturno svestan i jednako token-efikasan (izlaz ne ulazi u kontekst). Pravilo: izaberi najlakši alat koji posao radi robusno; ne biraj alat po buzzword-u. Veza: [[parse-format-dont-text-match]] (oba kandidata strukturno svesna; bira se po težini), [[scoped-tool-for-high-frequency-need-route-complex]].",
+    "lesson_en": "A more powerful / flagship mechanism is not automatically the right answer. PTC (Claude writes and runs code in a sandbox) is, per Anthropic docs, a STRONG fit for fan-out across many items and large results, but a WEAK fit for a small number of tool calls with small responses — container/script overhead exceeds the savings. For a single small structured edit (one field in JSON), jq via Bash is simpler, structurally aware, and equally token-efficient (its output never enters context). Rule: pick the lightest tool that does the job robustly; don't choose a tool by buzzword.",
+    "seen_in": [
+      "d2-q018"
+    ]
+  },
+  {
+    "id": "tool-description-defines-boundaries",
+    "title": "Granice alata (šta NE radi) idu u OPIS — model tako pravilno bira; spreči pogrešan poziv na opisu, ne hvataj pad posle",
+    "domain": 2,
+    "lesson_sr": "Kad model preterano primenjuje alat na slučajeve van opsega (prosleđuje nevalidne parametre i ruši backend), uzrok je opis bez granica. Popravka: u opis eksplicitno upiši šta alat podržava I šta NE podržava, sa uputstvom da ga ne koristi za te slučajeve — model tada zaključi da je van opsega i ne pozove ga. Sprečavanje na mestu IZBORA pobija reaktivne zakrpe (try-catch koji samo ljupko padne, dummy parametre koji lažu) i radikalne (ukloni alat = baciš deterministički proračun). Veza: [[intercept-before-not-after]], [[constrain-tool-interface-to-prevent-bad-input]] (hard schema guardrail), [[tool-available-not-used-instruct-in-prompt]] (ogledalo: opis/prompt upravlja i KADA da se koristi).",
+    "lesson_en": "When the model over-applies a tool to out-of-scope cases (passing invalid parameters and crashing the backend), the cause is a description that omits boundaries. Fix: state explicitly in the description what the tool supports AND what it does NOT, instructing the model not to use it for those cases — the model then reasons it is out of scope and won't call it. Preventing at tool-SELECTION time beats reactive patches (a try-catch that just fails gracefully, dummy parameters that lie) and drastic ones (removing the tool discards a deterministic calculator).",
+    "seen_in": [
+      "d2-q019"
+    ]
+  },
+  {
+    "id": "partial-success-return-results-plus-failure-metadata",
+    "title": "Batch nezavisnih stavki: partial success (vrati uspehe + metapodatke o padu), ne all-or-nothing",
+    "domain": 2,
+    "lesson_sr": "Kad MCP/batch alat obrađuje više NEZAVISNIH stavki i neke uspeju a neke padnu, vrati DELIMIČAN USPEH: isError:false + uspešne rezultate + strukturiranu metapodatkovnu sekciju koja precizno opisuje šta je palo (partial_success:true, failed_items:['Doc3']). Tako agent dobija i upotrebljive podatke (nastavlja tok) i mašinski čitljiv signal greške (sam odlučuje: preskoči, prijavi, traži popravku). NE tretiraj batch kao atomic/sve-ili-ništa — odbacivanje uspešnih rezultata zbog jednog pada je bačen rad; atomičnost je za prave transakcije sa međuzavisnim koracima, ne za nezavisne stavke. NE proglašavaj ceo poziv neuspehom + isRetryable:true — blokira upotrebljive rezultate beskorisnim retry-jem, a oštećen fajl je TERMINALNA (non-transient) greška koju retry ne rešava. NE haluciniraj rezultat za palu stavku da niz ima očekivanu dužinu — fabrikacija je štetan anti-pattern. Veži sa [[error-type-must-be-accurate-not-just-present]] (isRetryable:true na non-transient grešci je netačan flag) i [[mcp-error-needs-iserror-not-empty-success]] (isError mora tačno odražavati stvarni ishod).",
+    "lesson_en": "When an MCP/batch tool processes multiple INDEPENDENT items and some succeed while others fail, return PARTIAL SUCCESS: isError:false + the successful results + a structured metadata section precisely describing what failed (partial_success:true, failed_items:['Doc3']). This gives the agent both usable data (to continue) and a machine-readable failure signal (to decide: skip, report, request remediation). DO NOT treat the batch as atomic/all-or-nothing — discarding successful results over one failure wastes completed work; atomicity is for true transactions with interdependent steps, not independent items. DO NOT declare the whole call a failure + isRetryable:true — it blocks usable results with a useless retry, and a corrupted file is a TERMINAL (non-transient) error retries cannot fix. DO NOT hallucinate a result for the failed item to pad the array length — fabrication is a harmful anti-pattern. Relate to error-type-must-be-accurate-not-just-present (isRetryable:true on a non-transient error is an inaccurate flag) and mcp-error-needs-iserror-not-empty-success (isError must accurately reflect the real outcome).",
+    "seen_in": [
+      "d2-q025"
+    ]
+  },
+  {
+    "id": "discovery-by-name-glob-by-content-grep",
+    "title": "Discovery: po imenu/ekstenziji → Glob, po sadržaju → Grep (ne Read+parse, ne mutiraj repo)",
+    "domain": 2,
+    "lesson_sr": "Za pronalaženje fajlova/koda u velikom repou biraj built-in alat prema TOME PO ČEMU TRAŽIŠ. Po imenu/putanji/ekstenziji → Glob (npr. **/*.cy.ts; ** je rekurzivni wildcard kroz sve ugnježdene foldere; vraća tačne putanje efikasno, bez čitanja sadržaja). Po SADRŽAJU/simbolu/stringu u fajlu → Grep (npr. anthropic.Anthropic()). NE Read na root + ručno parsiranje liste fajlova (nepotreban I/O + dodatna logika za filter; globbing to radi nativno i brže). NE Grep po ključnoj reči koda (npr. describe() da nađeš test fajlove — to je traženje po SADRŽAJU: skenira sve fajlove, vraća i ne-test fajlove koji slučajno koriste tu reč, traži ručni filter; kad je kriterijum ime/ekstenzija, koristi Glob. NIKAD ne mutiraj repo (Edit/rename/move) radi puke discovery — destruktivno, lomi zavisnosti, rizikuje kod. Mirror [[grep-to-entry-point-read-sequentially-not-bulk]] (Grep/sadržaj-strana iste teme izbora built-in alata).",
+    "lesson_en": "To find files/code in a large repo, pick the built-in tool by WHAT YOU MATCH ON. By name/path/extension → Glob (e.g. **/*.cy.ts; ** is a recursive wildcard across all nested folders; returns exact paths efficiently without reading contents). By CONTENT/symbol/string inside a file → Grep (e.g. anthropic.Anthropic()). NOT Read on the root + manually parsing the file list (unnecessary I/O + extra filter logic; globbing does this natively and faster). NOT Grep on a code keyword (e.g. describe() to find test files — that searches by CONTENT: scans every file, returns non-test files that happen to use the keyword, needs manual filtering; when the criterion is name/extension, use Glob. NEVER mutate the repo (Edit/rename/move) just for discovery — destructive, breaks dependencies, risks the codebase. Mirror of grep-to-entry-point-read-sequentially-not-bulk (the Grep/content side of the same built-in-tool selection theme).",
+    "seen_in": [
+      "d2-q026",
+      "d2-q027"
+    ]
+  },
+  {
+    "id": "full-file-replace-write-targeted-edit-edit",
+    "title": "Cela zamena fajla → Write (atomski overwrite); targetirana izmena → Edit",
+    "domain": 2,
+    "lesson_sr": "Biraj alat za izmenu po PRIRODI promene. Cela zamena sadržaja fajla → Write: atomski create/overwrite, jednokoračno, čisto. Targetirana, kontekstualna izmena malog regiona → Edit. NE rm (Bash) pa recreate (file-system churn, problemi s dozvolama/metapodacima). NE search alat (Grep) za brisanje sadržaja — Grep je za pretragu, ne za mutaciju. Edit na velikom fajlu uz uparivanje prve/poslednje linije za full-file zamenu je krhko i podložno greškama. Vidi [[discovery-by-name-glob-by-content-grep]] i [[right-size-tool-to-task]].",
+    "lesson_en": "Pick the mutation tool by the NATURE of the change. Full-file content replacement -> Write: atomic create/overwrite, single-step, clean. Targeted, contextual edit of a small region -> Edit. NOT rm (Bash) then recreate (file-system churn, permission/metadata issues). NOT a search tool (Grep) to delete contents — Grep is for searching, not mutation. Using Edit to match the first/last line for a full-file replace on a large file is brittle and error-prone. See [[discovery-by-name-glob-by-content-grep]] and [[right-size-tool-to-task]].",
+    "seen_in": [
+      "d2-q028"
     ]
   }
 ]

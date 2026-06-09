@@ -1,1 +1,1161 @@
-[]
+[
+  {
+    "id": "d2-q001",
+    "domain": 2,
+    "subdomain": "2.3",
+    "question": "An enterprise search agent is equipped with 20 distinct tools for querying different internal databases (Jira, Confluence, GitHub, Salesforce, etc.). Due to high decision complexity, the agent frequently selects the wrong tool. The architect plans to implement a Supervisor routing pattern. Which design best adheres to tool distribution principles?",
+    "options": {
+      "A": "The Supervisor is given all 20 tools but uses tool_choice: {\"type\": \"any\"} to strictly evaluate them, while subagents are only used for conversational formatting.",
+      "B": "The Supervisor has no search tools itself; it evaluates the user's query and routes it to specialized subagents (e.g., Code_Search_Agent, CRM_Search_Agent), each equipped with 2-3 relevant tools.",
+      "C": "The Supervisor is equipped with the 5 most popular tools, and routes requests to subagents only if the required tool is among the remaining 15.",
+      "D": "The Supervisor is given a single generic search_all tool, and the 20 specific tools are deprecated to reduce decision complexity."
+    },
+    "correct": "B",
+    "my_answer": "A",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. tool_choice 'any' only forces the model to call some tool; it does not shrink the 20-tool decision space, so the wrong-tool problem persists. Reducing subagents to conversational formatting also defeats the Supervisor pattern, whose purpose is to delegate specialized tool work to subagents.",
+      "B": "Correct. The Supervisor holds no domain tools - it reads the query and routes it to a specialized subagent (e.g., Code_Search_Agent, CRM_Search_Agent), each carrying only 2-3 relevant tools. This is proper tool distribution: the 'which tool' decision is split into an easy routing choice plus a choice among a few candidates, drastically lowering decision complexity.",
+      "C": "Incorrect. Splitting tools by 'popularity' (5 popular + 15 others) is an arbitrary division rather than a domain-based one, and the Supervisor still carries tools itself - violating the routing principle that the coordinator dispatches rather than executes.",
+      "D": "Incorrect. A single generic search_all tool does not remove complexity; it merely relocates it inside the tool, which must now guess which database to query. Deprecating the 20 specific tools loses specialization and precise parameter schemas."
+    },
+    "claude_notes": "Kompleksnost izbora alata se rešava RASPODELOM: Supervisor/koordinator nema domenske alate - samo rutira upit specijalizovanom subagentu, a svaki subagent nosi 2-3 logički srodna alata (grupisana po domenu, ne po popularnosti). A = tool_choice:'any' samo forsira poziv NEKOG alata, ne smanjuje broj kandidata (20 ostaje 20) + svođenje subagenata na formatiranje promašuje smisao Supervisor pattern-a. C = arbitrarna podela po popularnosti, a Supervisor i dalje nosi alate (krši princip da koordinator rutira a ne izvršava). D = generički search_all samo premešta kompleksnost UNUTAR alata (mora da pogađa koju bazu) i gubi specijalizaciju i precizne param-šeme. NAPOMENA: zvanični per-opcija tekst nije bio dostupan za ovo pitanje - explanations su izvedene iz naše analize; verdikt B potvrđen zvaničnim ključem (zelena ivica).",
+    "glossary_refs": [
+      "supervisor",
+      "tool distribution",
+      "tool_choice",
+      "subagent",
+      "routing"
+    ],
+    "pattern_refs": [
+      "distribute-tools-to-specialized-subagents",
+      "route-by-complexity-not-fixed-pipeline"
+    ],
+    "tags": [
+      "tool-design",
+      "tool-distribution",
+      "supervisor",
+      "routing",
+      "tool_choice",
+      "mcp"
+    ]
+  },
+  {
+    "id": "d2-q002",
+    "domain": 2,
+    "subdomain": "2.4",
+    "question": "A financial trading agent is configured with a Market Data MCP server and a Trade Execution MCP server via the project's .mcp.json. The workflow requires the agent to fetch real-time pricing, perform a complex local calculation, and immediately execute a trade. The compliance team is concerned that the agent might need to drop the connection to the Market Data server to connect to the Trade Execution server, causing unacceptable latency. How does the MCP architecture handle this scenario?",
+    "options": {
+      "A": "The agent must use a connection_pool tool to keep both connections alive, otherwise it will automatically drop the first connection to establish the second.",
+      "B": "The architecture requires the engineering team to merge both servers into a single custom binary to guarantee zero-latency execution between the two domains.",
+      "C": "Tools from all configured MCP servers are discovered at connection time and remain available simultaneously, eliminating any connection-switching latency during the workflow.",
+      "D": "The agent will experience latency because it must sequentially authenticate and establish a new WebSocket connection with each server before executing its respective tools."
+    },
+    "correct": "C",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "The MCP architecture does not require a specialized connection_pool tool or manual management of connection states to maintain multiple servers. It does not automatically drop one connection to establish another; multiple servers can be active concurrently.",
+      "B": "One of the core design goals of MCP is modularity-the ability to keep domain-specific logic separate. It does not require merging distinct servers into a single binary for performance, as the client architecture is built to manage multiple server connections in parallel efficiently.",
+      "C": "MCP is designed to support multiple server connections simultaneously. When a client initializes using a configuration like .mcp.json, it discovers tools from all registered servers during the handshake. These connections remain active and available, allowing the agent to call tools across different servers without the latency of re-establishing or switching connections.",
+      "D": "MCP avoids sequential authentication or connection handoffs for every tool call. Persistent connections are established with all configured servers during the initialization phase, preventing the latency associated with establishing new transport layers (like WebSockets or Stdio) during a critical workflow execution."
+    },
+    "claude_notes": "MCP host/klijent drži ZASEBNU TRAJNU konekciju ka SVAKOM serveru iz .mcp.json ISTOVREMENO. Pri pokretanju sesije klijent se poveže na sve servere, uradi handshake (initialize) i discovery alata - svi alati svih servera se skupe u jedan namespace dostupan kroz ceo workflow. Nema 'prebacivanja' konekcije (nije ili-ili), pa je premisa compliance tima (mora prekinuti Market Data da otvori Trade Execution) POGREŠNA - i baš to ispravlja opcija C. A = izmišljen connection_pool alat + netačno da klijent auto-dropuje prvu konekciju. B = spajanje u jedan binary ruši modularnost MCP-a (poenta su nezavisni serveri) i nepotrebno je. D = pogrešan lifecycle: konekcije + auth se rade JEDNOM pri inicijalizaciji, ne pred svaki poziv alata; MCP transport je stdio ili HTTP/SSE, ne per-tool WebSocket handshake.",
+    "glossary_refs": [
+      "MCP",
+      "MCP server",
+      ".mcp.json",
+      "tool discovery",
+      "persistent connection"
+    ],
+    "pattern_refs": [
+      "mcp-parallel-persistent-connections",
+      "distractor-invents-a-mechanism"
+    ],
+    "tags": [
+      "mcp",
+      "mcp-server",
+      "tool-discovery",
+      "persistent-connection",
+      "claude-code",
+      "latency"
+    ]
+  },
+  {
+    "id": "d2-q003",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "A threat-hunting agent queries a log analytics MCP tool for IP addresses associated with a known malware signature over the last 24 hours. The tool's service account credentials have expired, resulting in an authentication failure from the backend. The tool developer configured the tool to catch all exceptions and return {\"isError\": false, \"results\": []} to prevent agent crashes. What is the architectural impact of this design?",
+    "options": {
+      "A": "The MCP protocol will detect the underlying authentication failure and override the isError: false flag, alerting the user.",
+      "B": "The agent will falsely conclude that no malware activity occurred, masking a critical access failure as a valid empty result.",
+      "C": "The agent will correctly interpret the empty array as a transient error and automatically retry the query using exponential backoff.",
+      "D": "The agent will prompt the user to manually provide new service account credentials before continuing the workflow."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. The MCP protocol transports tool responses but does not inspect or override the content of those responses. If the tool returns isError: false, the protocol will faithfully deliver that to the agent. There is no built-in mechanism to detect authentication failures hidden by the tool's error handling.",
+      "B": "Correct. By swallowing the authentication error and returning a successful empty response, the tool hides the access failure from the agent. The agent interprets this as a legitimate empty result, leading to a false negative in threat detection. This is a recognized risk in AI-driven security analysis, and Anthropic's documentation stresses the need for human oversight and robust error handling to prevent such masking of critical failures.",
+      "C": "Incorrect. The tool explicitly returns isError: false and an empty results array, which signals success to the agent. The agent has no way to detect the underlying authentication failure and will not treat it as a transient error requiring a retry. Anthropic's agent security framework emphasizes transparency and proper error signaling to avoid such misinterpretations.",
+      "D": "Incorrect. Since the tool reports success, the agent has no indication of an authentication problem and will not prompt for credentials. Anthropic's recommended approach for credential management involves secure vaulting and short-lived tokens (e.g., via Workload Identity Federation) to avoid such expiration issues, but the agent itself does not handle credential renewal in this scenario."
+    },
+    "claude_notes": "MCP tool na grešku MORA vratiti isError: true sa opisnom porukom (strukturni error odgovor) - tako model zna da operacija nije uspela i može da reaguje (retry / eskalacija / obavesti korisnika). Ovde je developer 'uhvatio sve izuzetke' i vratio uspeh + prazan niz, čime je obrisao razliku između 'nema podataka' i 'nije uspelo'. Rezultat je false negative: prazan rezultat na malware upit model čita kao 'nema malware aktivnosti', dok je zapravo access failure (istekli kredencijali) - fatalno u security/threat-hunting domenu. A = MCP protokol samo PRENOSI ono što alat vrati; ne zaviruje u internu logiku niti pregazuje isError (izmišljen mehanizam). C = isError:false + [] je signal USPEHA, nema osnova za retry/backoff (to bi imalo smisla samo uz isError:true). D = agent ne može da traži kredencijale jer NE ZNA za auth problem - greška je progutana u except bloku pre nego što je stigla do modela.",
+    "glossary_refs": [
+      "isError",
+      "structured error response",
+      "false negative",
+      "MCP"
+    ],
+    "pattern_refs": [
+      "mcp-error-needs-iserror-not-empty-success",
+      "distractor-invents-a-mechanism"
+    ],
+    "tags": [
+      "mcp",
+      "error-handling",
+      "iserror",
+      "structured-error",
+      "false-negative",
+      "security",
+      "tool-design"
+    ]
+  },
+  {
+    "id": "d2-q004",
+    "domain": 2,
+    "subdomain": "2.1",
+    "question": "A logistics routing agent uses a calculate_distance tool, which requires origin and destination parameters as JSON objects containing precise latitude and longitude numbers. When users provide street addresses in their prompts, Claude frequently hallucinates the coordinate values, leading to routing failures. An architect needs to solve this problem by enhancing the tool definitions and instructions provided to Claude. Which approach is most aligned with Anthropic's recommended practices for reliable tool use?",
+    "options": {
+      "A": "Implement a pre-processing layer in the application code to intercept all user prompts, use a third-party API to convert any found addresses to coordinates, and then pass the modified prompt to Claude.",
+      "B": "Change the calculate_distance tool's input schema to accept a single string and rely on Claude's natural language understanding to parse the address.",
+      "C": "Modify the system prompt to reject user requests that do not contain latitude and longitude coordinates.",
+      "D": "Update the calculate_distance tool's description, provide examples of its usage with coordinates, and introduce a geocode_address tool, instructing Claude to use it first to convert addresses into coordinates."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. While this is a valid external architectural pattern, the question asks for a solution that enhances the tool definitions and instructions *provided to Claude*. This option solves the problem outside the model's tool-use interface, bypassing Claude's ability to orchestrate tools. The Anthropic-native approach is to empower the model to select and chain the necessary tools itself.",
+      "B": "Incorrect. This does not solve the core problem. Anthropic's documentation notes that Claude has limited spatial reasoning and is prone to hallucination with precise coordinates. Relying on the model to parse addresses and generate coordinates without a dedicated tool is unreliable and the source of the original issue.",
+      "C": "Incorrect. This approach creates a poor user experience by rejecting valid user queries instead of making the agent more capable. The goal is to enable Claude to handle natural language inputs, not to force users to conform to a rigid data format.",
+      "D": "Correct. This is the recommended approach according to Anthropic's documentation on tool use. Chaining tools—where the output of one tool (geocode_address) becomes the input for another (calculate_distance)—is a primary method for handling complex, multi-step tasks. This leverages Claude's reasoning to orchestrate deterministic tools, which significantly reduces hallucination and improves reliability. Providing clear descriptions and input_examples further guides the model to correct tool usage."
+    },
+    "claude_notes": "Koren: alat traži precizne lat/long, korisnik daje ulicu → model tera da fabrikuje podatak koji objektivno ne zna → halucinira koordinate (Claude ima ograničeno spatial reasoning). Fix po Anthropic preporuci (D): (1) izoštri tool description + daj input_examples sa koordinatama (jasne granice), (2) uvedi namenski deterministički alat geocode_address i uputi Claude da ga pozove PRVI, pa izlaz ulanči u calculate_distance = tool chaining (pribavi podatak, ne izmišljaj). A = rešava VAN tool-use interfejsa (app preprocessing, third-party API), zaobilazi Claude-ovu orkestraciju alata; pitanje izričito traži poboljšanje definicija alata/instrukcija. B = labavljenje šeme na jedan string poziva JOŠ više halucinacija - to je uzrok problema, ne rešenje. C = odbijanje zahteva bez koordinata = loš UX, prebacuje teret na korisnika, ne čini agenta sposobnijim i ne rešava halucinaciju.",
+    "glossary_refs": [
+      "tool chaining",
+      "input_examples",
+      "tool description",
+      "hallucination"
+    ],
+    "pattern_refs": [
+      "chain-tools-to-fetch-data-not-invent",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-design",
+      "tool-chaining",
+      "tool-description",
+      "input-examples",
+      "hallucination",
+      "reliability"
+    ]
+  },
+  {
+    "id": "d2-q005",
+    "domain": 2,
+    "subdomain": "2.1",
+    "question": "A quantitative analysis bot has two tools: run_backtest (safe, simulated) and execute_live_trade (risky, real money). The system prompt includes the instruction: 'You are a high-frequency trading assistant. Execute user strategies efficiently and without hesitation.' When users ask to 'test my moving average strategy,' Claude occasionally calls execute_live_trade instead of run_backtest. What is the primary cause of this misrouting?",
+    "options": {
+      "A": "Keyword-sensitive instructions in the system prompt ('Execute... without hesitation') are creating unintended tool associations.",
+      "B": "The model's temperature is set too high, causing it to randomly sample the riskier tool.",
+      "C": "The run_backtest tool lacks a negative constraint in its description explicitly forbidding live trades.",
+      "D": "The tool names are too dissimilar; run_backtest should be renamed to execute_backtest to match the system prompt."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. Anthropic's documentation explicitly warns that 'keyword-sensitive instructions can create unintended tool associations.' The system prompt's use of 'Execute... without hesitation' primes Claude to favor tools with 'execute' in their name, leading to misrouting. The recommended approach is to use clear, structured prompts with XML tags and detailed tool descriptions to disambiguate tool selection, avoiding forceful, ambiguous instructions.",
+      "B": "Incorrect. While high temperature can increase output variability, the described misrouting is systematic and tied to the system prompt's wording, not random sampling. Anthropic's guidance focuses on prompt engineering and tool design to control tool selection, not temperature adjustment. The issue is one of misinterpretation due to keyword sensitivity, not stochastic behavior.",
+      "C": "Incorrect. While clear tool descriptions are important, the primary issue here is not the absence of a negative constraint. Anthropic's documentation emphasizes that tool descriptions should be unambiguous and explicit about functionality, but the root cause is the system prompt's phrasing, which overrides tool descriptions by creating unintended associations. Adding a negative constraint might help, but it does not address the core problem of keyword-sensitive instructions.",
+      "D": "Incorrect. Renaming tools to match a problematic system prompt would exacerbate the issue by making both tools contain 'execute,' increasing ambiguity. Best practices suggest differentiating tool names and descriptions clearly, not aligning them with vague instructions. The system prompt should be revised to provide explicit guidance on when to use each tool, rather than renaming tools to fit a flawed prompt."
+    },
+    "claude_notes": "Primarni uzrok je keyword-sensitivnost system prompta: reč 'Execute' (u 'Execute... without hesitation') primira izbor alata koji u imenu sadrži 'execute' (execute_live_trade) → nenamerna asocijacija. Ključ: misrouting je SISTEMATSKI i vezan za formulaciju prompta, ne nasumičan. Lek (Anthropic): jasni strukturirani promptovi (XML tagovi), precizni razlikujući opisi alata, eksplicitno uputstvo kada koji alat - izbegavati forsirane/dvosmislene instrukcije. B = temperatura objašnjava stohastiku, ali opisano ponašanje je sistematsko, ne random sampling (zamka: pripiše ponašanje temperaturi). C = odsustvo negativnog constraint-a; jasni opisi pomažu, ali koren je formulacija prompta koja PREGAZUJE opise alata - negativni constraint je flaster, ne rešenje uzroka. D = preimenovati run_backtest u execute_backtest POGORŠAVA (oba alata sadrže 'execute' → veća dvosmislenost); best practice je RAZLIKOVATI imena/opise i revidirati prompt, ne usklađivati alate sa lošim promptom.",
+    "glossary_refs": [
+      "keyword-sensitive instructions",
+      "unintended tool associations",
+      "negative constraint",
+      "tool description",
+      "temperature"
+    ],
+    "pattern_refs": [
+      "prompt-wording-primes-tool-selection",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-design",
+      "prompt-engineering",
+      "tool-selection",
+      "keyword-sensitivity",
+      "system-prompt"
+    ]
+  },
+  {
+    "id": "d2-q006",
+    "domain": 2,
+    "subdomain": "2.4",
+    "question": "A retail enterprise is building an agentic workflow to manage their e-commerce platform. The workflow requires interacting with Shopify (for storefront data), Zendesk (for customer tickets), and a highly proprietary, 20-year-old AS/400 mainframe (for warehouse inventory). The engineering director wants to minimize development time while ensuring robust functionality. Which MCP server strategy should the architect recommend?",
+    "options": {
+      "A": "Use community MCP servers for Shopify and Zendesk, and configure a generic REST API community server to interface with the AS/400 mainframe for all warehouse inventory management tasks.",
+      "B": "Build a single, monolithic custom MCP server that wraps the APIs of Shopify, Zendesk, and the AS/400 mainframe, providing a unified tool set for the agent to manage inventory and orders.",
+      "C": "Utilize community MCP servers for Shopify and Zendesk, and build a custom MCP server to interface with the proprietary AS/400 mainframe for inventory management.",
+      "D": "Develop custom MCP servers for Shopify, Zendesk, and the AS/400 mainframe to provide a unified interface with consistent logging and error handling across the agentic workflow."
+    },
+    "correct": "C",
+    "my_answer": "A",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. While community servers are appropriate for Shopify and Zendesk, assuming a generic REST API community server can handle a legacy AS/400 mainframe is risky. Legacy mainframes often require specialized protocol handling, custom business logic, or specific adapters that generic wrappers cannot provide, compromising the requirement for robust functionality.",
+      "B": "Incorrect. A monolithic custom server creates unnecessary coupling between unrelated systems and introduces a single point of failure. It is more complex to test, maintain, and update than modular servers and does not take advantage of available community resources for the SaaS components.",
+      "C": "Correct. This is the most efficient strategy. Leveraging existing community MCP servers for common SaaS platforms like Shopify and Zendesk reduces implementation effort and speeds up delivery. This allows the engineering team to focus their custom development efforts where they are truly needed: the proprietary legacy AS/400 mainframe, which lacks a pre-built integration.",
+      "D": "Incorrect. Developing custom MCP servers for all three systems significantly increases development time and long-term maintenance burden. This approach fails to leverage existing, tested community solutions for standard SaaS platforms like Shopify and Zendesk, contradicting the goal of minimizing development time."
+    },
+    "claude_notes": "MCP strategija balansira dva cilja: MIN dev vremena + robusnost. Rešenje (C): reuse gotovih community MCP servera za mainstream SaaS (Shopify storefront, Zendesk tiketi) → brza isporuka, manje koda; a custom MCP server samo tamo gde mora - proprietarni legacy AS/400 mainframe, za koji nema gotove integracije i gde generički REST wrapper ne daje robusnost. A = community za SaaS je OK, ali generički REST community server za legacy AS/400 je RIZIČNO: legacy mainframe traži specijalizovan protocol handling / custom business logic / specifične adaptere → robusnost puca (ovo je tvoja greška: prihvaćen generički REST na proprietarni mainframe). B = monolitni custom server = nepotrebno kuplovanje nesrodnih sistema, single point of failure, teži za test/održavanje, i ne koristi community resurse za SaaS. D = custom za sve tri = robusno ali maksimalno dev vreme + dugoročno održavanje, ignoriše gotove testirane community servere → direktno protivno cilju MIN dev vremena. Kontekst: AS/400 = IBM proprietarni mainframe (proprietarni protokoli, ne čist REST); Shopify/Zendesk = moderni SaaS sa dostupnim community MCP serverima.",
+    "glossary_refs": [
+      "community MCP server",
+      "custom MCP server",
+      "legacy system",
+      "monolithic server",
+      "MCP server"
+    ],
+    "pattern_refs": [
+      "reuse-community-mcp-build-custom-only-for-proprietary"
+    ],
+    "tags": [
+      "mcp",
+      "mcp-server",
+      "community-server",
+      "custom-server",
+      "legacy",
+      "build-vs-reuse",
+      "modularity"
+    ]
+  },
+  {
+    "id": "d2-q007",
+    "domain": 2,
+    "subdomain": "2.3",
+    "question": "A multi-agent system features a Researcher agent with 10 deep-dive search tools and a Writer agent with 2 formatting tools. The Writer agent frequently encounters minor factual gaps (e.g., needing to verify a specific date) while drafting. Currently, the Writer must yield back to the Coordinator, which calls the Researcher, adding 3-4 extra turns and increasing latency. How should the architect optimize this workflow?",
+    "options": {
+      "A": "Give the Writer agent the full suite of 10 research tools but use system prompts to restrict their usage to minor factual lookups.",
+      "B": "Force the Writer agent to use tool_choice: {\"type\": \"any\"} to ensure it resolves all factual gaps before generating any text.",
+      "C": "Provide the Writer agent with a scoped verify_fact tool for high-frequency minor lookups, while routing complex research back to the Coordinator.",
+      "D": "Merge the Researcher and Writer agents into a single agent with all 12 tools to eliminate routing latency entirely."
+    },
+    "correct": "C",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Giving the Writer the full suite of research tools is insecure and inefficient. Relying on system prompts to restrict usage is fragile compared to proper tool scoping. It increases the context window usage and the risk of tool hallucination or misuse.",
+      "B": "Forcing tool usage via tool_choice: {\"type\": \"any\"} does not provide the Writer with the capability to perform lookups if it doesn't have the tools. It also leads to brittle behavior and does not solve the underlying latency issue caused by the current routing logic.",
+      "C": "This is the optimal architectural choice. Providing the Writer with a specialized, scoped tool for high-frequency, low-complexity lookups allows it to resolve minor gaps locally, significantly reducing latency. Complex research is still delegated to the specialized Researcher agent, maintaining a clean multi-agent separation.",
+      "D": "Merging the Researcher and Writer agents into a single agent eliminates routing latency but creates a bloated agent. This violates the principle of separation of concerns, increases cognitive load, and forces the model to manage many irrelevant tools during simple tasks, potentially reducing accuracy."
+    },
+    "claude_notes": "Right-sizing raspodele alata: Writer-u daj JEDAN uzak, namenski (scoped) alat baš za njegovu high-frequency, low-complexity potrebu (verify_fact) → rešava sitne rupe lokalno, ukida +3-4 turn-a kroz Coordinatora; kompleksno istraživanje OSTAJE kod specijaliste (Researcher preko Coordinatora) → čista multi-agent separacija. B (tvoj izbor) = tool_choice:{\"type\":\"any\"} samo FORSIRA poziv nekog alata (i kad rupe nema, pre teksta), ali NE DAJE Writer-u sposobnost ako alat ne postoji; krhko ponašanje i ne rešava latenciju iz routing logike. A = svih 10 dubinskih alata + restrikcija system promptom = over-provisioning: raste context window usage i decision complexity, rizik halucinacije/zloupotrebe alata, a prompt-restrikcija je krhka u poređenju sa pravim tool scoping-om. D = spajanje u jedan agent sa svih 12 alata eliminiše routing latenciju ALI pravi bloated agent: krši separation of concerns, diže cognitive load, tera model da upravlja mnogo nerelevantnih alata na prostim zadacima → potencijalno niža tačnost.",
+    "glossary_refs": [
+      "scoped tool",
+      "cognitive load",
+      "separation of concerns",
+      "tool distribution",
+      "tool_choice",
+      "coordinator"
+    ],
+    "pattern_refs": [
+      "scoped-tool-for-high-frequency-need-route-complex",
+      "distribute-tools-to-specialized-subagents"
+    ],
+    "tags": [
+      "tool-design",
+      "tool-distribution",
+      "scoped-tool",
+      "multi-agent",
+      "latency",
+      "separation-of-concerns",
+      "tool_choice"
+    ]
+  },
+  {
+    "id": "d2-q008",
+    "domain": 2,
+    "subdomain": "2.3",
+    "question": "A software development multi-agent system includes a 'Code Writer' agent and a 'QA Tester' agent. To speed up the workflow, the developer gave the Code Writer agent access to the run_integration_tests tool. Now, the Code Writer frequently attempts to run tests before finishing the code generation, causing pipeline failures. What is the most appropriate architectural fix?",
+    "options": {
+      "A": "Restrict the Code Writer's toolset to code generation tools and route testing tasks exclusively to the QA Tester agent.",
+      "B": "Update the run_integration_tests tool description to warn the Code Writer not to use it until the code is complete.",
+      "C": "Merge the Code Writer and QA Tester into a single agent so it has full context of when to run the tests.",
+      "D": "Force the Code Writer to use tool_choice: {\"type\": \"any\"} so it must write code and run tests in the same turn."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. This is the most robust architectural solution. According to Anthropic's recommended practices, multi-agent systems benefit from specialization. This approach aligns with the 'Generate-Validate Pattern', where one agent generates content (code) and a separate agent validates it (runs tests). Restricting the Code Writer's toolset enforces a clear separation of concerns, preventing it from performing tasks outside its designated role.",
+      "B": "Incorrect. While improving tool descriptions is a good practice for prompt engineering, it is not a reliable architectural fix. The agent's behavior is non-deterministic, and it might still ignore the warning. A more robust solution is to architecturally prevent the agent from accessing tools it shouldn't be using.",
+      "C": "Incorrect. This approach contradicts the principles of a multi-agent architecture, which leverages specialization and patterns like Orchestrator-Worker for complex tasks. Merging the agents into a monolith eliminates the benefits of separation of concerns and can make the single agent's prompt and logic more complex and harder to manage.",
+      "D": "Incorrect. The tool_choice parameter forces the model to use a tool if one is available, but it does not solve the underlying problem of the agent choosing the wrong tool at the wrong time. The agent could still choose to run tests prematurely within that turn, and this approach doesn't enforce the correct sequence of operations."
+    },
+    "claude_notes": "Testiranje je posao QA Tester-a; alat run_integration_tests dat je VAN domena Code Writer-a 'radi brzine', pa ga koristi u pogrešnom trenutku (testira pre nego što je kod gotov) → pipeline failures. Najrobusniji fix (A): arhitektonski ograničiti Code Writer na alate za generisanje koda + rutirati testiranje ISKLJUČIVO QA Tester-u = separation of concerns / Generate-Validate Pattern (jedan agent generiše kod, drugi validira pokretanjem testova). B = upozorenje u opisu alata ('ne koristi dok kod nije gotov') je prompt-engineering flaster za DETERMINISTIČKI redosled - nepouzdano jer je ponašanje non-deterministicko (model može ignorisati); robusno je arhitektonski sprečiti pristup alatu. C = merge u jedan agent = monolit, briše benefite specijalizacije/separation of concerns, prompt i logika složeniji i teži za održavanje (krši Orchestrator-Worker). D = tool_choice:{\"type\":\"any\"} forsira poziv nekog alata ALI ne rešava POGREŠAN REDOSLED - agent i dalje može pokrenuti testove prerano u tom turn-u. KONTRAST sa d2-q007: tamo alat TREBA agentu (česta legitimna sitna potreba → scoped alat), ovde alat NE PRIPADA agentu (tuđa odgovornost, lomi tok → ukloni + rutiraj).",
+    "glossary_refs": [
+      "Generate-Validate Pattern",
+      "Orchestrator-Worker pattern",
+      "specialization",
+      "separation of concerns",
+      "tool distribution",
+      "tool_choice"
+    ],
+    "pattern_refs": [
+      "remove-tool-that-doesnt-belong-route-to-specialist",
+      "distribute-tools-to-specialized-subagents",
+      "deterministic-needs-hook-not-prompt"
+    ],
+    "tags": [
+      "tool-design",
+      "tool-distribution",
+      "separation-of-concerns",
+      "multi-agent",
+      "generate-validate",
+      "orchestrator-worker"
+    ]
+  },
+  {
+    "id": "d2-q009",
+    "domain": 2,
+    "subdomain": "2.3",
+    "question": "A data ingestion pipeline forces an agent to call a validate_schema tool on the first turn using tool_choice: {\"type\": \"tool\", \"name\": \"validate_schema\"}. If the validation fails, the tool returns a detailed error string. The developer notices that when validation fails, the agent gets stuck in a loop, repeatedly calling validate_schema with the exact same invalid payload. How should the workflow configuration be adjusted to allow the agent to recover from the validation failure?",
+    "options": {
+      "A": "Keep the forced tool choice but add a system prompt instructing the agent to modify its payload when it receives an error string, such as by appending a retry counter or switching to a fallback schema.",
+      "B": "After the first forced turn, update the subsequent API request to use tool_choice: {\"type\": \"auto\"} so the agent has the freedom to call a different tool or ask for human help.",
+      "C": "Replace the validate_schema tool with a generic process_data tool that ingests data regardless of validation errors, logging any issues for later review while continuing the pipeline execution.",
+      "D": "Change the initial turn to use tool_choice: {\"type\": \"any\"} so the agent can decide whether to validate the schema or skip directly to ingestion, relying on its own judgment to avoid the loop."
+    },
+    "correct": "B",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. While a system prompt can influence behavior, the tool_choice parameter is a hard constraint. If the API call continues to force the validate_schema tool, the agent has no option but to call it again. It cannot choose a different action, like asking for help, which is the root cause of the loop.",
+      "B": "Correct. This is the recommended approach for multi-turn agentic workflows. Forcing a tool on the first turn ensures a required step is taken. According to Anthropic's documentation, switching to tool_choice: {\"type\": \"auto\"} on subsequent turns gives the model the freedom to reason about the tool's output (in this case, an error) and decide on the best next action, such as calling a different tool or generating a natural language response to ask for clarification, which effectively breaks the loop.",
+      "C": "Incorrect. This is a poor architectural choice that simply ignores the problem rather than solving it. Bypassing validation would lead to data corruption and downstream failures. The goal is to handle the validation error gracefully, not to eliminate the validation step.",
+      "D": "Incorrect. This violates the pipeline's requirement to force schema validation on the first turn. Using tool_choice: {\"type\": \"any\"} would compel the agent to use a tool, but not necessarily the validate_schema tool if other tools were available, thus failing to guarantee the initial validation step."
+    },
+    "claude_notes": "tool_choice je PER-REQUEST i HARD constraint. Forsiranje validate_schema (type:tool, name:validate_schema) na SVAKOM turn-u zaključava agenta na taj jedan alat → kad alat vrati error, agent ne može ništa drugo (drugi alat, NL pitanje, eskalacija) → beskonačna petlja sa istim nevažećim payload-om. Fix (B): forsiraj alat SAMO na 1. turn-u (garantuje da se obavezni korak validacije desi), pa naredni API zahtev pređe na {\"type\":\"auto\"} → agent slobodan da rezonuje o ishodu (error) i izabere sledeću akciju (pozove drugi alat, generiše NL odgovor za pojašnjenje, ili eskalira) → petlja se prekida. A = zadrži forsirano + system prompt da modifikuje payload: prompt NE može da prevaziđe hard tool_choice constraint - agent je i dalje primoran da zove validate_schema, koren petlje ostaje. C = zameni validate_schema generičkim process_data koji unosi bez obzira na greške = uništava validaciju, data corruption + downstream padovi (ignoriše problem, ne rešava graciozno). D (tvoj izbor) = menja PRVI turn na \"any\": (1) podriva zahtev da se PRVO validira (any sme izabrati drugi alat / preskočiti validaciju), (2) ne dotiče petlju na narednim turn-ovima - menjaš pogrešan turn (prvi je tačno forsiran, problem je što sloboda nikad ne dođe POSLE njega).",
+    "glossary_refs": [
+      "tool_choice",
+      "agentic loop",
+      "human-in-the-loop",
+      "infinite loop"
+    ],
+    "pattern_refs": [
+      "force-tool-first-turn-then-relax-to-auto",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool_choice",
+      "per-request",
+      "agentic-loop",
+      "recovery",
+      "reliability",
+      "multi-turn"
+    ]
+  },
+  {
+    "id": "d2-q010",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "You are tasked with modifying the authentication flow in a 500-file repository. You have no prior knowledge of the codebase. A junior developer suggests using a tool to find all files containing 'auth' in the name and Reading them all at once to build context. As an architect, why should you reject this approach and what should you do instead?",
+    "options": {
+      "A": "Reject it because Edit is faster for tracing. Instead, use Edit to inject logging into all files containing 'auth' to observe the live authentication flow.",
+      "B": "Reject it because authentication flows are in the database. Instead, use Read on the database schema and related migration files to trace the authentication logic.",
+      "C": "Reject it because Reading all files upfront overwhelms the context window. Instead, use Grep to find the login entry point and Read files sequentially.",
+      "D": "Reject it because Glob cannot filter by filename. Instead, use Bash find to locate all 'auth' files, then use Read on the entire list to build the required context."
+    },
+    "correct": "C",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Using Edit to inject logging into many files before understanding the codebase is risky and invasive. It can introduce bugs and violates the principle of first understanding a system before modifying it. The initial goal is discovery, not modification.",
+      "B": "Incorrect. This assumes authentication logic resides in the database, but it typically lives in application code (e.g., password hashing, session management). Reading only the database schema and migrations would give an incomplete picture of the authentication flow.",
+      "C": "Correct. Reading all files upfront creates a bloated context, degrading performance and increasing token usage. The recommended approach is to use Grep to locate a relevant entry point, then sequentially Read files by following imports and function calls, which is efficient and aligns with Anthropic's best practices for context management.",
+      "D": "Incorrect. The issue is not that Glob cannot filter by filename—it can, using patterns like *auth*.*. The real problem is reading all matched files at once, which overwhelms the context window and is inefficient. Using find and then Read on the entire list suffers from the same flaw."
+    },
+    "claude_notes": "U velikom nepoznatom repou NE čitaj sve „relevantne\" fajlove unapred - bulk-read zatrpava context window, degradira performanse i diže token usage. Discovery PRE modifikacije: koristi Grep (pretraga SADRŽAJA) da lociraš ulaznu tačku (login/auth logika), pa Read selektivno/sekvencijalno prateći import-e i pozive funkcija = progresivno građenje konteksta (Anthropic best practice za context management). A = Edit za „tracing\" znači menjati kod (ubacivati logging) PRE razumevanja - rizično, invazivno, uvodi bagove; cilj je discovery, ne modifikacija. B (tvoj izbor) = izmišljena premisa da auth živi u bazi; auth logika tipično je u APP kodu (password hashing, session management), pa bi Read samo schema+migracija dao nepotpunu sliku. D = razlog je lažan: Glob MOŽE da filtrira po imenu (patterni *auth*.*); a „Read cele liste\" PONAVLJA istu grešku - context overflow. KLJUČNA RAZLIKA: Glob = ime/putanja fajla, Grep = sadržaj fajla.",
+    "glossary_refs": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Bash",
+      "context window",
+      "built-in tools"
+    ],
+    "pattern_refs": [
+      "grep-to-entry-point-read-sequentially-not-bulk",
+      "distractor-invents-a-mechanism"
+    ],
+    "tags": [
+      "built-in-tools",
+      "grep",
+      "glob",
+      "read",
+      "edit",
+      "bash",
+      "context-management",
+      "claude-code"
+    ]
+  },
+  {
+    "id": "d2-q011",
+    "domain": 2,
+    "subdomain": "2.4",
+    "question": "A data engineering agent is designed to write complex SQL queries across a massive data warehouse containing over 800 tables. During testing, the agent frequently hallucinates column names or wastes significant time executing DESCRIBE TABLE tool calls for dozens of tables before writing the actual query. What is the most effective architectural solution to provide the agent with the necessary context?",
+    "options": {
+      "A": "Expose the database schemas as an MCP resource, giving the agent immediate visibility into the schema catalog without exploratory tool calls.",
+      "B": "Restrict the agent's access to only 10 tables per session by configuring a dynamic whitelist in the .mcp.json file.",
+      "C": "Create a guess_schema tool that uses a smaller, faster LLM to predict column names based on the table name, reducing the load on the main agent.",
+      "D": "Update the system prompt to include the complete schema definition for all 800 tables so the agent has it in context at all times."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. In the Model Context Protocol (MCP), resources are designed to expose structured, read-only data (like a database schema catalog) to the agent. This provides an authoritative source of truth that the model can reference as needed, significantly reducing the overhead and latency associated with sequential tool calls and preventing hallucinations.",
+      "B": "Incorrect. Restricting the agent's scope is a brittle workaround that limits its ability to handle complex queries across the full warehouse. It does not address the fundamental need for a scalable way to discover metadata within the allowed scope.",
+      "C": "Incorrect. A guessing tool relies on prediction rather than authoritative metadata, which exacerbates the core problem of hallucination. Data engineering tasks require absolute accuracy to ensure SQL queries do not fail in production.",
+      "D": "Incorrect. Including schema definitions for 800 tables in the system prompt would likely exceed the model's context window or at least bloat it significantly, leading to high token costs, increased latency, and a loss of focus for the primary reasoning task."
+    },
+    "claude_notes": "MCP izlaže TRI stvari: tools (akcije), resources (read-only strukturisani podaci/kontekst) i prompts (šabloni). Schema katalog izložen kao MCP resource = authoritative source of truth dostupan agentu na uvid → ukida eksplorativne DESCRIBE TABLE pozive (overhead/latencija) i halucinaciju imena kolona. B = whitelist na 10 tabela po sesiji = krhak workaround koji sakati složene upite preko celog warehouse-a; ne rešava skalabilno otkrivanje metapodataka unutar dozvoljenog opsega. C = guess_schema (manji/brži LLM predviđa kolone) oslanja se na PREDIKCIJU umesto authoritative metapodataka → POGORŠAVA halucinaciju; data engineering traži apsolutnu tačnost (SQL ne sme da padne u produkciji). D = kompletna šema svih 800 tabela u system prompt stalno = prekoračuje ili snažno naduvava context window → visok token cost, veća latencija, gubitak fokusa za primarni reasoning. KONTRAST A vs D: resource = strukturisan izvor na uvid po potrebi; prompt-stuffing = trajno zatrpavanje konteksta.",
+    "glossary_refs": [
+      "MCP resource",
+      "exploratory tool calls",
+      "MCP",
+      "context window",
+      "hallucination",
+      ".mcp.json"
+    ],
+    "pattern_refs": [
+      "expose-reference-data-as-mcp-resource-not-explore-or-stuff",
+      "chain-tools-to-fetch-data-not-invent"
+    ],
+    "tags": [
+      "mcp",
+      "mcp-resource",
+      "schema",
+      "context-management",
+      "hallucination",
+      "data-engineering"
+    ]
+  },
+  {
+    "id": "d2-q012",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "An architect is maintaining a complex project using Claude Code, which relies on several custom plugins. The invoice-parser plugin has a declared dependency on the currency-converter plugin. The architect attempts to disable the currency-converter plugin by running the command claude plugin disable currency-converter. Based on the documented behavior for plugin dependency handling in Claude Code, what is the expected outcome?",
+    "options": {
+      "A": "The command will fail, and Claude Code will prevent the currency-converter plugin from being disabled because the enabled invoice-parser plugin depends on it.",
+      "B": "The currency-converter plugin will be disabled, but the invoice-parser plugin will be automatically disabled as well to resolve the dependency conflict.",
+      "C": "The command will succeed, disabling the currency-converter plugin. The invoice-parser plugin will remain enabled but will fail at runtime when it attempts to call the missing dependency.",
+      "D": "The currency-converter plugin will be disabled, and the architect will be prompted to provide an alternative implementation or a mock for the invoice-parser plugin to use."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. According to Anthropic's official documentation, Claude Code enforces plugin dependencies to ensure stability. If you attempt to disable a plugin that another enabled plugin depends on, the command will fail, and the error message will explicitly state which plugin is causing the dependency conflict.",
+      "B": "Incorrect. The command to disable the currency-converter plugin will fail and no plugins will be disabled automatically. According to the documentation, Claude Code will instead provide a 'chained command' in the error message that the architect can choose to run, which would then disable the full set of interdependent plugins in a single, manual step.",
+      "C": "Incorrect. Claude Code's plugin management system is designed to prevent this exact scenario. It proactively checks for dependencies and will fail the command to maintain the integrity of the plugin ecosystem, rather than allowing a runtime failure to occur later.",
+      "D": "Incorrect. The command will fail. The documented behavior for handling dependency conflicts in Claude Code is to block the disabling action and return an error. The system does not include functionality to prompt for or manage mock implementations in this context."
+    },
+    "claude_notes": "Claude Code je dependency-aware: plugin u .claude-plugin/plugin.json deklariše `dependencies` niz (ime ili {name, version}). Pri pokušaju disable plugina od kog zavisi DRUGI enabled plugin, komanda se ODBIJA - greška eksplicitno imenuje zavisne pluginove i nudi 'chained command' koja ih isključuje pravim redosledom (zavisne prvo, pa traženi). Proaktivna zaštita PRE akcije, radi integriteta plugin ekosistema. Ovde: invoice-parser (enabled) zavisi od currency-converter → disable currency-converter PADA. B = NE kaskadira tiho auto-disable invoice-parser; nijedan plugin se ne isključuje automatski - umesto toga dobiješ chained command koju TI biraš da pokreneš. C = NE uspeva pa pukne u runtime-u; sistem proaktivno proverava zavisnosti i pada komandu unapred (intercept PRE, ne reaktivni runtime pad). D = prompt za alternativu/mock = izmišljeno ponašanje; dokumentacija ga ne pominje. Napomena: odgovor verifikovan u zvaničnoj Claude Code dokumentaciji (plugin-dependencies, v2.1.143+), ne iz memorije.",
+    "glossary_refs": [
+      "plugin",
+      "plugin dependencies",
+      "plugin.json"
+    ],
+    "pattern_refs": [
+      "claude-code-blocks-disable-of-depended-on-plugin",
+      "intercept-before-not-after"
+    ],
+    "tags": [
+      "claude-code",
+      "plugin",
+      "plugin-dependencies",
+      "cli",
+      "guardrail",
+      "reliability"
+    ]
+  },
+  {
+    "id": "d2-q013",
+    "domain": 2,
+    "subdomain": "2.3",
+    "question": "An internal knowledge-base agent uses a generic fetch_url tool to retrieve company documents. Production logs show the agent occasionally attempts to fetch external public URLs or hallucinates internal IP addresses, leading to timeouts and security alerts. Which modification best resolves this issue while maintaining the agent's core functionality?",
+    "options": {
+      "A": "Replace fetch_url with a constrained load_internal_document tool that accepts document IDs and validates them against the internal directory.",
+      "B": "Set tool_choice: {\"type\": \"auto\"} so the model can decide whether the URL is internal or external before executing the tool call.",
+      "C": "Update the fetch_url tool's description to explicitly warn the model about the consequences of fetching external URLs.",
+      "D": "Implement a pre-processing agent that uses regex to validate URLs before passing them to the fetch_url tool."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. This is the most robust and recommended approach. According to Anthropic's best practices, restricting the tool's capability to only access a validated set of internal documents is a core strategy for preventing hallucinations and ensuring security. This method implements \"External knowledge restriction\" by design, ensuring the model is grounded in a controlled, curated information source and cannot attempt to access unauthorized external or non-existent internal resources.",
+      "B": "Incorrect. The tool_choice parameter controls *if* the model uses a tool or which tool it selects from a list. It does not constrain the *arguments* the model provides to the tool. The model could still choose to call the fetch_url tool and pass a hallucinated or external URL as a parameter.",
+      "C": "Incorrect. This is a form of prompt engineering. While Anthropic's documentation states that clear instructions can help reduce hallucinations, it is not a reliable security control. The model may still ignore the warning and generate an invalid URL. A structural change that programmatically prevents the undesirable behavior is a much more effective and secure solution.",
+      "D": "Incorrect. While this could act as a safeguard, it is not the best solution. It adds architectural complexity by introducing another agent and relies on potentially brittle regex for validation. The more direct, secure, and recommended approach is to modify the tool's fundamental design to be inherently safe, rather than patching it with an external validation layer."
+    },
+    "claude_notes": "Generički alat koji prima URL = preširok interfejs → model povremeno prosledi loš ili haluciniran argument (eksterni URL, izmišljen interni IP). Rešenje je da se SUZI interfejs: load_internal_document(document_id) + validacija prema internom direktorijumu čini „dohvati eksterni URL\" STRUKTURNO nemogućim (hard guardrail na nivou interfejsa), a core funkcija (čitanje internih dokumenata) ostaje. Anthropic to imenuje „External knowledge restriction\" by design. B = tool_choice kontroliše DA LI / KOJI alat se zove, ne ŠTA mu se prosleđuje kao argument; haluciniran url prolazi netaknut (i auto je ionako podrazumevano). C = prompt engineering / soft guardrail — model može da ignoriše upozorenje u opisu, nije pouzdana sigurnosna kontrola. D = overengineering: drugi agent + krhki regex; ne dira uzrok (generički fetch_url i dalje postoji), a regex ne validira da li dokument stvarno postoji u direktorijumu. Pouka: kad alat prima loš argument → suzi interfejs (hard guardrail), ne upozoravaj promptom (soft) ni dodaji eksterni validacioni sloj.",
+    "glossary_refs": [
+      "external knowledge restriction",
+      "scoped tool",
+      "tool_choice",
+      "hallucination"
+    ],
+    "pattern_refs": [
+      "constrain-tool-interface-to-prevent-bad-input",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-design",
+      "scoped-tool",
+      "guardrail",
+      "security",
+      "hallucination",
+      "subdomain-2.3"
+    ]
+  },
+  {
+    "id": "d2-q014",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "An automated financial analysis agent uses an MCP tool to pull stock market data from a third-party API. The tool currently wraps all API exceptions—including rate limits, invalid ticker symbols, and unauthorized access—into a single uniform response: { \"isError\": true, \"message\": \"API Request Failed\" }. What is the primary architectural risk of this design?",
+    "options": {
+      "A": "The agent cannot distinguish between a rate limit (requiring a wait and retry) and an invalid ticker (requiring user clarification), leading to wasted retry attempts or premature task failure.",
+      "B": "The agent will assume the tool is deprecated and permanently remove it from its available tool list for all future user sessions, preventing any further market data retrieval and forcing reliance on stale cached prices.",
+      "C": "The MCP protocol will automatically reject any error response that does not contain a stack trace, causing the agent's session to crash and lose all in-progress financial analysis state, including unsaved portfolio adjustments.",
+      "D": "The agent will attempt to bypass the tool entirely and write its own Python code to call the API directly, violating security boundaries and exposing raw API credentials to the execution environment."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. The primary architectural risk of unstructured error responses is the loss of actionable context. If the agent cannot distinguish between transient errors like rate limits (requiring a wait and retry) and terminal errors like invalid ticker symbols (requiring user clarification), it cannot make informed recovery decisions, leading to wasted retry attempts or premature task failure.",
+      "B": "Incorrect. LLM-based agents do not have a built-in mechanism to permanently deprecate or remove tools from their available tool list based on a single uniform error response. The agent will not assume the tool is deprecated and will not prevent future market data retrieval.",
+      "C": "Incorrect. The MCP protocol does not require error responses to contain a stack trace, and its absence will not cause the protocol to reject the response or crash the agent's session. The agent's state, including unsaved portfolio adjustments, is not inherently lost due to a missing stack trace in an error response.",
+      "D": "Incorrect. While an agent might attempt to use other available tools if one fails, it cannot violate enforced security boundaries to write and execute unauthorized code for direct API access unless specifically configured to do so. The agent will not bypass the tool and expose raw API credentials."
+    },
+    "claude_notes": "Sledeći sloj posle [[structured error response]]: vraćanje isError:true NIJE dovoljno ako je poruka uniformna/netipizovana. Spljoštavanje svih izuzetaka (rate limit, nevažeći ticker, unauthorized) u jedan isti odgovor briše ACTIONABLE kontekst — agent ne može da razlikuje PROLAZNU grešku (rate limit → sačekaj pa retry) od TERMINALNE (nevažeći ticker → traži pojašnjenje korisnika; 401 → eskaliraj). Posledica: ili uludo retry-uje nešto što nikad neće proći, ili prerano odustaje od nečega što bi prošlo posle pauze. Rešenje = granularne/tipizovane greške (npr. error_type: rate_limit | invalid_input | unauthorized) da agent izabere ispravnu strategiju oporavka. B/C/D su izmišljeni horor scenariji: LLM agent nema mehanizam da trajno 'deprecira' alat zbog jedne greške (B); MCP ne zahteva stack trace i ne ruši sesiju zbog njegovog odsustva (C); agent ne probija sigurnosne granice da piše sopstveni kod i curi kredencijale osim ako je tako konfigurisan (D). Prava zamka: tri opcije zvuče dramatično/ozbiljno, a tačan rizik je tiši i praktičniji — gubitak informacije o tipu greške.",
+    "glossary_refs": [
+      "structured error response",
+      "transient error",
+      "terminal error",
+      "rate limit"
+    ],
+    "pattern_refs": [
+      "errors-must-be-typed-for-recovery"
+    ],
+    "tags": [
+      "tool-design",
+      "error-handling",
+      "mcp",
+      "structured-errors",
+      "retry",
+      "subdomain-2.2"
+    ]
+  },
+  {
+    "id": "d2-q015",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "An agent is tasked with provisioning cloud infrastructure using an MCP tool. The tool requires a specific instance type. The agent requests an instance type that is currently out of stock in the selected region (a capacity issue that might resolve in a few hours). The tool currently returns isError: true with isRetryable: false. What is the consequence of this configuration?",
+    "options": {
+      "A": "The MCP protocol will override the isRetryable: false flag and force the agent into an exponential backoff loop, repeatedly retrying the provisioning request until the instance becomes available.",
+      "B": "The agent will ignore the isRetryable: false flag because capacity issues are inherently transient, and it will retry the request immediately using the same instance type and region.",
+      "C": "The agent will treat the error as a permanent failure (like a validation or permission error) and will not attempt to retry the operation later, even if instructed to wait.",
+      "D": "The agent will recognize the capacity issue and automatically switch to a different region without prompting the user, assuming the tool's error response indicates a transient resource shortage."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. The MCP protocol does not override tool-defined flags. Retry behavior, including exponential backoff, is driven by the tool's response flags and the agent's implementation; isRetryable: false prevents automatic retries.",
+      "B": "Incorrect. Agents adhere to structured error responses for predictable behavior. The agent respects the isRetryable: false flag and will not retry immediately, regardless of the underlying transient nature of the capacity issue.",
+      "C": "Correct. In the MCP framework, isRetryable: false tells the agent the error is non-transient, like a validation or permission error. When a transient capacity issue is mislabeled this way, the agent treats it as permanent and will not retry, even if instructed to wait.",
+      "D": "Incorrect. The tool returns isRetryable: false, which signals a terminal error. The agent does not automatically switch regions unless explicitly programmed to do so; it relies on the error response to decide next steps, and this flag indicates the request should not be retried."
+    },
+    "claude_notes": "isRetryable je mašinski ugovor koji agent posluša bukvalno — ne preispituje flag „zdravim razumom\". Tool je hardkodovao isRetryable:false na kapacitetsku (prolaznu) grešku → agent je tretira kao terminalnu (validation/permission), odustaje i NEĆE retry-ovati ni kasnije, čak ni ako mu se kaže da čeka. Izgubljen je oporavak koji je bio moguć (sačekaj par sati → instanca se vrati). Ovo je ogledalo d2-q014: tamo greška NIJE bila tipizovana (uniformna poruka), ovde je tipizovana POGREŠNO — oba puta agent ne donese ispravnu odluku. Pouka: tipizovana greška vredi tačno onoliko koliko je tačna; pogrešan tip je štetan kao i nedostatak tipa. A = MCP NE override-uje tool-definisane flag-ove (zamka „protokol je pametniji od tebe\"); isRetryable:false upravo sprečava retry. B = agent NE ignoriše flag „jer je kapacitet ionako prolazan\"; poštuje strukturirani error radi predvidljivog ponašanja (a i immediate retry istog tipa/regiona bi bio loš). D = override flag-a + izmišljena autonomija; agent ne menja region sam osim ako je eksplicitno programiran. Tačnost flag-a je odgovornost dizajna tool-a.",
+    "glossary_refs": [
+      "isRetryable",
+      "transient error",
+      "terminal error",
+      "structured error response"
+    ],
+    "pattern_refs": [
+      "error-type-must-be-accurate-not-just-present",
+      "errors-must-be-typed-for-recovery"
+    ],
+    "tags": [
+      "tool-design",
+      "error-handling",
+      "mcp",
+      "structured-errors",
+      "retry",
+      "subdomain-2.2"
+    ]
+  },
+  {
+    "id": "d2-q016",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "An agent uses an MCP tool to query a legacy mainframe database. The mainframe has a strict maintenance window every night from 2:00 AM to 3:00 AM, during which all queries are rejected with a \"System Offline\" code. Currently, the tool returns isError: true, errorCategory: \"transient\", and isRetryable: true. Why is this configuration problematic during the maintenance window, and how should it be fixed?",
+    "options": {
+      "A": "It violates the MCP specification, which requires all transient errors to be isRetryable: false to prevent infinite retry loops that degrade system performance. It should be changed to errorCategory: \"business\" so the agent treats the outage as a non-retryable business rule violation.",
+      "B": "It causes the agent to rapidly retry the query, wasting tokens and compute resources for an hour. It should be changed to isRetryable: false with a human-readable description explaining the maintenance window so the agent can inform the user to wait.",
+      "C": "It causes the agent to permanently delete the tool from its context, preventing any future queries to the mainframe even after the maintenance window ends. It should be changed to isError: false with an empty result set to keep the tool active during the maintenance window.",
+      "D": "It forces the agent to hallucinate database records by fabricating plausible data when the mainframe is offline, leading to incorrect downstream decisions. It should be changed to errorCategory: \"permission\" so the agent requests administrative access to override the maintenance lock."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. The Model Context Protocol (MCP) does not require transient errors to be non-retryable; in fact, transient errors (like network blips) are the primary candidates for the isRetryable: true flag. The issue here is the duration and predictability of the outage, not a specification violation.",
+      "B": "Correct. Marking a scheduled maintenance outage as retryable leads the agent to believe the failure is a momentary glitch. Consequently, the agent or orchestration layer may repeatedly retry the call throughout the hour-long window, wasting tokens and compute. The proper fix is to set isRetryable: false and provide a clear, human-readable error message so the agent can inform the user of the scheduled downtime.",
+      "C": "Incorrect. A tool returning an error does not cause the agent to permanently delete the tool from its context. Furthermore, returning isError: false with an empty result set is poor design as it misleads the agent into thinking the query was successful but returned no data, when in reality the system was unavailable.",
+      "D": "Incorrect. A 'System Offline' status is an availability issue, not a permission issue. Categorizing this as a permission error would lead the agent to suggest incorrect recovery paths, such as asking the user for higher-level credentials, which would not resolve the maintenance window blockage."
+    },
+    "claude_notes": "Noćni prozor 02–03h je PLANIRAN, predvidiv ispad poznatog trajanja — nije nasumičan glitch. isRetryable:true govori agentu „slobodno ponavljaj\", pa tokom sata agent/orkestracija lupa retry za retry-em u prazno (ispad neće proći do 03:00) → traćenje tokena i compute. Popravka: isRetryable:false (prekini besmisleni loop) + human-readable opis sa kontekstom („mainframe je u maintenance-u do 03:00\"), da agent ima actionable informaciju — javi korisniku da sačeka. Nijansa: ispad JESTE privremen (prođe u 03:01), pa isRetryable:false nije savršeno semantički — idealno bi bilo „retryable, ali ne pre 03:00\" (retry-after); ali od ponuđenih, B je jedina koja i zaustavlja loop i daje korisnu informaciju, pa je arhitektonski najbranjivija. Ovo je ogledalo d2-q015: tamo je prolazno označeno kao terminalno (prerano odustajanje), ovde je zakazan/privremen ispad označen kao odmah-ponovljiv (uludo ponavljanje) — ista pouka iz dva ugla. A = MCP NE zahteva da transient bude non-retryable (izmišljen zahtev); problem je trajanje + predvidivost, ne spec violation; „business\" je trajni prekršaj poslovnog pravila, a ovo je privremeni ispad. C = agent ne briše tool zbog jedne greške + isError:false sa praznim rezultatom je lažni uspeh (poznata anti-šema iz d2-q003 — tiho gutanje greške). D = „System Offline\" je availability problem, ne permission; admin kredencijali ne otvaraju namerno ugašen sistem.",
+    "glossary_refs": [
+      "errorCategory",
+      "isRetryable",
+      "transient error",
+      "structured error response"
+    ],
+    "pattern_refs": [
+      "error-type-must-be-accurate-not-just-present",
+      "errors-must-be-typed-for-recovery",
+      "mcp-error-needs-iserror-not-empty-success"
+    ],
+    "tags": [
+      "tool-design",
+      "error-handling",
+      "mcp",
+      "structured-errors",
+      "retry",
+      "error-category",
+      "subdomain-2.2"
+    ]
+  },
+  {
+    "id": "d2-q017",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "You are tasked with updating the tax_rate from 0.05 to 0.06 for the state of \"NY\" in a large state_taxes.json file. The file contains a JSON array of objects, and a simple text-based search-and-replace is unsafe as it could modify entries for other states or fail if formatting changes. What is the most robust and structurally-aware approach using a standard command-line environment to ensure only the correct object is modified?",
+    "options": {
+      "A": "Use a read_file tool to load the entire JSON file into the context window, instruct the model to modify the \"NY\" object's rate, and then use a write_file tool to save the entire modified content back to the file.",
+      "B": "Use grep -n to find the line number for \"state\": \"NY\", then use a stream editor like sed to replace the tax_rate on a subsequent line.",
+      "C": "Use the jq command-line tool to apply a filter that selects the \"NY\" object and updates its tax_rate field, then use a temporary file and a move command (mv) to safely overwrite the original file.",
+      "D": "Use the Anthropic text_editor tool with the str_replace command to replace the string \"state\": \"NY\",\\n \"tax_rate\": 0.05 with the updated value."
+    },
+    "correct": "C",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "While this approach could work in an AI-assisted environment like Claude Code, it is not the most robust or standard command-line method. It relies on the model correctly interpreting and modifying the entire file, which may be inefficient for large files and introduces a dependency on the AI's accuracy. The question specifically asks for a 'standard command-line environment,' where jq is the idiomatic tool for structured JSON manipulation.",
+      "B": "This approach is fragile and not structurally aware. It assumes a specific line offset and formatting, which can easily break if the JSON is pretty-printed differently, contains extra whitespace, or has multiple entries for \"NY\". A text-based search-and-replace cannot guarantee that only the intended object is modified, making it unsafe for structured data like JSON.",
+      "C": "This is the recommended approach for structurally-aware JSON editing. jq parses the JSON structure, allowing precise selection of the \"NY\" object with a filter like map(if .state == \"NY\" then .tax_rate = 0.06 else . end). Since jq lacks an in-place edit option, writing to a temporary file with mktemp and then atomically replacing the original with mv ensures data integrity and prevents corruption if the command fails. This method is portable, safe, and officially documented.",
+      "D": "This method is also text-based and not structurally aware. It depends on exact string matching, including whitespace and newline characters, which can vary with formatting changes. It does not parse the JSON structure, so it could miss the target or inadvertently modify other entries if the string appears elsewhere. The question asks for a 'standard command-line environment,' and jq is the appropriate tool for robust JSON manipulation."
+    },
+    "claude_notes": "Subdomain 2.5 testira izbor pravog built-in alata. Ključna razlika: TEKSTUALNI alati (sed, str_replace, naivni grep+sed) vide fajl kao niz karaktera — pucaju čim se formatiranje promeni (drugačiji indent, minifikovano, \\n) i mogu pogoditi pogrešnu državu. STRUKTURNI alat jq parsira JSON kao stablo — pogađa tačno NY objekat bez obzira na formatiranje (map(if .state==\"NY\" then .tax_rate=0.06 else . end)). jq nema in-place edit, pa se piše u temp fajl (mktemp) i atomično prebriše original sa mv — ili stari ili novi fajl, nikad korumpiran. A = oslanja se na model da regeneriše ceo veliki fajl (skupo + zavisi od tačnosti modela), nije „standard CLI\". B = grep+sed pretpostavlja tačan red/offset — krhko, eksplicitno ona „unsafe\" tekstualna zamena iz stema. D (naš pogrešan izbor) = str_replace cilja blok ali je i dalje doslovna zamena stringa sa tačnim razmacima/\\n — najosetljivije na formatiranje; razume malo više konteksta od B ali i dalje NE parsira JSON. Pouka: structurally-aware = PARSIRA format, ne gađa tekst preciznije.",
+    "glossary_refs": [
+      "jq",
+      "structurally-aware editing",
+      "atomic write (temp file + mv)",
+      "str_replace",
+      "sed",
+      "Bash"
+    ],
+    "pattern_refs": [
+      "parse-format-dont-text-match"
+    ],
+    "tags": [
+      "tool-design",
+      "built-in-tools",
+      "cli",
+      "json",
+      "structurally-aware",
+      "atomic-write",
+      "subdomain-2.5"
+    ]
+  },
+  {
+    "id": "d2-q018",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "You are using the Claude Code command-line environment to update the tax_rate from 0.05 to 0.06 for the state of \"NY\" in a large state_taxes.json file. The file contains a JSON array of objects, and a simple text-based search-and-replace is unsafe as it could modify incorrect entries or fail if formatting changes. What is the most robust and structurally-aware approach using the capabilities of the Claude Code environment?",
+    "options": {
+      "A": "Use grep -n to find the line number for \"state\": \"NY\", then use a stream editor like sed to replace the tax_rate on a subsequent line.",
+      "B": "Use a read_file tool to load the entire JSON file into the context window, instruct the model to modify the \"NY\" object's rate, and then use a write_file tool to save the entire modified content back to the file.",
+      "C": "Use the jq command-line tool to apply a filter that selects the \"NY\" object and updates its tax_rate field, then use a temporary file and a move command (mv) to safely overwrite the original file.",
+      "D": "Use Programmatic Tool Calling (PTC) to generate and execute Python code that reads the JSON file, parses it, updates the tax_rate for \"NY\", and writes the modified data back to the file."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "This is a fragile, text-based approach that is explicitly discouraged for structured data like JSON. It relies on exact line positioning and formatting, which can easily break if the file is reformatted or if there are multiple matches. The question itself notes that simple text-based search-and-replace is unsafe. Claude Code provides more robust, structurally-aware methods through Programmatic Tool Calling or dedicated tools that understand the data structure.",
+      "B": "This approach is conceptually valid but not the most robust or recommended method. Loading a large file entirely into the context window can be token-inefficient and may risk context limits. More importantly, Anthropic's official guidance emphasizes using Programmatic Tool Calling (PTC) for structured data manipulation, where Claude generates and executes code (e.g., Python) to parse, modify, and serialize JSON. This ensures structural integrity, allows for complex logic, and avoids potential errors from direct LLM output of the entire file content.",
+      "C": "",
+      "D": "This is the most robust and recommended approach according to Anthropic's official documentation. Programmatic Tool Calling (PTC) allows Claude to write and execute code (e.g., Python) to perform the modification. This method ensures structural integrity by parsing the JSON into a programmatic data structure, applying the change with standard logic, and serializing it back. It is token-efficient (intermediate results are not loaded into context), supports complex logic, and integrates with Claude Code's safety features like human-in-the-loop review and version control."
+    },
+    "claude_notes": "DISPUTED (jq vs PTC). Skoro isti scenario kao d2-q017, ali stem kaže „capabilities of the Claude Code environment\" i opcija D je sada PTC. Korisnik odgovorio C; kviz označio netačnim i dao zvanični ključ D (PTC). Po opcijama: A = tekstualno/krhko (grep+sed pretpostavlja red/offset) — eksplicitno ona „unsafe\" zamena iz stema. B = ceo veliki fajl u kontekst (skupo, rizik po context limit) + model regeneriše sadržaj → nije robusno. C (NAŠ verdikt) = jq parsira JSON kao strukturu, pogađa tačno NY objekat, atomičan upis preko temp fajla + mv; jednolinijski je, izlaz NE ulazi u kontekst modela, a Bash je built-in alat subdomaina 2.5. D (zvanični ključ kviza) = PTC; jeste strukturno svestan, ALI po Anthropic zvaničnim docs PTC je WEAK fit za „a small number of tool calls with small responses\" (overhead code-execution sandbox-a premašuje uštedu) — strong fit je fan-out preko mnogo stavki, veliki rezultati za filtriranje/agregaciju, agentic search. Za izmenu JEDNOG polja je over-engineering. Pravdanje za D (token-efikasnost, strukturni integritet) jednako važi za jq preko Bash-a, pa ne diže D iznad C. Disputed jer kviz protivreči sebi: d2-q017 (isti zadatak, „standard command-line\" framing) proglašava jq/C tačnim i „officially documented\", a ovde isti jq/C postaje netačan čim se doda PTC opcija. NA ISPITU: ako vidiš PTC opciju uz „Claude Code environment\" framing, kviz verovatno traži D — to je klimava tačka, biraj svesno. Vidi disputed polje za pun rezon i izvore (Anthropic PTC docs).",
+    "glossary_refs": [
+      "Programmatic Tool Calling (PTC)",
+      "jq",
+      "structurally-aware editing",
+      "atomic write (temp file + mv)",
+      "Bash"
+    ],
+    "pattern_refs": [
+      "parse-format-dont-text-match",
+      "right-size-tool-to-task"
+    ],
+    "tags": [
+      "tool-design",
+      "built-in-tools",
+      "cli",
+      "json",
+      "structurally-aware",
+      "ptc",
+      "disputed",
+      "subdomain-2.5"
+    ],
+    "disputed": {
+      "reason": "Skoro isti scenario kao d2-q017 (gde je jq/C zvanično tačno, „officially documented\"). Ovde kviz dodaje PTC opciju, prebacuje framing na „capabilities of the Claude Code environment\" i proglašava PTC/D tačnim a jq/C netačnim. Ista mreža kviza daje suprotan ključ za isti zadatak — protivreči sebi.",
+      "official_answers_seen": [
+        "jq + temp fajl + mv (strukturno svestan CLI alat preko Bash-a) — zvanično tačno u d2-q017 (framing „standard command-line environment\")",
+        "Programmatic Tool Calling (PTC): Claude generiše i izvršava Python koji parsira, menja i serializuje JSON — zvanično tačno u ovoj instanci (framing „capabilities of the Claude Code environment\")"
+      ],
+      "our_verdict": "C",
+      "verdict_rationale": "Anthropic zvanični PTC docs: „a small number of tool calls with small responses\" je SLAB fit (overhead container-a/skripte premašuje uštedu); strong-fit = fan-out preko mnogo stavki, veliki rezultati za filtriranje, agentic search. Izmena jednog polja u jednom fajlu je upravo taj slab fit; PTC zahteva code execution sandbox. jq preko Bash-a je strukturno svestan, jednolinijski, atomičan (temp+mv), izlaz NE ulazi u kontekst — pa „token-efficient/structural integrity\" iz obrazloženja za D jednako važi za C. Subdomain 2.5 = built-in alati (Read/Write/Edit/Bash/Grep/Glob); jq ide kroz Bash (built-in), PTC nije built-in alat. Simplicity-first + konzistentnost sa d2-q017 → C je najbranjiviji. Izvori: platform.claude.com/docs/en/agents-and-tools/tool-use/programmatic-tool-calling ; anthropic.com/engineering/advanced-tool-use. Na ispitu: PTC opcija uz „Claude Code environment\" framing → kviz verovatno traži D."
+    }
+  },
+  {
+    "id": "d2-q019",
+    "domain": 2,
+    "subdomain": "2.1",
+    "question": "A real estate bot has a calculate_mortgage tool. It works perfectly for standard fixed-rate mortgages. However, when users ask about 'reverse mortgages' or 'HELOCs', Claude attempts to use the tool, passing invalid parameters that crash the backend calculator. What is the best approach to handle these edge cases?",
+    "options": {
+      "A": "Remove the calculate_mortgage tool and rely on Claude's internal knowledge to generate financial calculations for all mortgage types, including reverse mortgages and HELOCs.",
+      "B": "Update the tool description to explicitly list supported mortgage types and add boundary explanations instructing Claude not to use the tool for reverse mortgages or HELOCs.",
+      "C": "Create dummy parameters in the tool schema for reverse mortgages and HELOCs that map to static text responses, so the tool returns a fixed message instead of crashing.",
+      "D": "Implement a try-catch block in the backend that catches invalid parameter errors for reverse mortgages and HELOCs, logs the failure, and returns a generic error message to Claude."
+    },
+    "correct": "B",
+    "my_answer": "A",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Removing the tool entirely sacrifices the precision and deterministic accuracy that programmatic calculators provide for supported mortgage types. LLMs are often unreliable for complex financial calculations, so the best approach is to retain the tool but strictly define its operational boundaries.",
+      "B": "Correct. Updating the tool description to explicitly list supported mortgage types and adding boundary instructions is the recommended practice for safe tool use. By making the tool's limitations clear in the prompt/schema, Claude can reason that it should not use the tool for unsupported scenarios, thereby preventing invalid calls and backend crashes.",
+      "C": "Incorrect. Creating dummy parameters is deceptive and increases schema complexity. It forces the model to provide static or potentially misleading results rather than allowing the model to transparently communicate that it cannot handle those specific financial products.",
+      "D": "Incorrect. While backend error handling prevents server crashes, silently failing with a generic message does not guide Claude on proper tool usage. This results in the model repeatedly attempting the same incorrect action or providing confusing responses to the user without understanding the root cause."
+    },
+    "claude_notes": "Subdomain 2.1 — opis alata je priručnik KADA da se koristi; bez navedenih granica Claude preterano primeni alat (vidi „mortgage\", zove ga i za reverse/HELOC) → nevalidni parametri → pad backend-a. B (tačno) = u opis upiši podržane tipove I eksplicitno šta NE podržava + uputstvo da ne zove za te slučajeve → Claude zaključi da je van opsega i ne pozove ga; zloupotreba sprečena na mestu IZBORA, backend nikad ne dobije loš poziv, validan alat ostaje. A (naš pogrešan izbor) = baca alat koji „works perfectly\"; finansijska matematika iz glave modela = halucinacija, nedeterministički brojevi — pogoršava i validan slučaj. C = dummy parametri kodiraju lažnu logiku, zaprljaju šemu, vraćaju obmanjujući statički tekst umesto da model transparentno kaže da ne ume. D (inženjerska zamka) = try-catch sprečava PAD ali ne i pogrešan izbor alata; generička greška nije akcionabilna → model ponavlja istu grešku; leči simptom (pad) ne uzrok (model ne zna granicu). U 2.1 kontekstu najbolje je spречiti PRE (opis/granica), ne hvatati POSLE; try-catch je dobra higijena kao dodatni sloj, ali nije najbolji odgovor.",
+    "glossary_refs": [
+      "tool description",
+      "tool boundaries",
+      "hallucination"
+    ],
+    "pattern_refs": [
+      "tool-description-defines-boundaries",
+      "intercept-before-not-after",
+      "constrain-tool-interface-to-prevent-bad-input"
+    ],
+    "tags": [
+      "tool-design",
+      "tool-interface",
+      "tool-description",
+      "boundaries",
+      "error-handling",
+      "subdomain-2.1"
+    ]
+  },
+  {
+    "id": "d2-q020",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "An application using the Anthropic Python SDK is crashing on startup. The logs indicate an unhandled anthropic.APIError because the ANTHROPIC_API_KEY environment variable is not set. You have access to the application's large, unfamiliar monorepo. What is the most efficient initial step to locate the code responsible for initializing the Anthropic client?",
+    "options": {
+      "A": "Use a file search utility like find to locate all .env files and confirm that ANTHROPIC_API_KEY is missing.",
+      "B": "Immediately attempt to run the application locally with a debugger attached to set a breakpoint on the anthropic.APIError exception.",
+      "C": "Start by reading the application's main entry point (e.g., main.py) and manually follow every import and function call to trace the execution path.",
+      "D": "Use grep to search the codebase for strings related to the Anthropic SDK, such as import anthropic or anthropic.Anthropic()."
+    },
+    "correct": "D",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. While this action would likely confirm the root cause of the error (a missing key), the question asks for the most efficient way to locate the responsible *code* in the application. This step identifies the configuration issue but does not help find where the Anthropic client is being initialized.",
+      "B": "Incorrect. While using a debugger is a powerful diagnostic tool, setting it up for a large, unfamiliar application can be complex and time-consuming, involving configuration of the environment, dependencies, and launch settings. Therefore, it is not the most *efficient initial* step compared to a simple grep command.",
+      "C": "Incorrect. Manually tracing the execution path from the entry point in a large, unfamiliar monorepo is extremely time-consuming and inefficient. This bottom-up approach is not a practical first step for locating a specific function call.",
+      "D": "Correct. Using a simple and fast command-line tool like grep to search for SDK-specific patterns is the most efficient initial step in a large, unfamiliar codebase. As the research indicates, the SDK raises an anthropic.APIError when the key is missing, so finding where the client is imported or instantiated (anthropic.Anthropic()) directly points to the code that triggers this check."
+    },
+    "claude_notes": "Subdomain 2.5 — pitanje testira IZBOR built-in alata za discovery u velikom, nepoznatom repo-u. Cilj je LOCIRATI kod koji inicijalizuje klijenta, ne potvrditi simptom. D (tačno) = Grep pretražuje SADRŽAJ → 'import anthropic'/'anthropic.Anthropic()' postoji tačno tamo gde se klijent pravi (mesto koje baca anthropic.APIError kad ključ fali) → trenutno te vodi na pravu liniju bez obzira na veličinu repo-a. B (naš pogrešan izbor) = debugger je dinamički, moćan ali skup za podešavanje (okruženje, zavisnosti, launch), a app i pada na startupu; ne pokrećeš kod da nađeš GDE kod stoji — overkill za statičku pretragu. A = find traži po IMENU fajla (.env), ne po sadržaju; uz to potvrđuje simptom (ključ fali) koji već znamo iz logova, ne lokaciju koda. C = ručno trasiranje importa iz main.py u nepoznatom monorepo-u je sporo i ne skalira; Grep vodi direktno na cilj. Pouka: lociraj kod po SADRŽAJU (Grep), ne po imenu (find/Glob), ne dinamički (debugger), ne ručnim trasiranjem.",
+    "glossary_refs": [
+      "Grep",
+      "Glob",
+      "built-in tools"
+    ],
+    "pattern_refs": [
+      "grep-to-entry-point-read-sequentially-not-bulk"
+    ],
+    "tags": [
+      "built-in-tools",
+      "grep",
+      "code-discovery",
+      "monorepo",
+      "tool-selection",
+      "subdomain-2.5"
+    ]
+  },
+  {
+    "id": "d2-q021",
+    "domain": 2,
+    "subdomain": "2.3",
+    "question": "A customer-facing chatbot uses a generic execute_system_command tool to check server status for users (e.g., running ping <hostname>). Security researchers discover they can trick the agent into running unauthorized commands like cat /etc/passwd by embedding prompt injections in their chat messages. What is the most robust architectural fix to prevent this misuse?",
+    "options": {
+      "A": "Replace the generic execute_system_command tool with a constrained check_server_ping tool that only accepts a valid IP address or hostname as its parameter.",
+      "B": "Distribute the execute_system_command tool to a dedicated Security_Agent that uses a trained classifier to filter out prompt injections before forwarding safe commands.",
+      "C": "Set tool_choice: {\"type\": \"auto\"} so the agent can autonomously decide to reply conversationally instead of executing commands when it detects a prompt injection.",
+      "D": "Add a validate_command tool and configure forced tool selection so the agent must call the validator before any command execution, blocking unauthorized operations."
+    },
+    "correct": "A",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Correct. Replacing the generic tool with a constrained check_server_ping tool that only accepts a valid IP or hostname applies the principle of least privilege. This directly eliminates the command injection vulnerability by removing the ability to execute arbitrary commands, aligning with the customer's responsibility for tool security in the Shared Responsibility Model.",
+      "B": "Incorrect. Distributing the tool to a dedicated Security_Agent with a classifier does not address the root cause—the tool's excessive power. The classifier can still be evaded by advanced prompt injections, making this approach overly complex and insufficient.",
+      "C": "Incorrect. Setting tool_choice: {\"type\": \"auto\"} only lets the agent decide whether to use a tool, but it is not a security control. A prompt injection can still manipulate the agent into choosing to execute the command, bypassing this conversational guardrail.",
+      "D": "Incorrect. Adding a validate_command tool with forced selection adds complexity and a new potential point of failure, as the validator itself could be bypassed or flawed. The most robust fix is to eliminate the risk by replacing the overly permissive tool rather than layering on validation."
+    },
+    "claude_notes": "Subdomain 2.3 — pitanje testira da li najrobusnije rešenje UKLANJA sposobnost zloupotrebe po konstrukciji, ili je DETEKTUJE/PRESREĆE. Koren problema nije loš input nego predizajniran alat: generički execute_system_command prima proizvoljnu shell komandu, pa prompt injection provuče cat /etc/passwd. A (tačno) = zameni ga constrained alatom check_server_ping koji prima samo IP/hostname → maliciozna komanda strukturno nema kuda da prođe (principle of least privilege, hard guardrail). D (naš pogrešan izbor) = validate_command + forced tool selection zvuči arhitektonski, ali generički opasni alat OSTAJE; samo si dodao kapiju koja se oslanja na to da validator tačno prepozna napad (detekcija, podložna zaobilaženju) — novi point of failure. B = trenirani klasifikator za injection je verovatnoća, ne garancija; advanced injection ga zaobilazi i ne dira preširok alat. C = tool_choice:auto bira DA LI/KOJI alat, nije bezbednosna kontrola; injection i dalje natera model da odluči da pokrene komandu. Pouka: suzi interfejs alata da loš argument bude nemoguć (hard guardrail) > soft guardrail/validator/klasifikator (detekcija). Veže se na obrazac constrain-tool-interface-to-prevent-bad-input (ista pouka, ovde u security/injection varijanti) i fix-root-cause-not-symptom ('most robust' = ukloni uzrok = preširok alat).",
+    "glossary_refs": [
+      "prompt injection",
+      "principle of least privilege",
+      "Shared Responsibility Model",
+      "scoped tool",
+      "tool_choice"
+    ],
+    "pattern_refs": [
+      "constrain-tool-interface-to-prevent-bad-input",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-design",
+      "least-privilege",
+      "prompt-injection",
+      "security",
+      "tool-distribution",
+      "tool-choice",
+      "subdomain-2.3"
+    ]
+  },
+  {
+    "id": "d2-q022",
+    "domain": 2,
+    "subdomain": "2.1",
+    "question": "A DevOps assistant has tools for restart_server, view_logs, and escalate_incident. The system prompt states: 'If a user reports a server crash, you must immediately escalate the incident.' A user says, 'The web server crashed, but I just want to view the logs to see why before we wake anyone up.' Claude ignores the user's request and calls escalate_incident. How should the architect resolve this conflict?",
+    "options": {
+      "A": "Review and revise the system prompt to remove the rigid, keyword-sensitive instruction that overrides the user's specific request and tool descriptions.",
+      "B": "Change the user interface to replace natural language input with buttons for view_logs and restart_server to prevent user requests from triggering the strict escalation rule.",
+      "C": "Update the view_logs tool's description to instruct the model that it is the required first step for server crash reports, giving it precedence over the system prompt's rule.",
+      "D": "Delete the escalate_incident tool from the assistant's available functions to force the model to select view_logs when a user reports a crash and requests a diagnostic action."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. The conflict stems from a rigid system prompt that forces escalation based on keywords, ignoring user context. Revising the prompt to allow nuanced decision-making enables Claude to respect the user's explicit request while still maintaining appropriate escalation policies.",
+      "B": "Incorrect. Replacing natural language input with buttons avoids the reasoning failure but does not fix the conflicting instructions. This UI-level change sacrifices the flexibility of conversational interaction and fails to address the core issue in the system prompt.",
+      "C": "Incorrect. Modifying the view_logs tool description to override the system prompt is unreliable because system prompts typically take precedence in Claude's instruction hierarchy. This approach is a brittle workaround that does not address the root cause of the rigid, keyword-sensitive directive.",
+      "D": "Incorrect. Deleting the escalate_incident tool removes essential functionality needed for genuine emergencies. It does not resolve the underlying conflict between the system prompt and user intent, and it limits the assistant's ability to escalate when truly necessary."
+    },
+    "claude_notes": "Subdomain 2.1 — konflikt između rigidnog sistemskog prompta i korisnikove namere. Uzrok: keyword-sensitive instrukcija ('ako se pomene crash → MORAŠ eskalirati') okida se na reč, ne na kontekst, pa gazi i korisnikov izričit zahtev i logiku alata. A (tačno) = revidiraj sistemski prompt da dozvoli nijansirano odlučivanje (eskaliraj kad treba, ali poštuj izričit zahtev za dijagnostiku) — popravka na IZVORU uzroka, zadržava sve alate i fleksibilnost. B = zameniti slobodan tekst dugmićima zaobilazi reasoning failure ali ne dira konfliktnu instrukciju u promptu; žrtvuje fleksibilnost konverzacije (UI flaster). C = ugurati u opis view_logs da ima prednost nad sistemskim promptom je nepouzdano jer sistemski prompt po pravilu pobeđuje u Claude-ovoj instruction hierarchy; dodaješ suprotstavljeno pravilo umesto da ukloniš uzrok — krhko. D = brisanje escalate_incident baca legitimnu sposobnost (pravi hitni slučajevi), ne rešava konflikt prompt↔namera. Pouka: keyword-sensitive prompt → REVIDIRAJ prompt na izvoru, ne zaobilazi kroz UI, ne nagomilavaj suprotstavljena pravila u opisu alata (gubi od sistemskog prompta u hijerarhiji), ne briši legitimne alate.",
+    "glossary_refs": [
+      "keyword-sensitive instructions",
+      "instruction hierarchy",
+      "tool description"
+    ],
+    "pattern_refs": [
+      "prompt-wording-primes-tool-selection",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-design",
+      "system-prompt",
+      "keyword-sensitive",
+      "instruction-hierarchy",
+      "conflict-resolution",
+      "subdomain-2.1"
+    ]
+  },
+  {
+    "id": "d2-q023",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "An HR agent uses a tool to search for employee records matching specific technical skills. A user asks the agent to find employees with 'Cobol' experience. The database query executes successfully but finds zero matches. The tool currently returns isError: true with the message 'No records found.' Consequently, the agent apologizes to the user, stating that the database is down. How should the tool's response be modified to enable the agent to respond correctly?",
+    "options": {
+      "A": "Keep isError: true but add isRetryable: false to the structured metadata so the agent recognizes the database is operational and avoids retrying the same query, preventing the apology for a down database.",
+      "B": "Change the tool to return isError: false with an empty list [] and a message indicating a successful query with zero matches, distinguishing a valid empty result from an access failure.",
+      "C": "Change the tool to return isError: true with errorCategory: \"validation\" to indicate to the agent that the search term 'Cobol' was invalid, prompting the agent to ask the user for a corrected skill name.",
+      "D": "Change the tool to return isError: false but include a mock employee record in the response so the agent does not misinterpret the empty array as a system failure and instead reports a fabricated match."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. The fundamental problem is that a successful query with zero results is not an error. Keeping isError: true reinforces the agent's incorrect assumption that a failure occurred, which is the root cause of the poor user experience. Adding isRetryable: false does not change the fact that the tool is misrepresenting a successful operation as an error.",
+      "B": "Correct. This is the recommended approach for handling successful queries that yield no results. Returning isError: false with an empty list [] and a message clearly communicates that the query executed successfully and the absence of data is the expected outcome, not an error. This allows the agent to correctly inform the user that no matches were found, rather than misinterpreting the result as a system failure.",
+      "C": "Incorrect. This misrepresents the situation in two ways. First, the query was successful, so isError: true is inappropriate. Second, 'Cobol' is a valid search term for a technical skill; the issue is not invalid input but a lack of matching records. A validation error should be reserved for malformed or disallowed inputs.",
+      "D": "Incorrect. Returning mock or fabricated data is a harmful anti-pattern that would cause the agent to hallucinate and provide factually incorrect information to the user. An agent's reliability depends on the tool providing truthful and accurate results, which includes correctly reporting when no data matches a query."
+    },
+    "claude_notes": "Subdomain 2.2 — semantika isError u strukturiranom rezultatu MCP alata. Koren problema: alat tretira 'nula poklapanja' kao grešku (isError:true), iako upit savršeno radi; agent vidi error i halucinira da je baza pala. B (tačno) = upit je uspeo → isError:false, prazna lista [], poruka 'uspešan upit, nula poklapanja' → agent razlikuje validan prazan ishod od access failure-a i ispravno kaže 'nema kandidata'. A = zadržati isError:true + dodati isRetryable:false ne dira koren — i dalje lažno predstavlja uspešnu operaciju kao grešku; isRetryable samo kaže 'ne ponavljaj'. C = isError:true + errorCategory:'validation' lažno tvrdi da je 'Cobol' nevažeći ulaz; ali to je validan termin koji prosto nema pogodaka — validation greška je rezervisana za malformed/disallowed ulaze (pogrešan tip greške štetan kao i nepostojeći). D = isError:false ali ubaci mock zapis = fabrikovanje podataka, štetan anti-pattern; agent bi prijavio nepostojeću osobu kao poklapanje. Pouka: isError mora TAČNO odražavati stvaran neuspeh; uspešna operacija sa praznim rezultatom je isError:false + prazan skup + poruka, jasno odvojena od kvara pristupa; nikad ne maskiraj signalizaciju lažnim podacima.",
+    "glossary_refs": [
+      "isError",
+      "structured error response",
+      "errorCategory",
+      "empty result"
+    ],
+    "pattern_refs": [
+      "mcp-error-needs-iserror-not-empty-success",
+      "error-type-must-be-accurate-not-just-present"
+    ],
+    "tags": [
+      "mcp",
+      "structured-error-response",
+      "isError",
+      "empty-result",
+      "false-failure",
+      "subdomain-2.2"
+    ]
+  },
+  {
+    "id": "d2-q024",
+    "domain": 2,
+    "subdomain": "2.1",
+    "question": "A cloud infrastructure assistant uses a single manage_aws_resource tool. The action parameter accepts 'create', 'delete', or 'modify'. The parameters field is a generic JSON object. The assistant frequently fails when modifying resources because the LLM hallucinates parameters that are only relevant to resource creation (e.g., passing an ami_id during a simple tag update). What is the most architecturally sound way to resolve this issue at the tool interface level?",
+    "options": {
+      "A": "Split the tool into create_aws_resource, delete_aws_resource, and modify_aws_resource with strictly defined, purpose-specific input schemas for each.",
+      "B": "Update the tool description to include a comprehensive mapping of which JSON parameters belong to which action.",
+      "C": "Change the parameters field to a stringified JSON object so the LLM is not constrained by strict schema validation during the tool call.",
+      "D": "Add a validate_schema tool that the LLM must call to check its proposed parameters before executing manage_aws_resource."
+    },
+    "correct": "A",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "This is the most robust architectural solution. According to research, this approach aligns with AWS best practices, such as the AWS Cloud Control API's distinct create-resource, update-resource, and delete-resource operations. Creating single-purpose tools with strict, purpose-specific schemas provides strong structural constraints that guide the LLM, preventing it from providing inappropriate parameters for a given action and directly mitigating this type of hallucination.",
+      "B": "Incorrect. While improving the tool's description (a form of prompt engineering) can help guide the LLM, it is a 'soft' constraint that relies on the model's ability to correctly interpret and follow complex instructions. The underlying architectural flaw of a single, overly generic tool remains, making this approach less reliable than enforcing constraints directly in the tool's interface.",
+      "C": "Incorrect. This would make the problem worse by removing what little structure exists. Research indicates that vague or unstructured inputs can increase the likelihood of LLM hallucinations. A robust architecture requires clear, specific, and validated inputs, not less constrained ones.",
+      "D": "Incorrect. This approach introduces unnecessary complexity and brittleness by requiring a multi-step process (call validate, then call manage). It relies on the LLM to consistently follow this two-step sequence. A superior architectural pattern is to build validation directly into the primary tool's interface via a strict schema, which is simpler and more reliable."
+    },
+    "claude_notes": "Subdomain 2.1 — koren problema je prešir, polimorfan alat: jedan manage_aws_resource sa action enum (create/delete/modify) i generičkom JSON parameters kesom; pošto interfejs ne razlikuje koja polja idu uz koju akciju, model halucinira create-parametre (ami_id) na modify (tag update). A (tačno) = razbij na namenske alate (create/delete/modify_aws_resource), svaki sa STROGOM, namenskom input šemom → polje koje ne pripada akciji (ami_id u modify) strukturno ne postoji u šemi → halucinacija nemoguća; hard guardrail na nivou interfejsa (poklapa se sa AWS Cloud Control API: distinktne create/update/delete operacije). B (naš pogrešan izbor) = dopuna OPISA mapiranjem parametara je soft guardrail (prompt engineering) — model ga može ignorisati; labav interfejs (generička kesa) ostaje. C = stringified JSON uklanja i ono malo strukture → još više halucinacija (suprotan smer). D = validate_schema alat je runtime validacioni sloj povrh nepromenjenog labavog alata + multi-step (oslanja se da model uvek prvo pozove validator) — nije na nivou interfejsa; bolje ugraditi validaciju u sam interfejs strogom šemom (jednostavnije, pouzdanije). Pouka: pogrešan/haluciniran parametar → suzi interfejs strogom namenskom šemom (hard guardrail) > opis (soft) > eksterni validator. Veže se na constrain-tool-interface-to-prevent-bad-input i fix-root-cause-not-symptom.",
+    "glossary_refs": [
+      "single-purpose tool",
+      "input schema",
+      "strict tool use",
+      "hallucination"
+    ],
+    "pattern_refs": [
+      "constrain-tool-interface-to-prevent-bad-input",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-design",
+      "tool-interface",
+      "input-schema",
+      "strict-tool-use",
+      "polymorphic-tool",
+      "hallucination",
+      "subdomain-2.1"
+    ]
+  },
+  {
+    "id": "d2-q025",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "A research agent uses an MCP tool to summarize a batch of three PDF documents. The tool successfully processes Doc1 and Doc2, but Doc3 is corrupted and cannot be read. The agent needs the summaries of Doc1 and Doc2 to continue its workflow. How should the tool respond to ensure the agent can proceed while acknowledging the error?",
+    "options": {
+      "A": "Return isError: true with isRetryable: true so the agent repeatedly retries the entire batch, blocking progress on Doc1 and Doc2 until the user manually repairs or replaces the corrupted Doc3 file.",
+      "B": "Return isError: false and hallucinate a generic summary for Doc3 so the agent receives the expected array length and does not crash. The tool fabricates a plausible but unverified summary for the corrupted document.",
+      "C": "Return isError: true with a message about Doc3, discarding the summaries of Doc1 and Doc2 to maintain strict data consistency. The tool treats the entire batch as atomic, so any single failure invalidates all results.",
+      "D": "Return isError: false containing the successful summaries of Doc1 and Doc2, and include a structured metadata section detailing the failure of Doc3 (e.g., partial_success: true, failed_items: [\"Doc3\"])."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Returning isError: true with isRetryable: true causes the agent to repeatedly retry the entire batch, blocking progress on Doc1 and Doc2. This is inefficient, especially since the corruption of Doc3 is a non-transient error that retries cannot resolve without user intervention.",
+      "B": "Incorrect. Returning isError: false and fabricating a summary for Doc3 is unsafe and misleading, as it introduces unverified information into the agent's workflow. Tools should never hallucinate content; instead, they should accurately report failures to maintain reliability.",
+      "C": "Incorrect. Returning isError: true and discarding the summaries of Doc1 and Doc2 prevents the agent from using the successfully processed results, wasting completed work. Treating the batch as atomic is inappropriate here because partial results are usable and the agent needs them to continue its workflow.",
+      "D": "Correct. Returning isError: false with the successful summaries and structured metadata about the failure allows the agent to proceed with the available data. The metadata (e.g., partial_success: true, failed_items: [\"Doc3\"]) provides machine-readable details so the agent can intelligently decide how to handle the error, such as skipping Doc3 or requesting user remediation."
+    },
+    "claude_notes": "Subdomain 2.2 — delimičan neuspeh u batch obradi sa NEZAVISNIM stavkama (3 PDF-a). Doc1/Doc2 sažeci su upotrebljivi bez Doc3; treba i nastaviti tok i priznati grešku. D (tačno) = partial success: isError:false (poziv kao celina nije propao) + uspešni rezultati + strukturirana metapodatkovna sekcija o padu (partial_success:true, failed_items:['Doc3']) → agent dobija podatke i mašinski čitljiv signal, pa sam odlučuje (preskoči Doc3 / traži popravku). A = isError:true + isRetryable:true tera ponavljanje celog batch-a, blokira Doc1/Doc2; uz to oštećen fajl je TERMINALNA (non-transient) greška — retry je beskoristan. B = isError:false + halucinacija sažetka za Doc3 = fabrikacija (štetno, uvodi neproveren sadržaj; krši 'acknowledge error'). C = isError:true + bacanje Doc1/Doc2 zbog atomičnosti (sve-ili-ništa) — atomičnost je za prave transakcije sa međuzavisnim koracima, ne za nezavisne stavke; baca gotov rad, krši 'proceed'. Pouka: batch nezavisnih stavki na delimičan pad → partial success (uspesi + metapodaci o padu), ne all-or-nothing (C), ne whole-batch retry (A), ne fabrikacija (B).",
+    "glossary_refs": [
+      "partial success",
+      "atomicity",
+      "isError",
+      "isRetryable",
+      "structured error response"
+    ],
+    "pattern_refs": [
+      "partial-success-return-results-plus-failure-metadata",
+      "error-type-must-be-accurate-not-just-present"
+    ],
+    "tags": [
+      "mcp",
+      "structured-error-response",
+      "partial-success",
+      "atomicity",
+      "batch",
+      "isRetryable",
+      "subdomain-2.2"
+    ]
+  },
+  {
+    "id": "d2-q026",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "A frontend architect needs to analyze all end-to-end test files to evaluate a migration from Cypress to Playwright. The test files are distributed across dozens of nested feature directories but all share the .cy.ts extension. What is the most effective way to locate these files?",
+    "options": {
+      "A": "Use the Edit tool to temporarily rename all .cy.ts files to a single directory for easier analysis.",
+      "B": "Use Glob with the pattern **/*.cy.ts to efficiently match and return the specific file paths.",
+      "C": "Use Read on the root directory to recursively list all files and parse the output for the extension.",
+      "D": "Use Grep with the search pattern describe( to find all test files, then filter the results manually."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Using an Edit tool to rename or move files is a destructive and unnecessary action for a discovery task. Modifying the repository state just to locate files is poor practice, as it can break dependencies and risks altering the codebase.",
+      "B": "Using Glob with the pattern **/*.cy.ts is the most effective and idiomatic way to locate files by extension. The ** wildcard allows for recursive matching across all nested directories, returning exact file paths efficiently without the overhead of reading file contents.",
+      "C": "Recursively reading the root directory to list all files and then parsing the output is functionally possible but inefficient. This method creates unnecessary I/O and requires additional logic to filter for the extension, whereas globbing handles this natively and more performantly.",
+      "D": "Using Grep with the search pattern describe( focuses on file content rather than file names. This approach is inefficient because it requires scanning the contents of all files, may return non-test files that happen to use that keyword, and requires manual filtering of results."
+    },
+    "claude_notes": "Subdomain 2.5 — izbor built-in alata za DISCOVERY po imenu/ekstenziji. Cilj: naći sve .cy.ts test fajlove razbacane po desetinama ugnježdenih foldera. B (tačno) = Glob sa **/*.cy.ts; ** je rekurzivni wildcard kroz sve ugnježdene direktorijume, vraća tačne putanje efikasno, BEZ čitanja sadržaja — idiomatski način za traženje po ekstenziji. A = Edit za rename/move fajlova radi puke analize je DESTRUKTIVNO i nepotrebno; menjanje stanja repo-a da bi se fajlovi locirali lomi zavisnosti i rizikuje kod. C = Read na root + rekurzivno listanje + ručno parsiranje ekstenzije je funkcionalno ali neefikasno (nepotreban I/O + dodatna logika za filter); globbing to radi nativno i brže. D = Grep sa 'describe(' traži po SADRŽAJU, ne po imenu — skenira sve fajlove, vraća i ne-test fajlove koji slučajno koriste tu reč, traži ručni filter; pogrešan kriterijum (sadržaj umesto imena). Pouka: po imenu/ekstenziji → Glob, po sadržaju → Grep; ne Read+parse (neefikasno), ne mutiraj repo (Edit) radi discovery. Mirror d2-q020 (tamo: lociraj po sadržaju → Grep).",
+    "glossary_refs": [
+      "Glob",
+      "Grep",
+      "Read",
+      "Edit",
+      "built-in tools"
+    ],
+    "pattern_refs": [
+      "discovery-by-name-glob-by-content-grep"
+    ],
+    "tags": [
+      "built-in-tools",
+      "glob",
+      "grep",
+      "code-discovery",
+      "file-discovery",
+      "tool-selection",
+      "subdomain-2.5"
+    ]
+  },
+  {
+    "id": "d2-q027",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "You are debugging a memory leak in a React application. The profiler indicates the leak originates from a custom hook called useWebSocket. This hook is exported from hooks/useWebSocket.ts, aggregated in hooks/index.ts, and imported by dozens of components. You need to find exactly which component is passing an unmemoized callback to this hook. What is the most systematic approach?",
+    "options": {
+      "A": "Use Glob to find all .tsx files within the project source directory, then use Read on each file to manually search for useWebSocket and inspect the callback props being passed.",
+      "B": "Use Read on hooks/useWebSocket.ts to understand its implementation. Then, use Write to refactor the hook to automatically memoize all callback inputs by wrapping them with useCallback.",
+      "C": "Use the Edit tool to add a console.trace() inside hooks/useWebSocket.ts. Then, use the Bash tool to run the application and review the browser console for stack traces on each render.",
+      "D": "Use Grep to find all files that import useWebSocket, then use Read on those files to systematically inspect the callback implementations passed to the hook."
+    },
+    "correct": "D",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Using Glob to find all .tsx files and then reading each one manually is inefficient and produces unnecessary information overload. When you have a specific identifier like useWebSocket, Grep is the correct tool to narrow down the search space immediately.",
+      "B": "Incorrect. While refactoring the hook to automatically memoize all callback inputs is a valid defensive programming pattern, it does not fulfill the specific objective of finding which component is currently causing the issue. Furthermore, writing a fix before fully auditing the usage sites can hide underlying logic errors in the consumer components.",
+      "C": "Incorrect. Adding console.trace() is a runtime debugging technique that requires code modification and application execution. While useful for complex call stacks, it is less efficient than static analysis (Grep) when you are simply looking for the call site of a known hook.",
+      "D": "Correct. Grep is the most systematic tool for locating every usage site of a specific string across a large codebase, allowing you to quickly isolate the relevant components. Once the subset of importing files is identified, the Read tool can be used to perform targeted static analysis to check for unmemoized callbacks (e.g., inline arrow functions or missing useCallback dependencies)."
+    },
+    "claude_notes": "Subdomain 2.5 — cilj je LOCIRATI poznati identifikator (`useWebSocket`) među desetinama korisnika, pa Read na suženom podskupu. D (tačno) = Grep nađe sve fajlove koji importuju `useWebSocket` → Read taj podskup za ciljanu STATIČKU analizu (inline strelaste funkcije, useCallback bez zavisnosti). A = Glob svih .tsx + Read svakog ručno → kad imaš konkretan string, to je information overload; Glob je za pretragu po IMENU/ekstenziji, ne za pronalaženje po sadržaju. B = Read pa Write/refactor (auto-memoizacija svih callback-ova) — ne ispunjava cilj (koja komponenta), a pisanje ispravke PRE nego što proveriš sva mesta korišćenja maskira stvarne logičke greške u potrošačima (ne popravljaj pre nego što dijagnostikuješ). C = Edit ubaci console.trace() + Bash pokreni app → runtime debugging zahteva izmenu koda i izvršavanje; sporije od statičke analize (Grep) za prosto traženje call-site poznatog hook-a. Pouka: traženje po SADRŽAJU/poznatom identifikatoru → Grep pa Read podskupa (statička analiza), ne Glob-sve+Read-sve, ne instrumentacija+pokretanje, ne refaktor pre dijagnoze.",
+    "glossary_refs": [
+      "Grep",
+      "Read",
+      "Glob",
+      "Edit",
+      "built-in tools",
+      "static analysis"
+    ],
+    "pattern_refs": [
+      "discovery-by-name-glob-by-content-grep",
+      "grep-to-entry-point-read-sequentially-not-bulk"
+    ],
+    "tags": [
+      "built-in-tools",
+      "grep",
+      "read",
+      "glob",
+      "code-discovery",
+      "static-analysis",
+      "tool-selection",
+      "subdomain-2.5"
+    ]
+  },
+  {
+    "id": "d2-q028",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "You need to completely replace the contents of a legacy webpack.config.js file with a brand new, standardized 20-line configuration provided by the platform team. The old file contains 300 lines of outdated custom plugins. Which tool application is most appropriate?",
+    "options": {
+      "A": "Use the Bash tool to rm the file, then use the Edit tool to create a new file with the same name.",
+      "B": "Use the Grep tool to delete the old contents line-by-line, then use the Write tool to insert the new configuration.",
+      "C": "Use the Edit tool, matching the first and last lines of the old file, and replacing the entire block with the new configuration.",
+      "D": "Use the Write tool directly to overwrite the entire webpack.config.js file with the new 20-line configuration."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Using Bash to delete the file followed by the Edit tool to recreate it is unnecessarily complex. This approach can lead to file system churn and potential issues with file permissions or metadata, whereas Write handles the overwrite natively.",
+      "B": "Grep is a search utility, not a tool for deleting file contents. Attempting to use search tools for deletion is inefficient and structurally incorrect when a direct replacement tool exists.",
+      "C": "Using the Edit tool to match the first and last lines of a large 300-line file is brittle and error-prone. The Edit tool is optimized for targeted, contextual modifications rather than full-file replacements.",
+      "D": "The Write tool is the most efficient and direct method for this task because it is designed to atomically create or overwrite a file's entire content. It ensures a clean replacement without the complexity of pattern matching or multi-step operations."
+    },
+    "claude_notes": "Subdomain 2.5 — biraš alat po PRIRODI izmene: cela zamena sadržaja vs targetiran region. D (tačno) = Write: atomski kreira/prepisuje CEO fajl (300→20 linija), jednokoračno, čisto, bez pattern-matchinga. A = Bash 'rm' pa Edit recreate → nepotrebno složeno; brisanje+ponovno kreiranje pravi file-system churn i probleme s dozvolama/metapodacima, Write overwrite radi nativno. B = Grep da briše linije → Grep je SEARCH alat, ne za mutaciju/brisanje; strukturno pogrešno kad postoji direktan alat za zamenu. C = Edit match prve/poslednje linije pa zameni blok → Edit je za ciljane KONTEKSTUALNE izmene malog regiona; na fajlu od 300 linija je krhko i podložno greškama za full-file zamenu. Pouka: cela zamena fajla → Write; targetirana izmena dela → Edit; ne rm+recreate, ne search alat za brisanje.",
+    "glossary_refs": [
+      "Write",
+      "Edit",
+      "Bash",
+      "Grep",
+      "built-in tools"
+    ],
+    "pattern_refs": [
+      "full-file-replace-write-targeted-edit-edit"
+    ],
+    "tags": [
+      "built-in-tools",
+      "write",
+      "edit",
+      "bash",
+      "file-overwrite",
+      "tool-selection",
+      "subdomain-2.5"
+    ]
+  }
+]

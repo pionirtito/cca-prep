@@ -5,7 +5,9 @@
     "sr": "Ciklus: pošalji zahtev Claude-u, proveri stop_reason, izvrši tražene alate, dodaj rezultate u istoriju, ponavljaj dok ne dođe end_turn.",
     "domain": 1,
     "seen_in": [
-      "d1-q001"
+      "d1-q001",
+      "d1-q030",
+      "d2-q009"
     ]
   },
   {
@@ -15,7 +17,9 @@
     "domain": 1,
     "seen_in": [
       "d1-q001",
-      "d1-q015"
+      "d1-q015",
+      "d1-q030",
+      "d1-q032"
     ]
   },
   {
@@ -28,7 +32,8 @@
       "d1-q004",
       "d1-q015",
       "d1-q019",
-      "d1-q021"
+      "d1-q021",
+      "d1-q030"
     ]
   },
   {
@@ -38,7 +43,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q001",
-      "d1-q015"
+      "d1-q015",
+      "d1-q030"
     ]
   },
   {
@@ -93,7 +99,8 @@
     "sr": "Trajni podaci unutar sesije, npr. approval token koji beleži da je čovek odobrio akciju. Hook može da ga proveri pre nego što dozvoli uslovljenu operaciju.",
     "domain": 1,
     "seen_in": [
-      "d1-q002"
+      "d1-q002",
+      "d1-q031"
     ]
   },
   {
@@ -142,7 +149,14 @@
     "sr": "Parametar API zahteva koji kontroliše da li i koji alat model mora da pozove. Vrednosti: 'auto' (model bira), 'any' (mora neki alat), 'tool' sa imenom (mora baš taj alat), 'none' (bez alata). Iznuđuje tool_use blok - determinističko sprovođenje na nivou API-ja, za razliku od prompta.",
     "domain": 1,
     "seen_in": [
-      "d1-q004"
+      "d1-q004",
+      "d1-q034",
+      "d2-q001",
+      "d2-q007",
+      "d2-q008",
+      "d2-q009",
+      "d2-q013",
+      "d2-q021"
     ]
   },
   {
@@ -152,7 +166,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q004",
-      "d1-q010"
+      "d1-q010",
+      "d2-q005"
     ]
   },
   {
@@ -174,7 +189,8 @@
     "seen_in": [
       "d1-q005",
       "d1-q012",
-      "d1-q026"
+      "d1-q026",
+      "d1-q034"
     ]
   },
   {
@@ -189,7 +205,10 @@
       "d1-q011",
       "d1-q013",
       "d1-q017",
-      "d1-q025"
+      "d1-q025",
+      "d1-q029",
+      "d1-q033",
+      "d2-q001"
     ]
   },
   {
@@ -204,7 +223,8 @@
       "d1-q018",
       "d1-q020",
       "d1-q025",
-      "d1-q026"
+      "d1-q026",
+      "d1-q031"
     ]
   },
   {
@@ -306,7 +326,8 @@
     "sr": "Topologija orkestracije gde svi subagenti komuniciraju KROZ centralnog koordinatora (hub), nikad direktno međusobno (spokes). Koordinator centralizuje orkestraciju, error handling, validaciju i retry/backoff, i gejtuje svaki naredni korak na uspeh prethodnog. Suprotnost krhkom peer-to-peer vezivanju, gde greška jednog agenta tiho zatruje sledećeg.",
     "domain": 1,
     "seen_in": [
-      "d1-q011"
+      "d1-q011",
+      "d1-q033"
     ]
   },
   {
@@ -315,7 +336,9 @@
     "sr": "Dizajn princip: svaka komponenta/agent radi svoj fokusiran posao i ne preuzima tuđu odgovornost. Prekršen kad se npr. Summarizer natera da tail-uje tuđe logove i vodi sopstvenu error-check logiku - krhko i van njegove uloge. Čuva sistem modularnim i lakim za debug.",
     "domain": 1,
     "seen_in": [
-      "d1-q011"
+      "d1-q011",
+      "d2-q007",
+      "d2-q008"
     ]
   },
   {
@@ -333,7 +356,10 @@
     "sr": "Obrazac (HITL) gde čovek odobrava akcije agenta pre izvršenja. Pravi alat za destruktivne akcije ili finalna odobrenja - NE za svaki dijagnostički korak, gde uvodi latenciju i guši automatizaciju. Rešava kontrolu/bezbednost, ne kvalitet predaje.",
     "domain": 1,
     "seen_in": [
-      "d1-q012"
+      "d1-q012",
+      "d1-q032",
+      "d1-q033",
+      "d2-q009"
     ]
   },
   {
@@ -387,7 +413,8 @@
     "sr": "Vraćanje u postojeću sačuvanu sesiju i nastavak iz njenog poslednjeg stanja (npr. --resume <session-name>). NASTAVLJA istu liniju interakcije; ne grana je. Razlikuj od forkovanja (pravi divergentnu granu iz stanja) i od clear-context (briše/resetuje stanje).",
     "domain": 1,
     "seen_in": [
-      "d1-q016"
+      "d1-q016",
+      "d1-q031"
     ]
   },
   {
@@ -396,7 +423,9 @@
     "sr": "Obrazac orkestracije gde Coordinator UNAPRED proceni složenost/nameru upita i dinamički ga pošalje SAMO relevantnom subagentu/ima ('fast path'), preskacuci ostale - umesto da svaki upit gura kroz fiksni puni pipeline. Upari posao sa potrebom: manje latencije i compute-a bez žrtvovanja tačnosti. Suprotno od broadcast-a svima + uzimanja prvog odgovora (brzo ali rizikuje netačan odgovor).",
     "domain": 1,
     "seen_in": [
-      "d1-q017"
+      "d1-q017",
+      "d1-q029",
+      "d2-q001"
     ]
   },
   {
@@ -415,7 +444,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q019",
-      "d1-q021"
+      "d1-q021",
+      "d1-q032"
     ]
   },
   {
@@ -424,7 +454,8 @@
     "sr": "Zahtev Messages API-ja da se 'user' i 'assistant' role-ovi strogo smenjuju - ne možeš imati dve uzastopne poruke istog role-a. Zato tool_use (u assistant poruci) i svi pripadajući tool_result blokovi (u jednoj sledećoj user poruci) čuvaju alternaciju; razbijanje rezultata u više user poruka napravilo bi uzastopne user poruke i pokvarilo obrazac.",
     "domain": 1,
     "seen_in": [
-      "d1-q019"
+      "d1-q019",
+      "d1-q032"
     ]
   },
   {
@@ -442,7 +473,8 @@
     "sr": "Identifikator koji povezuje tool_result sa njegovim originalnim tool_use pozivom. Daje PROVENIENCU - model pouzdano mapira svaku opservaciju (rezultat) na tačnu akciju (poziv) koja ju je proizvela. Postoji samo unutar strukturnog tool_result bloka; lepljenje rezultata kao plain text izbacuje tool_use_id, kida vezu akcija<->ishod i izaziva halucinaciju i gubitak stanja.",
     "domain": 1,
     "seen_in": [
-      "d1-q021"
+      "d1-q021",
+      "d1-q032"
     ]
   },
   {
@@ -505,7 +537,8 @@
     "sr": "Agent završnog koraka (sinonim: aggregator) koji uzme strukturisane izlaze više paralelnih pod-agenata i napravi JEDAN koherentan odgovor na prirodnom jeziku za celo pitanje. Preporučeni način spajanja fan-out rezultata; koordinacija ide preko njega, ne peer-to-peer.",
     "domain": 1,
     "seen_in": [
-      "d1-q024"
+      "d1-q024",
+      "d1-q033"
     ]
   },
   {
@@ -550,7 +583,10 @@
     "sr": "Glavni agent koji orkestrira i delegira pod-zadatke specijalizovanim subagentima (pozivom Task alata). Koordinacija ide kroz njega (hub-and-spoke), ne peer-to-peer među subagentima. Da bi delegirao, prompt mu mora reći KADA da pozove Task.",
     "domain": 1,
     "seen_in": [
-      "d1-q025"
+      "d1-q025",
+      "d1-q029",
+      "d1-q033",
+      "d2-q007"
     ]
   },
   {
@@ -577,7 +613,8 @@
     "sr": "Pravilo API-ja koje ograničava broj zahteva po jedinici vremena. Prekoračenje kažnjava (ovde 24h ban naloga). Pošto je kazna trenutna/nepovratna, zaštita mora da SPREČI sporni poziv pre slanja (PreToolCall), a ne da reaguje posle (PostToolCall je prekasno).",
     "domain": 1,
     "seen_in": [
-      "d1-q027"
+      "d1-q027",
+      "d2-q014"
     ]
   },
   {
@@ -596,6 +633,626 @@
     "domain": 1,
     "seen_in": [
       "d1-q028"
+    ]
+  },
+  {
+    "term": "strict tool use",
+    "en": "An Anthropic Structured Outputs feature: setting strict: true on a tool definition guarantees the model's tool inputs match the provided input_schema (JSON Schema) by constraining token sampling to schema-valid outputs (constrained decoding) - the invalid call is never generated. Supported on Opus 4.8 / Sonnet 4.6 / Haiku 4.5 (and legacy Opus 4.5/4.1). Supports format/enum/const/anyOf/$ref/additionalProperties:false; does NOT enforce 'pattern' regex or minLength/maxLength (string constraints are stripped/validated client-side). Use format:'date' for a date, not a regex pattern.",
+    "sr": "Anthropic Structured Outputs funkcija: strict: true u definiciji alata garantuje da tool inputs modela prate zadati input_schema (JSON Schema) tako što ograničava token sampling na schema-validne izlaze (constrained decoding) - nevažeći poziv nikad ne nastane. Garanciju daje API parametar, ne prompt. Podržano na Opus 4.8 / Sonnet 4.6 / Haiku 4.5 (i legacy Opus 4.5/4.1). Podržava format/enum/const/anyOf/$ref/additionalProperties:false; NE iznuđuje 'pattern' regex ni minLength/maxLength (string constraints se uklanjaju/validiraju klijentski). Za datum koristi format:'date', ne regex pattern.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q034",
+      "d2-q024"
+    ]
+  },
+  {
+    "term": "supervisor",
+    "en": "A coordinator/orchestrator agent that holds no domain tools of its own; it reads the user's query and routes it to specialized subagents. A naming variant of the coordinator/hub-and-spoke role, emphasized in tool-distribution designs.",
+    "sr": "Koordinator/orkestrator agent koji sam nema domenske alate; čita korisnikov upit i rutira ga specijalizovanim subagentima. Imenska varijanta coordinator/hub-and-spoke uloge, naglašena u dizajnu raspodele alata.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q001"
+    ]
+  },
+  {
+    "term": "tool distribution",
+    "en": "The principle of spreading tools across multiple specialized agents, each with a small focused set (2-3 related tools), instead of giving one agent all tools. Reduces decision complexity and wrong-tool selection; pairs with a routing Supervisor.",
+    "sr": "Princip raspodele alata na više specijalizovanih agenata, svaki sa malim fokusiranim skupom (2-3 srodna alata), umesto da jedan agent ima sve alate. Smanjuje decision complexity i pogrešan izbor alata; ide uz routing Supervisor.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q001",
+      "d2-q007",
+      "d2-q008"
+    ]
+  },
+  {
+    "term": "MCP",
+    "en": "Model Context Protocol - an open protocol that standardizes how a host/client (e.g. Claude Code, an agent) connects to external servers exposing tools, resources, and prompts. The client maintains persistent connections to all configured servers and aggregates their tools into one namespace.",
+    "sr": "Model Context Protocol - otvoreni protokol koji standardizuje kako se host/klijent (npr. Claude Code, agent) povezuje na spoljne servere koji izlažu alate, resurse i promptove. Klijent drži trajne konekcije ka svim konfigurisanim serverima i skuplja njihove alate u jedan namespace.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q002",
+      "d2-q003",
+      "d2-q011"
+    ]
+  },
+  {
+    "term": "MCP server",
+    "en": "A process exposing tools/resources/prompts over MCP (via stdio or HTTP/SSE transport). Multiple MCP servers can be connected concurrently; each is modular and domain-specific (e.g. a Market Data server, a Trade Execution server).",
+    "sr": "Proces koji izlaže alate/resurse/promptove preko MCP-a (stdio ili HTTP/SSE transport). Više MCP servera može biti povezano istovremeno; svaki je modularan i domenski specifičan (npr. Market Data server, Trade Execution server).",
+    "domain": 2,
+    "seen_in": [
+      "d2-q002",
+      "d2-q006"
+    ]
+  },
+  {
+    "term": ".mcp.json",
+    "en": "A project-scoped configuration file that declares which MCP servers a project connects to (command/transport/args). On session start the client reads it, connects to every listed server, and discovers their tools.",
+    "sr": "Konfiguracioni fajl na nivou projekta koji deklariše na koje MCP servere se projekat povezuje (komanda/transport/argumenti). Pri pokretanju sesije klijent ga pročita, poveže se na svaki naveden server i otkrije njihove alate.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q002",
+      "d2-q011"
+    ]
+  },
+  {
+    "term": "tool discovery",
+    "en": "The step where, after connecting and performing the initialize handshake, the MCP client queries each server (tools/list) to learn its available tools. Done once at connection time; the discovered tools then remain available for the session.",
+    "sr": "Korak u kome, nakon povezivanja i initialize handshake-a, MCP klijent upita svaki server (tools/list) da sazna dostupne alate. Radi se jednom pri konekciji; otkriveni alati zatim ostaju dostupni kroz sesiju.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q002"
+    ]
+  },
+  {
+    "term": "persistent connection",
+    "en": "A connection that the MCP host keeps open for the whole session after the initial handshake, rather than re-establishing it per tool call. Enables calling tools across multiple servers without re-connect/switching latency.",
+    "sr": "Konekcija koju MCP host drži otvorenom kroz celu sesiju nakon početnog handshake-a, umesto da je uspostavlja iznova pred svaki poziv alata. Omogućava pozivanje alata sa više servera bez latencije ponovnog povezivanja/prebacivanja.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q002"
+    ]
+  },
+  {
+    "term": "isError",
+    "en": "A boolean field on an MCP tool result indicating whether the tool call failed. isError: true tells the model the operation did not succeed (so it can retry, escalate, or surface the failure); isError: false signals success. Swallowing a backend failure and returning isError: false masks the error from the agent.",
+    "sr": "Boolean polje na rezultatu MCP alata koje označava da li je poziv alata pao. isError: true govori modelu da operacija NIJE uspela (pa može da retry-uje, eskalira ili prikaže grešku); isError: false signalizira uspeh. Gutanje backend greške i vraćanje isError: false skriva grešku od agenta.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q003",
+      "d2-q023",
+      "d2-q025"
+    ]
+  },
+  {
+    "term": "structured error response",
+    "en": "Returning a tool failure as an explicit, structured signal (isError: true plus a descriptive message) rather than as a silent 'success with empty result'. Lets the agent distinguish 'no data found' from 'the call failed' and react accordingly. The opposite anti-pattern swallows exceptions and reports false success.",
+    "sr": "Vraćanje neuspeha alata kao eksplicitnog, strukturisanog signala (isError: true uz opisnu poruku) umesto kao tihog 'uspeh + prazan rezultat'. Omogućava agentu da razlikuje 'nema podataka' od 'poziv je pao' i da reaguje. Suprotni anti-pattern guta izuzetke i prijavljuje lažan uspeh.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q003",
+      "d2-q014",
+      "d2-q015",
+      "d2-q016",
+      "d2-q023",
+      "d2-q025"
+    ]
+  },
+  {
+    "term": "false negative",
+    "en": "A result that reports 'nothing found' when something actually exists. In agentic tooling this arises when a failed call is masked as a successful empty result - the model concludes 'all clear' while a real failure (e.g. expired credentials) went undetected. Critically dangerous in security/threat detection.",
+    "sr": "Rezultat koji javlja 'ničeg nema' iako nešto zapravo postoji. U agentskom toolingu nastaje kad se neuspeo poziv maskira kao uspešan prazan rezultat - model zaključi 'čisto' dok je stvarni neuspeh (npr. istekli kredencijali) ostao neprimećen. Posebno opasno u security/detekciji pretnji.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q003"
+    ]
+  },
+  {
+    "term": "tool chaining",
+    "en": "An orchestration technique where the output of one tool becomes the input of another (e.g. geocode_address → calculate_distance). Lets the model handle complex multi-step tasks and obtain data deterministically instead of hallucinating it, improving reliability.",
+    "sr": "Tehnika orkestracije gde izlaz jednog alata postaje ulaz drugog (npr. geocode_address → calculate_distance). Omogućava modelu da reši složene multi-step zadatke i pribavi podatak deterministički umesto da ga halucinira, čime raste pouzdanost.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q004"
+    ]
+  },
+  {
+    "term": "input_examples",
+    "en": "Examples of correct tool calls included in a tool definition. They guide the model toward proper usage and the expected input format, reducing malformed or hallucinated parameters - part of designing a reliable tool interface.",
+    "sr": "Primeri ispravnih poziva alata uključeni u definiciju alata. Vode model ka pravilnom korišćenju i očekivanom formatu ulaza, smanjuju loše formirane ili halucinirane parametre - deo dizajna pouzdanog tool interfejsa.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q004"
+    ]
+  },
+  {
+    "term": "tool description",
+    "en": "The natural-language description of a tool's purpose, behavior, and boundaries in its definition. Clear, specific descriptions are central to reliable tool use - they tell the model when and how to use the tool and what its inputs mean.",
+    "sr": "Opis namene, ponašanja i granica alata na prirodnom jeziku u njegovoj definiciji. Jasni, precizni opisi su ključni za pouzdan tool use - govore modelu kada i kako da koristi alat i šta njegovi ulazi znače.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q004",
+      "d2-q005",
+      "d2-q019",
+      "d2-q022"
+    ]
+  },
+  {
+    "term": "hallucination",
+    "en": "When the model fabricates data it does not actually know (e.g. inventing precise coordinates from a street address), producing plausible but wrong values. The fix is to give the model a tool to fetch the data rather than relying on it to generate it; loosening schemas only invites more hallucination.",
+    "sr": "Kad model fabrikuje podatke koje zapravo ne zna (npr. izmišlja precizne koordinate iz adrese), proizvodeći uverljive ali pogrešne vrednosti. Rešenje je dati modelu alat da pribavi podatak umesto da se oslanja na njegovo generisanje; labavljenje šema samo poziva još halucinacija.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q004",
+      "d2-q011",
+      "d2-q013",
+      "d2-q019",
+      "d2-q024"
+    ]
+  },
+  {
+    "term": "keyword-sensitive instructions",
+    "en": "Prompt instructions whose key words unintentionally steer the model - e.g. 'Execute...' biases the model toward a tool with 'execute' in its name. Anthropic warns these create unintended tool associations; mitigate with clear, structured prompts and explicit tool guidance.",
+    "sr": "Instrukcije u promptu čije ključne reči nenamerno usmeravaju model - npr. 'Execute...' navodi model ka alatu sa 'execute' u imenu. Anthropic upozorava da stvaraju nenamerne asocijacije sa alatima; ublažava se jasnim, strukturiranim promptovima i eksplicitnim uputstvom o alatima.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q005",
+      "d2-q022"
+    ]
+  },
+  {
+    "term": "unintended tool associations",
+    "en": "When prompt phrasing links a word to a tool and causes wrong tool selection - the system prompt's wording effectively overrides the tool descriptions. The misrouting is systematic (tied to wording), not random.",
+    "sr": "Kad formulacija prompta poveže reč sa alatom i izazove pogrešan izbor alata - formulacija system prompta praktično pregazi opise alata. Misrouting je sistematski (vezan za formulaciju), ne nasumičan.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q005"
+    ]
+  },
+  {
+    "term": "negative constraint",
+    "en": "An explicit prohibition in a tool description or prompt (e.g. 'do not execute live trades'). It can help disambiguate, but it does not fix the root cause when the real problem is keyword-sensitive prompt wording that primes the wrong tool.",
+    "sr": "Eksplicitna zabrana u opisu alata ili promptu (npr. 'ne izvršavaj live trade'). Može pomoći u razdvajanju, ali ne rešava koren kad je pravi problem keyword-sensitivna formulacija prompta koja primira pogrešan alat.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q005"
+    ]
+  },
+  {
+    "term": "community MCP server",
+    "en": "A pre-built, community-maintained MCP server for a popular system or SaaS platform (e.g. Shopify, Zendesk). Reusing one instead of building from scratch reduces implementation effort and speeds up delivery.",
+    "sr": "Gotov, community-održavan MCP server za popularan sistem ili SaaS platformu (npr. Shopify, Zendesk). Reuse umesto gradnje iz nule smanjuje napor implementacije i ubrzava isporuku.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q006"
+    ]
+  },
+  {
+    "term": "custom MCP server",
+    "en": "An MCP server you build yourself, warranted when no community server exists or the system is proprietary/non-standard (e.g. a legacy AS/400 mainframe). Lets you focus custom effort only where robust integration genuinely requires it.",
+    "sr": "MCP server koji sam gradiš, opravdan kad nema community rešenja ili je sistem proprietaran/nestandardan (npr. legacy AS/400 mainframe). Omogućava da custom napor usmeriš samo tamo gde robusna integracija stvarno to traži.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q006"
+    ]
+  },
+  {
+    "term": "legacy system",
+    "en": "An old, often proprietary system (e.g. an AS/400 mainframe) that typically requires specialized protocol handling, custom business logic, or specific adapters. A generic REST wrapper usually cannot integrate with it robustly, so it warrants a custom MCP server.",
+    "sr": "Star, često proprietaran sistem (npr. AS/400 mainframe) koji obično traži specijalizovan protocol handling, custom poslovnu logiku ili specifične adaptere. Generički REST wrapper najčešće ne može robustno da se integriše s njim, pa zahteva custom MCP server.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q006"
+    ]
+  },
+  {
+    "term": "monolithic server",
+    "en": "A single server that wraps multiple unrelated systems into one unit. An anti-pattern for MCP integration: it creates unnecessary coupling, a single point of failure, and is harder to test/maintain - and it ignores available community servers. Prefer one modular server per system.",
+    "sr": "Jedan server koji umota više nesrodnih sistema u jednu celinu. Anti-pattern za MCP integraciju: stvara nepotrebno kuplovanje, single point of failure, teži je za test/održavanje - i ignoriše dostupne community servere. Bolje zaseban modularni server po sistemu.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q006"
+    ]
+  },
+  {
+    "term": "scoped tool",
+    "en": "A narrow, purpose-built tool of limited scope given to an agent for exactly its frequent, specific need (e.g. a verify_fact tool for the Writer). Proper tool scoping - preferable to handing over a full suite of powerful tools and restricting usage via prompts (which is fragile).",
+    "sr": "Uzak, namenski alat ograničenog opsega dat agentu baš za njegovu čestu, specifičnu potrebu (npr. verify_fact za Writer-a). Pravo tool scoping - bolje nego dati pun skup moćnih alata pa ograničavati korišćenje promptom (što je krhko).",
+    "domain": 2,
+    "seen_in": [
+      "d2-q007",
+      "d2-q013",
+      "d2-q021"
+    ]
+  },
+  {
+    "term": "cognitive load",
+    "en": "How much the model must hold and choose among (tools, context) while working. A bloated agent with many irrelevant tools raises cognitive load and can reduce accuracy on simple tasks - an argument for scoped tools and separation of concerns over a single mega-agent.",
+    "sr": "Koliko model mora da „drži\" i bira (alati, kontekst) dok radi. Bloated agent sa mnogo nerelevantnih alata diže cognitive load i može smanjiti tačnost na prostim zadacima - argument za scoped alate i separaciju poslova umesto jednog mega-agenta.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q007"
+    ]
+  },
+  {
+    "term": "Generate-Validate Pattern",
+    "en": "A multi-agent pattern where one agent generates content (e.g. code) and a separate agent validates it (e.g. runs tests). Splitting generation from validation enforces separation of concerns and prevents an agent from performing tasks outside its role.",
+    "sr": "Multi-agent obrazac u kome jedan agent generiše sadržaj (npr. kod), a drugi ga validira (npr. pokreće testove). Razdvajanje generisanja od validacije sprovodi separaciju poslova i sprečava agenta da radi posao van svoje uloge.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q008"
+    ]
+  },
+  {
+    "term": "Orchestrator-Worker pattern",
+    "en": "A multi-agent architecture where an orchestrator splits a complex task among specialized worker agents. It leverages specialization rather than one monolithic agent; merging workers into a single agent eliminates its benefits.",
+    "sr": "Multi-agent arhitektura u kojoj orkestrator deli složen zadatak specijalizovanim worker agentima. Oslanja se na specijalizaciju umesto jednog monolitnog agenta; spajanje worker-a u jedan agent briše te benefite.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q008"
+    ]
+  },
+  {
+    "term": "specialization",
+    "en": "The principle that each agent does a narrow, clearly defined job with its own toolset. It is a foundation of multi-agent architecture and the opposite of a bloated monolithic agent that holds every tool.",
+    "sr": "Princip da svaki agent radi uzak, jasno definisan posao sa svojim skupom alata. Temelj multi-agent arhitekture i suprotnost bloated monolitnom agentu koji drži sve alate.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q008"
+    ]
+  },
+  {
+    "term": "infinite loop",
+    "en": "A failure mode where an agent gets stuck repeating the same action - e.g. a tool_choice that forces the same tool on every turn makes it call that tool with the same payload over and over after an error. Broken by returning freedom (tool_choice auto), changing state, or adding a stop condition.",
+    "sr": "Režim otkaza u kome agent zaglavi ponavljajući istu akciju - npr. tool_choice koji forsira isti alat na svakom turn-u tera ga da zove taj alat sa istim payload-om iznova posle greške. Prekida se vraćanjem slobode (tool_choice auto), promenom stanja ili stop-uslovom.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q009"
+    ]
+  },
+  {
+    "term": "Read",
+    "en": "Claude Code built-in tool that reads a file's contents (whole or a portion). Required before Edit. Used for selective/sequential context building rather than bulk-reading many files.",
+    "sr": "Ugrađeni Claude Code alat koji čita sadržaj fajla (ceo ili deo). Obavezan pre Edit-a. Koristi se za selektivno/sekvencijalno građenje konteksta umesto bulk-čitanja mnogo fajlova.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q010",
+      "d2-q026",
+      "d2-q027"
+    ]
+  },
+  {
+    "term": "Grep",
+    "en": "Claude Code built-in tool that searches file CONTENTS by regex (ripgrep-based), returning matching files/lines. Use it to locate where something appears in code (e.g. a login entry point) - contrast with Glob (by name).",
+    "sr": "Ugrađeni Claude Code alat koji pretražuje SADRŽAJ fajlova po regex-u (zasnovan na ripgrep), vraća fajlove/linije koje se poklapaju. Koristi ga da nađeš gde se nešto pojavljuje u kodu (npr. login ulazna tačka) - suprotno od Glob-a (po imenu).",
+    "domain": 2,
+    "seen_in": [
+      "d2-q010",
+      "d2-q020",
+      "d2-q026",
+      "d2-q027",
+      "d2-q028"
+    ]
+  },
+  {
+    "term": "Glob",
+    "en": "Claude Code built-in tool that finds files by NAME/path using glob patterns (e.g. **/*auth*.*). It can filter by filename; it does NOT search file contents (that's Grep).",
+    "sr": "Ugrađeni Claude Code alat koji pronalazi fajlove po IMENU/putanji glob patternima (npr. **/*auth*.*). Može da filtrira po imenu fajla; NE pretražuje sadržaj (to je Grep).",
+    "domain": 2,
+    "seen_in": [
+      "d2-q010",
+      "d2-q020",
+      "d2-q026",
+      "d2-q027"
+    ]
+  },
+  {
+    "term": "Edit",
+    "en": "Claude Code built-in tool that makes a targeted change to an existing file by exact-string replacement. Requires a prior Read. Meant for modification, not for tracing/understanding code.",
+    "sr": "Ugrađeni Claude Code alat koji pravi ciljanu izmenu postojećeg fajla zamenom tačnog stringa. Zahteva prethodni Read. Služi za modifikaciju, ne za tracing/razumevanje koda.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q010",
+      "d2-q026",
+      "d2-q027",
+      "d2-q028"
+    ]
+  },
+  {
+    "term": "Bash",
+    "en": "Claude Code built-in tool that runs shell commands (e.g. find, git, npm). Used for everything outside direct file read/edit operations.",
+    "sr": "Ugrađeni Claude Code alat koji pokreće shell komande (npr. find, git, npm). Koristi se za sve van direktnih fajl read/edit operacija.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q010",
+      "d2-q017",
+      "d2-q018",
+      "d2-q028"
+    ]
+  },
+  {
+    "term": "context window",
+    "en": "The limited span of context the model can hold at once. Bulk-reading many files floods it with mostly-irrelevant text, degrading performance and raising token usage - hence targeted Grep + sequential Read instead.",
+    "sr": "Ograničen prostor konteksta koji model može da drži odjednom. Bulk-čitanje mnogo fajlova ga zatrpa uglavnom nerelevantnim tekstom, degradira performanse i diže token usage - zato ciljani Grep + sekvencijalni Read umesto toga.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q010",
+      "d2-q011"
+    ]
+  },
+  {
+    "term": "built-in tools",
+    "en": "The built-in Claude Code tools (Read, Write, Edit, Bash, Grep, Glob). Choose by job: Grep/Glob/Read for discovery, Edit/Write for modification, Bash for everything else. Subdomain 2.5 is about applying them effectively.",
+    "sr": "Ugrađeni Claude Code alati (Read, Write, Edit, Bash, Grep, Glob). Biraju se po poslu: Grep/Glob/Read za discovery, Edit/Write za izmenu, Bash za ostalo. Subdomain 2.5 je o njihovoj efektivnoj primeni.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q010",
+      "d2-q020",
+      "d2-q026",
+      "d2-q027",
+      "d2-q028"
+    ]
+  },
+  {
+    "term": "Write",
+    "en": "Claude Code built-in tool that writes or overwrites an entire file (new file or full rewrite). Distinct from Edit, which makes a targeted in-place change.",
+    "sr": "Ugrađeni Claude Code alat koji piše ili prepisuje ceo fajl (nov fajl ili pun rewrite). Razlikuje se od Edit-a, koji pravi ciljanu izmenu na licu mesta.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q028"
+    ]
+  },
+  {
+    "term": "MCP resource",
+    "en": "An MCP mechanism for exposing structured, read-only data/context to the agent (e.g. a database schema catalog). It acts as an authoritative source of truth the model can reference on demand, removing exploratory tool calls and preventing hallucination. MCP exposes tools, resources, and prompts.",
+    "sr": "MCP mehanizam za izlaganje strukturisanog, read-only podatka/konteksta agentu (npr. schema katalog baze). Deluje kao authoritative source of truth koji model konsultuje po potrebi, ukida eksplorativne pozive alata i sprečava halucinaciju. MCP izlaže tools, resources i prompts.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q011"
+    ]
+  },
+  {
+    "term": "exploratory tool calls",
+    "en": "Tool calls made just to DISCOVER information before the real work (e.g. DESCRIBE TABLE, ls/Glob, Read to inspect structure). They cost turns, latency, and tokens, and often number in the dozens; eliminated by providing the data upfront as a resource.",
+    "sr": "Pozivi alata koji se prave samo da bi se OTKRILA informacija pre pravog posla (npr. DESCRIBE TABLE, ls/Glob, Read radi provere strukture). Troše turn-ove, latenciju i token-e, često ih ima na desetine; ukidaju se davanjem podatka unapred kao resource.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q011"
+    ]
+  },
+  {
+    "term": "plugin",
+    "en": "A Claude Code plugin: a package that adds commands, agents, MCP servers, or hooks to a project. Enabled/disabled via `claude plugin enable/disable <name>@<marketplace>` or the /plugin UI.",
+    "sr": "Claude Code plugin: paket koji projektu dodaje komande, agente, MCP servere ili hooks. Uključuje se/isključuje preko `claude plugin enable/disable <ime>@<marketplace>` ili /plugin UI-ja.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q012"
+    ]
+  },
+  {
+    "term": "plugin dependencies",
+    "en": "Dependencies one Claude Code plugin declares on others in plugin.json. Claude Code is dependency-aware: it refuses to disable a plugin while another enabled plugin depends on it, naming the dependents and offering a chained command to disable them in order.",
+    "sr": "Zavisnosti koje jedan Claude Code plugin deklariše na druge u plugin.json. Claude Code je dependency-aware: odbija disable plugina dok neki enabled plugin zavisi od njega, imenuje zavisne i nudi chained command da ih isključi po redu.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q012"
+    ]
+  },
+  {
+    "term": "plugin.json",
+    "en": "A Claude Code plugin's manifest in the .claude-plugin/ directory. Holds metadata and a `dependencies` array (a bare name string, or an object {name, version} with a version constraint).",
+    "sr": "Manifest Claude Code plugina u .claude-plugin/ direktorijumu. Sadrži metapodatke i `dependencies` niz (golo ime kao string, ili objekat {name, version} sa ograničenjem verzije).",
+    "domain": 2,
+    "seen_in": [
+      "d2-q012"
+    ]
+  },
+  {
+    "term": "external knowledge restriction",
+    "en": "Anthropic best-practice: restrict a tool's capability to a validated, curated set of internal sources by interface design, so the model cannot access unauthorized external or non-existent internal resources. Prevents hallucinations and enforces security at the tool level rather than via prompt warnings.",
+    "sr": "Anthropic best-practice: ograniči sposobnost alata na validiran, kuriran skup internih izvora po DIZAJNU interfejsa, tako da model ne može pristupiti neovlašćenim eksternim ni nepostojećim internim resursima. Suzbija halucinacije i osigurava bezbednost na nivou alata, umesto upozorenjima u promptu.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q013"
+    ]
+  },
+  {
+    "term": "transient error",
+    "en": "A temporary, recoverable failure that may succeed if retried after a delay (e.g. rate limit / 429, timeout, transient 503). The correct recovery is wait-and-retry (ideally with backoff). Contrast with a terminal error, where retrying is pointless.",
+    "sr": "Privremena, popravljiva greška koja može uspeti ako se ponovi posle pauze (npr. rate limit / 429, timeout, prolazni 503). Ispravna reakcija je sačekaj-pa-retry (idealno uz backoff). Suprotno od terminalne greške, gde je retry besmislen.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q014",
+      "d2-q015",
+      "d2-q016"
+    ]
+  },
+  {
+    "term": "terminal error",
+    "en": "A permanent failure that will NOT succeed on retry; the input or precondition is wrong (e.g. invalid ticker / bad input, 401/403 unauthorized). The correct recovery is to change strategy — ask the user for clarification or escalate — not to retry. Contrast with a transient error.",
+    "sr": "Trajna greška koja NEĆE uspeti ponavljanjem; input ili preduslov je pogrešan (npr. nevažeći ticker / loš input, 401/403 unauthorized). Ispravna reakcija je promena strategije — traži pojašnjenje korisnika ili eskaliraj — a ne retry. Suprotno od prolazne (transient) greške.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q014",
+      "d2-q015"
+    ]
+  },
+  {
+    "term": "isRetryable",
+    "en": "A boolean flag in a structured MCP error response that signals to the agent whether the error is transient and worth retrying (true -> wait-and-retry, ideally with backoff) or terminal (false -> do not retry; change strategy or escalate). The agent obeys it literally; classification accuracy is the tool's responsibility — a transient error wrongly marked false causes premature give-up.",
+    "sr": "Bulev flag u strukturiranom MCP error response koji agentu govori da li je greška prolazna i vredi je ponoviti (true -> sačekaj pa probaj ponovo, idealno uz backoff) ili terminalna (false -> ne ponavljaj; promeni strategiju ili eskaliraj). Agent ga posluša bukvalno; tačnost klasifikacije je odgovornost tool-a — prolazna greška pogrešno označena kao false uzrokuje prerano odustajanje.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q015",
+      "d2-q016",
+      "d2-q025"
+    ]
+  },
+  {
+    "term": "errorCategory",
+    "en": "A categorical field in a structured error response that classifies the NATURE of a failure (e.g. transient / business / permission / availability), driving the agent's recovery path. Complements isRetryable (a boolean 'is it worth retrying'). It must be classified accurately — a wrong category steers the agent into the wrong strategy (e.g. an availability outage mislabeled 'permission' makes the agent ask for credentials that won't help).",
+    "sr": "Kategorijsko polje u strukturiranom error response koje klasifikuje PRIRODU greške (npr. transient / business / permission / availability) i tako bira put oporavka agenta. Komplementarno sa isRetryable (boolean „vredi li ponoviti\"). Mora biti tačno klasifikovano — pogrešna kategorija vodi agenta u pogrešnu strategiju (npr. availability ispad pogrešno označen kao „permission\" → agent traži kredencijale koji ne pomažu).",
+    "domain": 2,
+    "seen_in": [
+      "d2-q016",
+      "d2-q023"
+    ]
+  },
+  {
+    "term": "jq",
+    "en": "jq — JSON-aware command-line processor; parses the file as structured data (objects/arrays/fields) and edits the exact field of the exact object, unlike text tools.",
+    "sr": "jq — komandno-linijski procesor specijalizovan za JSON; parsira fajl kao strukturu (objekti/nizovi/polja) i menja tačno polje tačnog objekta, za razliku od tekstualnih alata.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q017",
+      "d2-q018"
+    ]
+  },
+  {
+    "term": "structurally-aware editing",
+    "en": "Editing data through a tool that PARSES the format (jq for JSON) rather than doing literal text replacement; robust to formatting and hits exactly the targeted element.",
+    "sr": "Izmena podataka preko alata koji PARSIRA format (jq za JSON), umesto doslovne tekstualne zamene; otporno na formatiranje, pogađa tačno ciljani element.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q017",
+      "d2-q018"
+    ]
+  },
+  {
+    "term": "atomic write (temp file + mv)",
+    "en": "Safe write: the result is written to a temporary file, then the original is atomically replaced with mv; you always have either the old or the new file, never a half-written/corrupted one if the command fails.",
+    "sr": "Bezbedan upis: rezultat se piše u privremeni fajl pa se original atomično prebriše komandom mv; ili stari ili novi fajl, nikad polu-upisan/korumpiran ako komanda padne.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q017",
+      "d2-q018"
+    ]
+  },
+  {
+    "term": "str_replace",
+    "en": "Command of the Anthropic text_editor built-in tool that replaces an EXACT character string (including whitespace/newlines); literal text replacement, not structure-aware, so it breaks on formatting changes.",
+    "sr": "Komanda Anthropic text_editor built-in alata koja zamenjuje TAČAN niz znakova (uklj. razmake/\\n); doslovna tekstualna zamena, nije strukturno svesna — puca na promenu formatiranja.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q017"
+    ]
+  },
+  {
+    "term": "sed",
+    "en": "Stream editor; edits text line-by-line by pattern, sees characters not structure, so it is unsafe for JSON.",
+    "sr": "Stream editor; uređuje tekst red-po-red po pattern-u, vidi karaktere a ne strukturu — nesiguran za JSON.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q017"
+    ]
+  },
+  {
+    "term": "Programmatic Tool Calling (PTC)",
+    "en": "Programmatic Tool Calling (PTC): a Claude capability where Claude writes code (run in a code-execution sandbox) that calls tools programmatically, instead of one model round-trip per tool call. Per Anthropic docs it is a STRONG fit for fan-out across many items, large results to filter/aggregate, and agentic search; a WEAK fit for a small number of tool calls with small responses (container/script overhead exceeds savings). Requires the code execution tool.",
+    "sr": "Programmatic Tool Calling (PTC): mogućnost gde Claude napiše kôd (izvršen u code-execution sandbox-u) koji programski poziva alate, umesto jedan round-trip po pozivu. Po Anthropic docs JAK izbor za fan-out preko mnogo stavki, velike rezultate za filtriranje/agregaciju i agentic search; SLAB izbor za mali broj poziva sa malim odgovorima (overhead container-a/skripte premašuje uštedu). Zahteva code execution tool.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q018"
+    ]
+  },
+  {
+    "term": "tool boundaries",
+    "en": "Tool boundaries: the explicit scope limits of a tool — what it does and, crucially, what it does NOT support — stated in its description so the model selects it only for in-scope cases. Part of Subdomain 2.1 (clear descriptions and boundaries). Prevents out-of-scope calls at selection time.",
+    "sr": "Granice alata: eksplicitne granice opsega alata — šta radi i, ključno, šta NE podržava — navedene u opisu tako da ga model bira samo za slučajeve u opsegu. Deo Subdomaina 2.1 (jasni opisi i granice). Sprečava pozive van opsega na mestu izbora.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q019"
+    ]
+  },
+  {
+    "term": "prompt injection",
+    "en": "An attack where adversarial instructions embedded in user-supplied content (a chat message, a fetched document) are interpreted by the model as commands, tricking the agent into unintended actions (e.g. running cat /etc/passwd via an over-broad command tool). Robust defense removes the capability (constrain the tool interface), not just detection/filtering, which can be evaded.",
+    "sr": "Napad u kome zlonamerne instrukcije ugrađene u korisnički sadržaj (poruka u chatu, preuzeti dokument) model protumači kao komande, navodeći agenta na neželjene akcije (npr. pokretanje cat /etc/passwd kroz prepirok command alat). Robustna odbrana UKLANJA sposobnost (suzi interfejs alata), ne samo detekcija/filtriranje koje se može zaobići.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q021"
+    ]
+  },
+  {
+    "term": "principle of least privilege",
+    "en": "Security principle: grant each component only the minimum capability it needs for its task and nothing more. Applied to tools, replace a generic powerful tool (execute_system_command) with a narrow, purpose-built one (check_server_ping accepting only an IP/hostname), so abuse becomes structurally impossible rather than merely policed.",
+    "sr": "Bezbednosni princip: svakoj komponenti daj samo minimalnu sposobnost koja joj treba za zadatak i ništa više. Primenjeno na alate, zameni generički moćan alat (execute_system_command) uskim namenskim (check_server_ping koji prima samo IP/hostname), tako da zloupotreba postaje strukturno nemoguća, a ne samo policirana.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q021"
+    ]
+  },
+  {
+    "term": "Shared Responsibility Model",
+    "en": "Anthropic's model splitting security duties between provider and customer: Anthropic secures the model/platform, while the customer is responsible for how they design and constrain their own tools, agents and integrations (e.g. not exposing a generic execute_system_command). Locking down tool capability is the customer's responsibility.",
+    "sr": "Anthropic-ov model koji deli bezbednosne dužnosti između provajdera i klijenta: Anthropic obezbeđuje model/platformu, dok je klijent odgovoran za to kako dizajnira i ograničava sopstvene alate, agente i integracije (npr. da ne izlaže generički execute_system_command). Zaključavanje sposobnosti alata je odgovornost klijenta.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q021"
+    ]
+  },
+  {
+    "term": "instruction hierarchy",
+    "en": "Claude's ordering of instruction sources by precedence: a system prompt generally outranks tool descriptions. Because of this you cannot reliably make a tool description override a system-prompt rule — fix the conflict at the higher-precedence source (the system prompt).",
+    "sr": "Claude-ov redosled prednosti izvora instrukcija: sistemski prompt po pravilu ima veću težinu od opisa alata. Zbog toga ne možeš pouzdano naterati opis alata da pregazi pravilo iz sistemskog prompta — konflikt rešavaj na izvoru veće prednosti (sistemski prompt).",
+    "domain": 2,
+    "seen_in": [
+      "d2-q022"
+    ]
+  },
+  {
+    "term": "empty result",
+    "en": "A successful operation that returns zero items (an empty list []). It is a valid outcome, NOT an error — the tool should return isError:false with the empty data and a message, so the agent distinguishes 'nothing matched' from an access/system failure. Flagging an empty result as isError:true makes the agent hallucinate a failure.",
+    "sr": "Uspešna operacija koja vrati nula stavki (prazna lista []). To je validan ishod, NE greška — alat treba da vrati isError:false sa praznim podacima i porukom, da agent razlikuje 'ništa nije nađeno' od kvara pristupa/sistema. Označiti prazan rezultat kao isError:true tera agenta da halucinira kvar.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q023"
+    ]
+  },
+  {
+    "term": "single-purpose tool",
+    "en": "A tool that does exactly one operation, with a strict, purpose-specific input schema — as opposed to one overly generic/polymorphic tool that multiplexes many operations via an 'action' enum + a free-form parameters blob. Splitting a generic tool into single-purpose tools (create/update/delete) gives the model strong structural constraints, so it cannot supply parameters irrelevant to the chosen action (Subdomain 2.1). Mirrors the AWS Cloud Control API's distinct create/update/delete operations.",
+    "sr": "Alat koji radi tačno jednu operaciju, sa strogom namenskom input šemom — za razliku od jednog preširokog/polimorfnog alata koji multipleksira više operacija preko 'action' enuma + slobodne parameters kese. Razbijanje generičkog alata na namenske (create/update/delete) daje modelu jake strukturne uslove, pa ne može da pošalje parametre nevažeće za izabranu akciju (Subdomain 2.1). Poklapa se sa distinktnim create/update/delete operacijama AWS Cloud Control API-ja.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q024"
+    ]
+  },
+  {
+    "term": "input schema",
+    "en": "The JSON Schema in a tool definition declaring its parameters: names, types, which are required, allowed values (enum), and whether extra fields are allowed (additionalProperties:false). A strict, narrow input_schema is a hard guardrail — a parameter not in the schema cannot be passed. Combined with strict tool use (constrained decoding), schema-invalid calls are never generated.",
+    "sr": "JSON Schema u definiciji alata koja deklariše njegove parametre: imena, tipove, koji su obavezni, dozvoljene vrednosti (enum) i da li su dozvoljena dodatna polja (additionalProperties:false). Stroga, uska input_schema je hard guardrail — parametar koga nema u šemi ne može se proslediti. U kombinaciji sa strict tool use (constrained decoding), schema-nevažeći pozivi nikad ne nastaju.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q024"
+    ]
+  },
+  {
+    "term": "partial success",
+    "en": "A batch/multi-item operation outcome where some items succeed and some fail. The tool returns isError:false with the successful results PLUS a structured metadata section flagging the failures (e.g. partial_success:true, failed_items:[...]), so the agent can proceed with usable data and still see, machine-readably, what failed. Use for independent items; contrast with atomic all-or-nothing.",
+    "sr": "Ishod batch/višestavke operacije gde neke stavke uspeju a neke padnu. Alat vraća isError:false sa uspešnim rezultatima PLUS strukturiranu metapodatkovnu sekciju koja označava padove (npr. partial_success:true, failed_items:[...]), pa agent može da nastavi sa upotrebljivim podacima i da i dalje mašinski čitljivo vidi šta je palo. Koristi za nezavisne stavke; suprotno od atomic sve-ili-ništa.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q025"
+    ]
+  },
+  {
+    "term": "atomicity",
+    "en": "All-or-nothing semantics: an operation either fully succeeds or is fully rolled back; any single failure invalidates the whole result. Correct for true transactions with interdependent steps, but WRONG for a batch of independent items (e.g. summarizing 3 separate PDFs) — there, atomicity needlessly discards usable successful results. Prefer partial success for independent items.",
+    "sr": "Sve-ili-ništa semantika: operacija ili u potpunosti uspe ili se cela poništi; bilo koji pojedinačni pad poništava ceo rezultat. Ispravno za prave transakcije sa međuzavisnim koracima, ali POGREŠNO za batch nezavisnih stavki (npr. sažimanje 3 odvojena PDF-a) — tu atomičnost bespotrebno baca upotrebljive uspešne rezultate. Za nezavisne stavke koristi partial success.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q025"
+    ]
+  },
+  {
+    "term": "static analysis",
+    "en": "Examining code by reading/searching it WITHOUT executing the program (e.g. Grep to find a known identifier's call sites, then Read to inspect them). Contrast with runtime/dynamic debugging (instrumenting with console.trace + Bash to run the app). For locating usages of a known symbol, static analysis via Grep+Read is faster and non-invasive — no code mutation, no execution.",
+    "sr": "Pregled koda čitanjem/pretragom BEZ izvršavanja programa (npr. Grep da nađeš call-site poznatog identifikatora, pa Read da ih pregledaš). Suprotno od runtime/dinamičkog debug-a (instrumentacija sa console.trace + Bash da pokreneš app). Za pronalaženje korišćenja poznatog simbola, statička analiza preko Grep+Read je brža i neinvazivna — bez izmene koda, bez izvršavanja.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q027"
     ]
   }
 ]
