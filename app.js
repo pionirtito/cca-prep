@@ -3,6 +3,7 @@ let QUESTIONS = [];
 let GLOSSARY = [];
 let PATTERNS = [];
 let GUIDE = null;
+let LARIONOV = null;
 let view = "overview";
 let quiz = null;
 let guideLang = "both"; // "both" | "en" | "sr"
@@ -20,6 +21,7 @@ async function load() {
     GLOSSARY = await fetch("./data/glossary.json").then((r) => r.json());
     try { PATTERNS = await fetch("./data/patterns.json").then((r) => r.json()); } catch (e) { PATTERNS = []; }
     try { GUIDE = await fetch("./data/guide.json").then((r) => r.json()); } catch (e) { GUIDE = null; }
+    try { LARIONOV = await fetch("./data/larionov.json").then((r) => r.json()); } catch (e) { LARIONOV = null; }
     renderStats();
     render();
   } catch (e) {
@@ -55,6 +57,7 @@ function render() {
   else if (view === "glossary") renderGlossary();
   else if (view === "patterns") renderPatterns();
   else if (view === "guide") renderGuide();
+  else if (view === "larionov") renderLarionov();
 }
 
 // ---- overview + search ----
@@ -408,6 +411,90 @@ function renderGuide() {
       ${langBtn("both", "Oba")}${langBtn("en", "EN")}${langBtn("sr", "SR")}
     </div>
     ${sections.join("")}`;
+}
+
+// ---- larionov guide (bilingual, hover -> EN) ----
+function inlineMd(s) {
+  let t = esc(s || "");
+  t = t.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+  t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+  t = t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return t;
+}
+// plain English text for the hover tooltip (strip markdown markers)
+function enAttr(s) {
+  const plain = (s || "")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, "$1")
+    .replace(/\*\*/g, "")
+    .replace(/`/g, "");
+  return esc(plain);
+}
+
+function lrBlock(b) {
+  switch (b.type) {
+    case "h1":
+      return `<h2 class="lr-h1" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h2>`;
+    case "h2":
+      return `<h2 class="lr-h2" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h2>`;
+    case "h3":
+      return `<h3 class="guide-h3" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h3>`;
+    case "h4":
+      return `<h4 class="lr-h4" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h4>`;
+    case "p":
+      return `<p class="guide-p" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</p>`;
+    case "quote":
+      return `<blockquote class="lr-quote" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</blockquote>`;
+    case "code":
+      return `<pre class="lr-code"${b.lang ? ` data-lang="${esc(b.lang)}"` : ""}><code>${esc(b.text || "")}</code></pre>`;
+    case "table": {
+      const rows = b.cells || [];
+      if (!rows.length) return "";
+      const head = `<tr>${rows[0].map((c) => `<th data-en="${enAttr(c.en)}">${inlineMd(c.sr)}</th>`).join("")}</tr>`;
+      const body = rows.slice(1).map((r) => `<tr>${r.map((c) => `<td data-en="${enAttr(c.en)}">${inlineMd(c.sr)}</td>`).join("")}</tr>`).join("");
+      return `<div class="lr-table-wrap"><table class="lr-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+    }
+    default:
+      return "";
+  }
+}
+
+function renderLarionov() {
+  if (!LARIONOV) {
+    app.innerHTML = `<p class="empty">Larionov vodič nije učitan. Proveri data/larionov.json (pokreni preko lokalnog servera).</p>`;
+    return;
+  }
+  const m = LARIONOV.meta || {};
+  const blocks = LARIONOV.blocks || [];
+  const out = [];
+  let i = 0;
+  while (i < blocks.length) {
+    const b = blocks[i];
+    if (b.type === "li" || b.type === "oli") {
+      const tag = b.type === "li" ? "ul" : "ol";
+      const cls = b.type === "li" ? "guide-list" : "guide-olist";
+      const items = [];
+      while (i < blocks.length && blocks[i].type === b.type) {
+        items.push(`<li data-en="${enAttr(blocks[i].en)}">${inlineMd(blocks[i].sr)}</li>`);
+        i++;
+      }
+      out.push(`<${tag} class="${cls}">${items.join("")}</${tag}>`);
+      continue;
+    }
+    out.push(lrBlock(b));
+    i++;
+  }
+
+  app.innerHTML = `
+    <div class="guide-meta">
+      <div class="guide-title">${esc((m.title && m.title.sr) || "Larionov vodič")}</div>
+      <div class="guide-sub">${esc((m.title && m.title.en) || "")}</div>
+      <div class="guide-badges">
+        ${m.author ? `<span class="pill">${esc(m.author)}</span>` : ""}
+        ${m.source ? `<a class="pill link" href="${esc(m.source)}" target="_blank" rel="noopener">izvor na GitHub-u ↗</a>` : ""}
+      </div>
+      <div class="guide-note">${esc(m.license_note || "")} Tekst je na srpskom — <b>pređi mišem preko pasusa</b> da vidiš engleski original.</div>
+    </div>
+    <div class="lr-body">${out.join("")}</div>`;
 }
 
 // ---- cross-navigation ----

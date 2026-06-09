@@ -264,3 +264,35 @@ footer { border-top: 1px solid var(--line); padding: 16px 28px; font-size: 11px;
   .guide-lang { top: 64px; }
   .dw-row { grid-template-columns: 28px 1fr 70px 38px; gap: 8px; }
 }
+
+/* ---- larionov guide (hover -> EN) ---- */
+.lr-body { position: relative; }
+.lr-h1 { font-family: var(--display); font-size: 26px; font-weight: 900; color: var(--accent); margin: 40px 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+.lr-body > .lr-h1:first-child { margin-top: 8px; }
+.lr-h2 { font-family: var(--display); font-size: 21px; font-weight: 600; margin: 30px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.lr-h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin: 14px 0 6px; }
+.lr-body .guide-h3 { margin-top: 20px; }
+.lr-quote { border-left: 3px solid var(--accent); padding: 6px 14px; margin: 0 0 12px; color: var(--ink-dim); font-size: 13.5px; background: var(--bg-soft); border-radius: 0 8px 8px 0; }
+.lr-quote a { color: var(--accent-soft); }
+
+.lr-code { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; overflow-x: auto; }
+.lr-code code { font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink); white-space: pre; }
+
+.lr-table-wrap { overflow-x: auto; margin: 0 0 14px; }
+.lr-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.lr-table th, .lr-table td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+.lr-table th { background: var(--bg-soft); color: var(--accent); font-weight: 600; }
+
+/* hover tooltip: any element carrying data-en reveals the English original */
+[data-en] { position: relative; cursor: help; }
+[data-en]:hover { background: rgba(214, 158, 95, 0.07); }
+[data-en]:hover::after {
+  content: attr(data-en);
+  position: absolute; left: 0; top: 100%; z-index: 30;
+  margin-top: 4px; max-width: min(620px, 92vw); width: max-content;
+  background: var(--panel); color: var(--ink); border: 1px solid var(--accent);
+  border-radius: 8px; padding: 9px 12px; box-shadow: 0 8px 28px rgba(0,0,0,.45);
+  font-family: var(--display); font-size: 13px; font-weight: 400; line-height: 1.5;
+  white-space: normal; text-transform: none; letter-spacing: normal; pointer-events: none;
+}
+.lr-table [data-en]:hover::after { font-size: 12px; max-width: min(420px, 80vw); }
