@@ -1756,5 +1756,26 @@
     "sr": "Proksiji koje NE treba koristiti kao okidač eskalacije jer ne koreliraju sa složenošću slučaja: analiza sentimenta (raspoloženje ≠ težina), samo-ocena pouzdanosti modela 1–10 (model ume da bude samouvereno pogrešan; kalibracija je loša) i namenski klasifikatori (overengineering, traže podatke za obuku kojih možda nemaš). Pouzdani okidači su eksplicitni (v. escalation trigger).",
     "domain": 5,
     "seen_in": []
+  },
+  {
+    "term": "VCS",
+    "en": "Version Control System (e.g. git) — tracks file change history and enables collaboration. Exam-relevant distinction: project-level Claude Code config (.claude/settings.json, .claude/commands/) is shared with the team via VCS, while user-level config (~/.claude/, settings.local.json) is not.",
+    "sr": "Sistem za kontrolu verzija (npr. git) — prati istoriju izmena fajlova i omogućava saradnju. Ispitna distinkcija: projektna Claude Code podešavanja (.claude/settings.json, .claude/commands/) dele se sa timom kroz VCS, a korisnička (~/.claude/, settings.local.json) ne.",
+    "domain": 3,
+    "seen_in": []
+  },
+  {
+    "term": "frontmatter",
+    "en": "YAML metadata block between '---' lines at the top of a Markdown file. In Claude Code it configures skills (SKILL.md: 'context: fork', 'allowed-tools', 'argument-hint', 'model'), slash commands, subagents, and '.claude/rules/' files ('paths' globs for conditional loading) — the tool parses it as structured config, the body below stays prose.",
+    "sr": "YAML blok metapodataka između '---' linija na vrhu Markdown fajla. U Claude Code-u konfiguriše skillove (SKILL.md: 'context: fork', 'allowed-tools', 'argument-hint', 'model'), slash komande, podagente i '.claude/rules/' fajlove ('paths' glob obrasci za uslovno učitavanje) — alat ga parsira kao strukturiranu konfiguraciju, a telo ispod ostaje proza.",
+    "domain": 3,
+    "seen_in": []
+  },
+  {
+    "term": "microservice",
+    "en": "Architectural style that splits an application into small, independently deployable services with clear boundaries (vs. a monolith). On the exam it appears as a scenario marker: restructuring a monolith into microservices means dozens of files and service-boundary decisions — a task with architectural consequences, so use plan mode before letting Claude edit.",
+    "sr": "Arhitektonski stil koji deli aplikaciju na male, nezavisno isporučive servise sa jasnim granicama (nasuprot monolitu). Na ispitu se javlja kao marker scenarija: restrukturiranje monolita u mikroservise znači desetine fajlova i odluke o granicama servisa — zadatak sa arhitektonskim posledicama, pa se pre izmena koristi plan mode.",
+    "domain": 3,
+    "seen_in": []
   }
 ]
