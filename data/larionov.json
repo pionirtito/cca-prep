@@ -2803,6 +2803,11 @@
       "sr": "Za česta slanja, podelite na prozore od 4 sata"
     },
     {
+      "type": "h1",
+      "en": "Chapter 8: Task Decomposition Strategies",
+      "sr": "Poglavlje 8: Strategije dekompozicije zadataka"
+    },
+    {
       "type": "h2",
       "en": "8.1 Fixed Pipelines (Prompt Chaining)",
       "sr": "8.1 Fiksni pipeline-ovi (Prompt Chaining)"
@@ -3393,6 +3398,11 @@
       "text": "## Report: AI Impact on Creative Industries\n\n### Visual Art (FULL COVERAGE)\n[research results]\n\n### Music (PARTIAL COVERAGE — search agent timeout)\n[partial results]\n⚠️ Note: coverage for this section is limited due to a timeout in the search agent.\n\n### Literature (FULL COVERAGE)\n[research results]"
     },
     {
+      "type": "h1",
+      "en": "Chapter 11: Context Management in Production Systems",
+      "sr": "Poglavlje 11: Upravljanje kontekstom u produkcijskim sistemima"
+    },
+    {
       "type": "h2",
       "en": "11.1 Extract Facts into a Separate Block",
       "sr": "11.1 Izdvajanje činjenica u zaseban blok"
@@ -3611,6 +3621,11 @@
       "type": "li",
       "en": "Time series -> chronological ordering",
       "sr": "Vremenske serije -> hronološko uređenje"
+    },
+    {
+      "type": "h1",
+      "en": "Chapter 13: Claude Code Built-in Tools",
+      "sr": "Poglavlje 13: Ugrađeni alati u Claude Code-u"
     },
     {
       "type": "h2",

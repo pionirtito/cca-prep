@@ -1039,6 +1039,8 @@ Ako vam je rezultat potreban za 30 sati, a obrada kroz Batch API može da traje 
 - Prozor za slanje: 30 - 24 = **6 sati**
 - Grupe se moraju poslati najkasnije 24 sata pre roka
 - Za česta slanja, podelite na prozore od 4 sata
+# Poglavlje 8: Strategije dekompozicije zadataka
+
 ## 8.1 Fiksni pipeline-ovi (Prompt Chaining)
 
 Svaki korak je definisan unapred:
@@ -1246,6 +1248,8 @@ Ovo koordinatoru pruža informacije potrebne da odluči:
 [research results]
 ```
 
+# Poglavlje 11: Upravljanje kontekstom u produkcijskim sistemima
+
 ## 11.1 Izdvajanje činjenica u zaseban blok
 
 Umesto oslanjanja na istoriju konverzacije (koja se degradira tokom sažimanja), izdvojite ključne činjenice u strukturisan blok:
@@ -1425,6 +1429,8 @@ Ne guraj sve na silu u jedan format:
 - Vesti i analize -> prozni tekst
 - Tehnički nalazi -> strukturirane liste
 - Vremenske serije -> hronološko uređenje
+# Poglavlje 13: Ugrađeni alati u Claude Code-u
+
 ## 13.1 Referenca za izbor alata
 
 | Zadatak | Alat | Primer |
