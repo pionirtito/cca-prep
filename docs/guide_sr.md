@@ -8,9 +8,9 @@
 
 ## Uvod
 
-Sertifikacija **Claude Certified Architect — Foundations** potvrđuje da specijalista može da donosi utemeljene odluke o kompromisima pri implementaciji stvarnih rešenja zasnovanih na Claude-u. Ispit proverava temeljno znanje o Claude Code, Claude Agent SDK, Claude API i Model Context Protocol (MCP)—ključnim tehnologijama za izgradnju produkcionih aplikacija sa Claude-om.
+Sertifikacija **Claude Certified Architect — Foundations** potvrđuje da specijalista može da donosi utemeljene odluke o kompromisima pri implementaciji stvarnih rešenja zasnovanih na Claude-u. Ispit proverava temeljno znanje o Claude Code, Claude Agent SDK, Claude API i Model Context Protocol (MCP) — ključnim tehnologijama za izgradnju produkcionih aplikacija sa Claude-om.
 
-Pitanja na ispitu zasnovana su na realističnim industrijskim scenarijima: izgradnja agentskih sistema za korisničku podršku, projektovanje istraživačkih cevovoda sa više agenata, integracija Claude Code-a u CI/CD, kreiranje alata za produktivnost programera i izvlačenje strukturisanih podataka iz nestrukturisanih dokumenata.
+Pitanja na ispitu zasnovana su na realističnim industrijskim scenarijima: izgradnja agentskih sistema za korisničku podršku, projektovanje istraživačkih pipeline-ova sa više agenata, integracija Claude Code-a u CI/CD, kreiranje alata za produktivnost programera i ekstrakcija strukturisanih podataka iz nestrukturisanih dokumenata.
 
 ## Ciljni kandidat
 
@@ -19,9 +19,9 @@ Idealan kandidat je **arhitekta rešenja** koji projektuje i isporučuje produkc
 - **Claude Agent SDK** — orkestracija više agenata, delegiranje podagentima, integracija alata, hook-ovi životnog ciklusa
 - **Claude Code** — CLAUDE.md, MCP serveri, Agent Skills, režim planiranja
 - **Model Context Protocol (MCP)** — alati i resursi za integraciju sa bekendom
-- **Prompt engineering** — JSON šeme, few-shot primeri, šabloni za izvlačenje podataka
+- **Prompt engineering** — JSON šeme, few-shot primeri, šabloni za ekstrakciju podataka
 - **Kontekstni prozori** — rad sa dugačkim dokumentima, prosleđivanje konteksta između više agenata
-- **CI/CD cevovodi** — automatizovani pregled koda, generisanje testova
+- **CI/CD pipeline-ovi** — automatizovani pregled koda, generisanje testova
 - **Eskalacija i pouzdanost** — rukovanje greškama, human-in-the-loop
 ## Format ispita
 
@@ -54,7 +54,7 @@ Koristite Claude Code za ubrzanje razvoja: generisanje koda, refaktorisanje, deb
 
 ### Scenario 3: Istraživački sistem sa više agenata
 
-Agent koordinator delegira zadatke specijalizovanim podagentima: veb istraživanje, analiza dokumenata, sinteza i generisanje izveštaja. Sistem mora da proizvodi potpune izveštaje sa citatima.
+Agent koordinator delegira zadatke specijalizovanim podagentima: istraživanje veba, analiza dokumenata, sinteza i generisanje izveštaja. Sistem mora da proizvodi potpune izveštaje sa citatima.
 
 ### Scenario 4: Alati za produktivnost programera
 
@@ -62,11 +62,11 @@ Agent pomaže inženjerima da istraže nepoznate baze koda, generišu boilerplat
 
 ### Scenario 5: Claude Code za kontinuiranu integraciju
 
-Integrišite Claude Code u CI/CD cevovod za automatizovane preglede koda, generisanje testova i povratne informacije na pull request-ove. Promptovi moraju biti osmišljeni tako da svedu lažno pozitivne rezultate na minimum.
+Integrišite Claude Code u CI/CD pipeline za automatizovane preglede koda, generisanje testova i povratne informacije na pull request-ove. Promptovi moraju biti osmišljeni tako da svedu lažno pozitivne rezultate na minimum.
 
-### Scenario 6: Izvlačenje strukturisanih podataka
+### Scenario 6: Ekstrakcija strukturisanih podataka
 
-Sistem izvlači informacije iz nestrukturisanih dokumenata, validira izlaz pomoću JSON šema i održava visoku tačnost. Mora ispravno da obrađuje granične slučajeve.
+Sistem ekstrahuje informacije iz nestrukturisanih dokumenata, validira izlaz pomoću JSON šema i održava visoku tačnost. Mora ispravno da obrađuje granične slučajeve.
 
 ### Scenario 7: Arhitektonski obrasci konverzacione veštačke inteligencije
 
@@ -114,7 +114,7 @@ Ovaj deo pokriva svu teoriju koja vam je potrebna da uspešno položite ispit. M
 
 ## 1.1 Struktura API zahteva
 
-Claude API prati model zahtev–odgovor. Svaki zahtev ka Claude Messages API uključuje:
+Claude API funkcioniše po modelu zahtev–odgovor. Svaki zahtev ka Claude Messages API-ju uključuje:
 
 ```json
 {
@@ -150,14 +150,14 @@ Niz `messages` koristi tri uloge:
 
 ## 1.3 Polje `stop_reason` u odgovoru
 
-Odgovor Claude API uključuje `stop_reason`, koji ukazuje na to zašto je model prestao da generiše:
+Odgovor Claude API-ja uključuje `stop_reason`, koji pokazuje zašto je model prestao da generiše:
 
 | Vrednost | Opis | Akcija |
 |---|---|---|
 | `"end_turn"` | Model je završio svoj odgovor | Prikaži rezultat korisniku |
 | `"tool_use"` | Model želi da pozove alat | Izvrši alat i vrati rezultat |
 | `"max_tokens"` | Dostignut je limit tokena | Odgovor je skraćen; možda ćete morati da povećate limit |
-| `"stop_sequence"` | Naišlo se na zaustavnu sekvencu | Obradi prema logici svoje aplikacije |
+| `"stop_sequence"` | Model je naišao na zaustavnu sekvencu | Obradi prema logici svoje aplikacije |
 
 Za agentske sisteme, `"tool_use"` i `"end_turn"` su najvažniji — oni upravljaju agentskom petljom.
 
@@ -181,7 +181,7 @@ Kontekstni prozor je ukupna količina teksta (u tokenima) koju model može da ob
 - Rezultate alata
 **Ključni problemi kontekstnog prozora:**
 
-1. **Efekat gubljenja-u-sredini (lost-in-the-middle):** modeli pouzdano obrađuju informacije na početku i kraju dugog unosa, ali mogu propustiti detalje u sredini. Ublažavanje: postavite ključne informacije blizu početka ili kraja.
+1. **Efekat gubljenja u sredini (lost-in-the-middle):** modeli pouzdano obrađuju informacije na početku i kraju dugog unosa, ali mogu propustiti detalje u sredini. Ublažavanje: postavite ključne informacije blizu početka ili kraja.
 2. **Nagomilavanje rezultata alata:** svaki poziv alata dodaje izlaz u kontekst. Ako alat vraća 40+ polja, a samo 5 je bitno, onda se većina konteksta troši uzalud.
 3. **Progresivno sažimanje:** pri kompresovanju istorije, numeričke vrednosti, procenti i datumi se često gube i postaju neodređeni („otprilike“, „grubo“, „nekoliko“).
 # Poglavlje 2: Alati i `tool_use`
@@ -229,17 +229,17 @@ Svaki alat se definiše pomoću JSON šeme:
 |---|---|---|
 | `{"type": "auto"}` | Model odlučuje da li će pozvati alat ili odgovoriti tekstom | Podrazumevano za većinu slučajeva |
 | `{"type": "any"}` | Model **mora** da pozove neki alat | Kada vam je potreban zagarantovan strukturiran izlaz |
-| `{"type": "tool", "name": "extract_metadata"}` | Model **mora** da pozove određeni alat | Kada vam je potreban prinudni prvi korak / redosled izvršavanja |
+| `{"type": "tool", "name": "extract_metadata"}` | Model **mora** da pozove određeni alat | Kada vam je potreban forsiran prvi korak / redosled izvršavanja |
 
 **Važni scenariji:**
 
 - `tool_choice: "any"` + više alata za ekstrakciju → model bira najbolji, ali i dalje dobijate strukturiran izlaz
-- Prinudni izbor → kada morate da garantujete određenu prvu akciju (npr. `extract_metadata` pre obogaćivanja)
+- Forsiran izbor → kada morate da garantujete određenu prvu akciju (npr. `extract_metadata` pre obogaćivanja)
 ## 2.4 JSON šeme za strukturiran izlaz
 
-Korišćenje `tool_use` sa JSON šemama je **najpouzdaniji** način da se od Claude-a dobije strukturiran izlaz. On:
+Korišćenje `tool_use` sa JSON šemama je **najpouzdaniji** način da se od Claude-a dobije strukturiran izlaz. Ovaj pristup:
 
-- Garantuje sintaksno ispravan JSON (bez nedostajućih zagrada, bez zarezā na kraju)
+- Garantuje sintaksno ispravan JSON (bez nedostajućih zagrada, bez zareza na kraju)
 - Nameće obaveznu strukturu (obavezna polja su prisutna)
 - **Ne** garantuje semantičku ispravnost (vrednosti i dalje mogu biti pogrešne)
 **Dizajn šeme — ključni principi:**
@@ -304,7 +304,7 @@ Agentska petlja je osnovni obrazac za autonomno izvršavanje zadataka. Model ne 
 4. Repeat until completion
 ```
 
-**Ovo je pristup vođen modelom:** Claude odlučuje koji alat da pozove sledeći na osnovu konteksta i prethodnih rezultata alata. To se razlikuje od čvrsto kodiranih stabala odlučivanja gde je redosled akcija fiksan.
+**Ovo je pristup vođen modelom:** Claude na osnovu konteksta i prethodnih rezultata alata odlučuje koji će alat sledeći pozvati. To se razlikuje od čvrsto kodiranih stabala odlučivanja, gde je redosled akcija fiksan.
 
 **Antiobrasci (izbegavaj):**
 
@@ -425,7 +425,7 @@ def enforce_refund_limit(tool_call):
 | Kada koristiti | Kritična poslovna pravila, finansijske operacije, usklađenost | Opšte preference, preporuke, formatiranje |
 | Primer | Blokiraj povraćaje > $500 | „Pokušaj da rešiš pre eskalacije“ |
 
-**Pravilo:** kada otkaz ima finansijske, pravne ili bezbednosne posledice — koristi hook-ove, ne prompt-ove.
+**Pravilo:** kada otkaz ima finansijske, pravne ili bezbednosne posledice — koristi hook-ove, ne promptove.
 
 # Poglavlje 4: Model Context Protocol (MCP)
 
@@ -473,7 +473,7 @@ MCP server je proces koji implementira MCP protokol i pruža alate/resurse. Kada
 **Ključne tačke:**
 
 - `.mcp.json` se čuva u korenu projekta i njime se upravlja preko sistema za kontrolu verzija
-- Promenljive okruženja (`${GITHUB_TOKEN}`) se koriste za tajne—sami tokeni se ne komituju
+- Promenljive okruženja (`${GITHUB_TOKEN}`) se koriste za tajne — sami tokeni se ne komituju
 - Dostupno svim saradnicima na projektu
 **Korisnička konfiguracija (`~/.claude.json`)** — za lične/eksperimentalne servere:
 
@@ -483,7 +483,7 @@ MCP server je proces koji implementira MCP protokol i pruža alate/resurse. Kada
 **Biranje servera:**
 
 - Za standardne integracije (Jira, GitHub, Slack), prednost dajte postojećim MCP serverima iz zajednice
-- Sopstvene servere gradite samo za jedinstvene, timski specifične tokove rada
+- Sopstvene servere gradite samo za jedinstvene radne tokove specifične za tim
 ## 4.4 Zastavica `isError` u MCP-u
 
 Kada MCP alat naiđe na grešku, u odgovoru koristi `isError: true`. To signalizira agentu da poziv nije uspeo.
@@ -512,7 +512,7 @@ Kada MCP alat naiđe na grešku, u odgovoru koristi `isError: true`. To signaliz
 }
 ```
 
-Generička greška ne daje agentu nikakvu informaciju za donošenje odluke—da li da pokuša ponovo, promeni upit ili eskalira?
+Generička greška ne daje agentu nikakvu informaciju za donošenje odluke — da li da pokuša ponovo, promeni upit ili eskalira?
 
 ## 4.5 MCP resursi
 
@@ -522,7 +522,7 @@ Resursi su podaci koje agent može da zatraži kako bi dobio kontekst bez preduz
 - Šeme baza podataka (razumevanje strukture podataka)
 - Dokumentacija (API reference, interni vodiči)
 - Sažeci problema/zadataka
-**Prednost resursa:** agentu nisu potrebni istraživački pozivi alata da bi razumeo koji podaci postoje. Resurs pruža trenutnu „mapu“.
+**Prednost resursa:** agent ne mora da pravi istraživačke pozive alata da bi razumeo koji podaci postoje. Resurs odmah pruža „mapu“.
 
 # Poglavlje 5: Claude Code — konfiguracija i radni tokovi
 
@@ -568,7 +568,7 @@ Project overview is in @README.md and dependencies are in @package.json
 - Podržane su i relativne i apsolutne putanje
 - Relativne putanje se razrešavaju u odnosu na fajl koji sadrži uvoz
 - Maksimalna dubina ugnežđenja uvoza je 5
-Ovo izbegava dupliranje i omogućava da svaki paket uključi samo relevantne standarde.
+Time se izbegava dupliranje i svaki paket može da uključi samo relevantne standarde.
 
 ## 5.3 Direktorijum `.claude/rules/`
 
@@ -606,7 +606,7 @@ Do not mock the database—use a test database.
 **Kako radi:**
 
 - Pravilo se učitava **samo** kada Claude Code menja fajl koji odgovara `paths` obrascu
-- Ovo štedi kontekst i tokene—irelevantna pravila se ne učitavaju
+- Ovo štedi kontekst i tokene — irelevantna pravila se ne učitavaju
 - Glob obrasci omogućavaju primenu konvencija po tipu fajla bez obzira na lokaciju (idealno za testove razbacane po kodu)
 **Kada koristiti `.claude/rules/` sa `paths` naspram CLAUDE.md na nivou direktorijuma:**
 
@@ -614,7 +614,7 @@ Do not mock the database—use a test database.
 - CLAUDE.md na nivou direktorijuma — kada su konvencije vezane za određeni direktorijum i nisu potrebne drugde
 ## 5.4 Prilagođene slash komande i veštine (Skills)
 
-> **Napomena:** u trenutnoj verziji Claude Code, prilagođene komande (`.claude/commands/`) su objedinjene sa veštinama (`.claude/skills/`). Oba formata kreiraju `/name` komande. Exam guide referencira `.claude/commands/`—taj format je i dalje podržan.
+> **Napomena:** u trenutnoj verziji Claude Code-a, prilagođene komande (`.claude/commands/`) objedinjene su sa veštinama (`.claude/skills/`). Oba formata kreiraju `/name` komande. Exam guide referencira `.claude/commands/` — taj format je i dalje podržan.
 
 Slash komande su prompt šabloni za višekratnu upotrebu koji se pozivaju preko `/name`:
 
@@ -662,7 +662,7 @@ Output a report on dependencies and architectural patterns.
 | Parametar | Opis |
 |---|---|
 | `context: fork` | Pokreće veštinu u izolovanom podagentu. Opširan izlaz ne zagađuje glavnu sesiju |
-| `allowed-tools` | Ograničava koji su alati dostupni (bezbednost—npr. veština ne može da briše fajlove ako to nije dozvoljeno) |
+| `allowed-tools` | Ograničava koji su alati dostupni (bezbednost — npr. veština ne može da briše fajlove ako to nije dozvoljeno) |
 | `argument-hint` | Nagoveštaj koji traži argument kada se pozove bez parametara |
 
 **Kada koristiti veštinu naspram CLAUDE.md:**
@@ -671,7 +671,7 @@ Output a report on dependencies and architectural patterns.
 - **CLAUDE.md** — uvek učitani opšti standardi i konvencije
 **Lične veštine (`~/.claude/skills/`):**
 
-- Kreiraj lične varijante pod drugim imenima da ne bi uticao na saigrače iz tima
+- Kreiraj lične varijante pod drugim imenima da ne bi uticao na kolege iz tima
 ## 5.6 Planski režim naspram direktnog izvršavanja
 
 **Planski režim:**
@@ -683,7 +683,7 @@ Output a report on dependencies and architectural patterns.
 **Kada koristiti planski režim:**
 
 - Velike izmene (desetine fajlova)
-- Više verodostojnih pristupa (mikroservisi: kako definisati granice?)
+- Više pristupa koji dolaze u obzir (mikroservisi: kako definisati granice?)
 - Arhitektonske odluke (koji framework? kakva struktura?)
 - Nepoznat kod (moraš da razumeš pre nego što menjaš)
 - Migracije biblioteka koje pogađaju 45+ fajlova
@@ -713,7 +713,7 @@ Output a report on dependencies and architectural patterns.
 
 `/memory` je ugrađena komanda za upravljanje memorijom između sesija:
 
-- Otvara fajl `CLAUDE.md` za izmenu, omogućavajući da sačuvaš beleške, preferencije i kontekst
+- Otvara fajl `CLAUDE.md` za izmenu, što omogućava da sačuvaš beleške, preferencije i kontekst
 - Informacije se zadržavaju kroz sesije i automatski se učitavaju pri pokretanju
 - Korisno za čuvanje projektnih konvencija, korisničkih preferencija, često korišćenih komandi i trenutnog konteksta rada
 - Alternativa ponovnom objašnjavanju istih instrukcija u svakoj sesiji
@@ -727,7 +727,7 @@ claude -p "Analyze this pull request for security issues"
 
 - Neinteraktivni režim: obradi prompt, ispiše na stdout, izađe
 - Ne čeka korisnički unos
-- Jedini ispravan način da se Claude pokrene u CI/CD pajplajnovima
+- Jedini ispravan način da se Claude pokrene u CI/CD pipeline-ovima
 **Strukturirani izlaz za CI:**
 
 ```bash
@@ -752,7 +752,7 @@ claude --resume investigation-auth-bug
 ```
 
 - Nastavlja prethodni razgovor sa sačuvanim kontekstom
-- Korisno za duge istrage kroz više sesija
+- Korisno za duga istraživanja koja se protežu kroz više sesija
 - Rizik: ako su se fajlovi promenili od prethodne sesije, rezultati alata mogu biti zastareli
 **`fork_session`** kreira nezavisnu granu iz deljenog konteksta:
 
@@ -785,7 +785,7 @@ Few-shot prompting je uključivanje 2–4 primera ulaza/izlaza u prompt radi dem
 
 - Nejasna instrukcija poput „budi precizniji“ može se tumačiti na mnogo načina
 - Primer nedvosmisleno pokazuje očekivani format i logiku odlučivanja
-- Model generalizuje obrazac na nove slučajeve (ne samo da ponavlja primere)
+- Model generalizuje obrazac na nove slučajeve (ne ponavlja prosto primere)
 **Tipovi few-shot primera i kada ih koristiti:**
 
 1. **Primeri za dvosmislene scenarije:**
@@ -910,7 +910,7 @@ Step 3: Integration pass (cross-file dependencies)
 
 **Zašto je ovo važno:**
 
-- Izbegava **razblaživanje pažnje** (attention dilution) — kada model primi previše fajlova odjednom, može da propusti bagove u nekim fajlovima dok daje površan komentar na druge
+- Izbegava **razblaživanje pažnje** (attention dilution) — kada model primi previše fajlova odjednom, može da propusti bagove u nekim fajlovima, dok o drugima daje površne komentare
 - Obezbeđuje dosledan kvalitet analize po fajlu
 - Omogućava odvojenu analizu interakcija između fajlova
 **Kada koristiti prompt chaining naspram dinamičke dekompozicije:**
@@ -936,7 +936,7 @@ Claude: "Before implementing caching for the API, a few questions:
 - Više održivih pristupa gde najbolji izbor zavisi od konteksta
 ## 6.5 Validacija i retry-with-feedback (ponovni pokušaj uz povratnu informaciju)
 
-Kada izdvojeni podaci ne prođu validaciju:
+Kada ekstrahovani podaci ne prođu validaciju:
 
 ```text
 Step 1: Extract data from the document
@@ -958,11 +958,11 @@ Step 3: If there's an error—retry with context:
 - Potreban kontekst je eksterni (podatak je u drugom dokumentu koji nije priložen)
 **Pydantic kao alat za validaciju:**
 
-Pydantic je Python biblioteka za validaciju podataka zasnovanu na šemi. Za ispit, ključne stavke su:
+Pydantic je Python biblioteka za validaciju podataka po šemi. Za ispit je ključno sledeće:
 
-- **Strukturna validacija:** tipovi, obaveznost, enum ograničenja proverena u kodu nakon prijema JSON-a od Claude-a
+- **Strukturna validacija:** tipovi, obaveznost i enum ograničenja proveravaju se u kodu nakon prijema JSON-a od Claude-a
 - **Semantička validacija:** prilagođeni validatori sprovode poslovnu logiku (zbir stavki jednak ukupnom iznosu; start_date < end_date)
-- **Petlje validacija–ponovni pokušaj:** pri neuspehu Pydantic validacije, sastavi poruku o grešci i ponovo prompuj Claude-a uz kontekst greške
+- **Petlje validacije i ponovnog pokušaja:** kada Pydantic validacija ne uspe, sastavi poruku o grešci i ponovo pošalji prompt Claude-u sa kontekstom greške
 - **Generisanje JSON šeme:** Pydantic modeli mogu da generišu JSON šemu za `tool_use`, pružajući jedinstveni izvor istine
 ## 6.6 Samoispravljanje (self-correction)
 
@@ -980,7 +980,7 @@ Obrazac za otkrivanje internih protivrečnosti:
 }
 ```
 
-Model izdvaja i navedenu vrednost i izračunatu vrednost — ako se razlikuju, `conflict_detected` ti omogućava da obradiš neslaganje.
+Model ekstrahuje i navedenu i izračunatu vrednost — ako se razlikuju, `conflict_detected` ti omogućava da obradiš neslaganje.
 
 # Poglavlje 7: Message Batches API
 
@@ -993,11 +993,11 @@ Message Batches API vam omogućava da pošaljete grupe zahteva na asinhronu obra
 | Atribut | Vrednost |
 |---|---|
 | Ušteda | **50%** u odnosu na sinhrone pozive |
-| Prozor obrade | Do **24 sata** (bez garancije SLA za kašnjenje) |
-| Višekratni poziv alata | **Nije podržano** (jedan zahtev = jedan odgovor) |
+| Prozor obrade | Do **24 sata** (bez SLA garancije za latenciju) |
+| Multi-turn pozivanje alata | **Nije podržano** (jedan zahtev = jedan odgovor) |
 | Korelacija | polje `custom_id` za povezivanje zahteva i odgovora |
 
-## 7.2 Kada koristiti Batch API naspram sinhronog API-ja
+## 7.2 Kada koristiti Batch API, a kada sinhroni API
 
 | Zadatak | API | Zašto |
 |---|---|---|
@@ -1034,12 +1034,12 @@ Message Batches API vam omogućava da pošaljete grupe zahteva na asinhronu obra
 5. Ponovo pošaljete samo 5 dokumenata koji nisu uspeli
 ## 7.5 Planiranje SLA
 
-Ako vam je rezultat potreban za 30 sati, a Batch API može da traje do 24 sata:
+Ako vam je rezultat potreban za 30 sati, a obrada kroz Batch API može da traje do 24 sata:
 
 - Prozor za slanje: 30 - 24 = **6 sati**
 - Grupe se moraju poslati najkasnije 24 sata pre roka
 - Za česta slanja, podelite na prozore od 4 sata
-## 8.1 Fiksni protočni nizovi (Prompt Chaining)
+## 8.1 Fiksni pipeline-ovi (Prompt Chaining)
 
 Svaki korak je definisan unapred:
 
@@ -1067,10 +1067,10 @@ Podzadaci se generišu na osnovu međurezultata:
 
 **Kada koristiti:**
 
-- Otvorene istraživačke zadatke
+- Otvoreni istraživački zadaci
 - Kada pun obim nije poznat unapred
 - Kada svaki korak zavisi od rezultata prethodnog koraka
-## 8.3 Višeprolazna recenzija koda (Multi-pass)
+## 8.3 Višeprolazni pregled koda (Multi-pass)
 
 Za pull request-ove sa 10+ fajlova:
 
@@ -1107,7 +1107,7 @@ Pass 2 (integration): Analyze relationships between files
 | Nepouzdana metoda | Zašto ne uspeva |
 |---|---|
 | Analiza sentimenta | Raspoloženje klijenta ne korelira sa složenošću slučaja |
-| Samoprocenjena pouzdanost modela (1–10) | Model može biti samouvereno u krivu; kalibracija je loša |
+| Samoprocenjena pouzdanost modela (1–10) | Model može samouvereno da greši; kalibracija je loša |
 | Automatski klasifikator | Prekomplikovano (overengineering); može zahtevati podatke za obuku koje nemaš |
 
 ## 9.2 Obrasci eskalacije
@@ -1148,7 +1148,7 @@ Policy: covers price adjustments only on your own site
 Agent: [escalates — policy does not cover competitor price matching]
 ```
 
-## 9.3 Protokoli strukturiranog predavanja (handoff)
+## 9.3 Protokoli strukturirane primopredaje (handoff)
 
 Pri eskalaciji, agent treba da prosledi strukturiran rezime čoveku:
 
@@ -1176,14 +1176,14 @@ Ljudski operater nema pristup celokupnom transkriptu razgovora — vidi samo ova
 
 Za sisteme za ekstrakciju podataka:
 
-1. **Skorovi pouzdanosti na nivou polja:** model izbacuje skor pouzdanosti po svakom ekstrahovanom polju
+1. **Skorovi pouzdanosti na nivou polja:** model daje skor pouzdanosti za svako ekstrahovano polje
 2. **Kalibracija:** koristi označene validacione skupove za podešavanje pragova
 3. **Rutiranje:**
 - Visoka pouzdanost + stabilna tačnost -> automatska obrada
 - Niska pouzdanost ili dvosmisleni izvori -> ljudska provera
 **Stratifikovano slučajno uzorkovanje:**
 
-- Čak i za ekstrakcije visoke pouzdanosti, redovno revidiraj uzorak
+- Čak i za ekstrakcije sa visokom pouzdanošću, redovno proveravaj uzorak
 - Agregatna tačnost od 97% može da sakrije 40% grešaka za određeni tip dokumenta
 - Analiziraj tačnost po tipu dokumenta i po polju, a ne samo ukupno
 # Poglavlje 10: Rukovanje greškama u multi-agentskim sistemima
@@ -1193,7 +1193,7 @@ Za sisteme za ekstrakciju podataka:
 | Kategorija | Primeri | Može se ponoviti | Akcija agenta |
 |---|---|---|---|
 | **Prolazne** | Tajmaut, 503, mrežni otkaz | Da | Ponovni pokušaj uz eksponencijalni backoff |
-| **Validaciona** | Nevalidan format ulaza, nedostaje obavezno polje | Ne (ispravi ulaz) | Izmeni zahtev i ponovi |
+| **Validacione** | Nevalidan format ulaza, nedostaje obavezno polje | Ne (ispravi ulaz) | Izmeni zahtev i ponovi |
 | **Poslovne** | Kršenje politike, prekoračen prag | Ne | Objasni korisniku; predloži alternativu |
 | **Dozvole** | Pristup odbijen | Ne | Eskaliraj |
 
@@ -1203,10 +1203,10 @@ Za sisteme za ekstrakciju podataka:
 |---|---|---|
 | Generički status „pretraga nedostupna“ | Koordinator ne može da odluči kako da se oporavi | Vrati tip greške, upit, delimične rezultate, alternative |
 | Tiho potiskivanje (prazan rezultat = uspeh) | Koordinator misli da nije bilo poklapanja, a zapravo je bio otkaz | Razlikuj „nema rezultata“ od „otkaz pretrage“ |
-| Prekidanje celog toka rada zbog jednog otkaza | Gubiš sve delimične rezultate | Nastavi sa delimičnim rezultatima; označi praznine |
+| Prekidanje celog radnog toka zbog jednog otkaza | Gubiš sve delimične rezultate | Nastavi sa delimičnim rezultatima; označi praznine |
 | Beskonačni ponovni pokušaji unutar podagenta | Latencija i protraćeni resursi | Lokalni oporavak (1–2 pokušaja), zatim propagiraj koordinatoru |
 
-## 10.3 Strukturirana greška podagenta
+## 10.3 Strukturisana greška podagenta
 
 ```json
 {
@@ -1327,13 +1327,13 @@ Main agent: keeps one line in context instead of 15 files
 ```
 
 **Zaseban sloj konteksta:**
-U multiagentskim sistemima, svaki podagent radi u okviru ograničenog budžeta konteksta—dobija samo informacije potrebne za svoj zadatak. Koordinator deluje kao zaseban sloj konteksta: agregira izlaze podagenata, čuva globalno stanje i raspodeljuje kontekst. Ovo sprečava „curenje konteksta“ (context leakage), gde jedan agent troši prozor informacijama nebitnim za ostale.
+U multi-agentskim sistemima, svaki podagent radi u okviru ograničenog budžeta konteksta — dobija samo informacije potrebne za svoj zadatak. Koordinator deluje kao zaseban sloj konteksta: agregira izlaze podagenata, čuva globalno stanje i raspodeljuje kontekst. Ovo sprečava „curenje konteksta“ (context leakage), gde jedan agent troši prozor informacijama nebitnim za ostale.
 
 **Ograničeni budžeti konteksta za podagente:**
 
 - Šaljite minimalan kontekst: konkretan zadatak + neophodne podatke
-- Uputite podagenta da vraća strukturisane rezultate, a ne sirove izlive podataka
-- Koristite `allowedTools` da ograničite skup alata podagenta—manje alata znači manje ometanja i nižu cenu konteksta
+- Uputite podagenta da vraća strukturisane rezultate, a ne sirov dump podataka
+- Koristite `allowedTools` da ograničite skup alata podagenta — manje alata znači manje ometanja i nižu cenu konteksta
 ## 11.6 Strukturisano očuvanje stanja (za oporavak od pada)
 
 Svaki agent izvozi svoje stanje na poznatu lokaciju:
@@ -1410,7 +1410,7 @@ Nemoj proizvoljno birati jednu vrednost. Sačuvaj obe uz atribuciju i prepusti k
 
 ## 12.3 Uključi datume radi ispravne interpretacije
 
-Bez datuma, vremenske razlike mogu pogrešno biti protumačene kao protivrečnosti:
+Bez datuma se vremenske razlike mogu pogrešno protumačiti kao protivrečnosti:
 
 ```text
 Bad: "Source A says 10%, source B says 15%. Contradiction."
@@ -1419,7 +1419,7 @@ Good: "Source A (2023) says 10%, source B (2024) says 15%. Likely +5% growth ove
 
 ## 12.4 Prikazuj prema tipu sadržaja
 
-Nemoj sve nasilno gurati u jedan format:
+Ne guraj sve na silu u jedan format:
 
 - Finansijski podaci -> tabele
 - Vesti i analize -> prozni tekst
@@ -1475,10 +1475,10 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ### Ključno znanje:
 
-- Arhitektura tipa glavčina i paoci (hub-and-spoke): koordinator poseduje svu međuagentsku komunikaciju, obradu grešaka i rutiranje
+- Hub-and-spoke arhitektura: sva međuagentska komunikacija, obrada grešaka i rutiranje su u nadležnosti koordinatora
 - Podagenti rade sa izolovanim kontekstom — oni ne nasleđuju automatski istoriju koordinatora
 - Odgovornosti koordinatora: dekompozicija zadataka, delegiranje, agregacija rezultata, dinamičko biranje podagenata
-- Rizik od preuske dekompozicije od strane koordinatora
+- Rizik da koordinator izvrši preusku dekompoziciju
 ### Ključne veštine:
 
 - Podeli pokrivenost istraživanja među podagentima radi smanjenja dupliranja
@@ -1497,12 +1497,12 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Uključi potpune izlaze prethodnih agenata u prompt podagenta
 - Koristi strukturirane formate da bi odvojio podatke od metapodataka prilikom prosleđivanja konteksta
 - Kreiraj paralelne podagente putem više `Task` poziva u jednom potezu koordinatora
-- Piši koordinatorove promptove u smislu ciljeva i kriterijuma kvaliteta, a ne instrukcija korak-po-korak
+- Formuliši promptove koordinatora kroz ciljeve i kriterijume kvaliteta, a ne kroz instrukcije korak po korak
 ## 1.4 Implementacija višekoračnih radnih tokova sa obrascima sprovođenja i predaje (handoff)
 
 ### Ključno znanje:
 
-- Razlika između **programskog sprovođenja** (hook-ovi, preduslovi) i **vođenja putem prompta** za uređivanje redosleda radnog toka
+- Razlika između **programskog sprovođenja** (hook-ovi, preduslovi) i **usmeravanja promptom** kada treba obezbediti redosled koraka u radnom toku
 - Kada su ti potrebne determinističke garancije (npr. provera identiteta pre finansijskih operacija), sami promptovi nisu dovoljni
 - Strukturirani protokoli predaje (handoff) tokom eskalacije (ID kupca, razlog, preporučena akcija)
 ### Ključne veštine:
@@ -1526,14 +1526,14 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ### Ključno znanje:
 
-- **Fiksni cevovodi** (prompt chaining) naspram **dinamičke adaptivne dekompozicije** zasnovane na međurezultatima
+- **Fiksni pipeline-ovi** (prompt chaining) naspram **dinamičke adaptivne dekompozicije** zasnovane na međurezultatima
 - Prompt chaining: sekvencijalni koraci (analiziraj svaki fajl zasebno, zatim pokreni integracioni prolaz)
 - Adaptivni planovi istraživanja koji generišu podzadatke na osnovu onoga što je otkriveno
 ### Ključne veštine:
 
 - Koristi prompt chaining za predvidive višeaspektne preglede; koristi dinamičku dekompoziciju za otvorena istraživanja
 - Podeli velike preglede koda na analizu po fajlu plus zaseban integracioni prolaz preko više fajlova
-- Dekomponuj otvorene zadatke: prvo mapiraj strukturu, zatim izgradi prioritetizovan plan
+- Dekomponuj otvorene zadatke: prvo mapiraj strukturu, zatim izgradi prioritizovan plan
 ## 1.7 Stanje sesije, nastavljanje i grananje (forking)
 
 ### Ključno znanje:
@@ -1555,7 +1555,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - Opisi alata su **primarni mehanizam** koji LLM koristi za izbor alata; minimalni opisi dovode do nepouzdanog izbora
 - Važnost uključivanja ulaznih formata, primera upita, graničnih slučajeva i granica primenljivosti
-- Dvosmisleni ili preklapajući opisi uzrokuju pogrešno usmeravanje
+- Dvosmisleni opisi i opisi koji se preklapaju dovode do pogrešnog usmeravanja
 - Formulacija sistemskog prompta može stvoriti nenamerne asocijacije sa alatima
 ### Ključne veštine:
 
@@ -1569,19 +1569,19 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Zastavica `isError` u odgovorima MCP alata
 - Razlika između **prolaznih grešaka** (tajmauti), **grešaka validacije** (loš ulaz), **poslovnih grešaka** (kršenja politike) i **grešaka pristupa/dozvola**
 - Generičke greške ("Operation failed") sprečavaju ispravne odluke o oporavku
-- Razlika između grešaka koje se mogu i ne mogu ponoviti
+- Razlika između grešaka kod kojih ponovni pokušaj ima smisla i onih kod kojih nema
 ### Ključne veštine:
 
 - Vraćati strukturirane metapodatke kao što su `errorCategory` (transient/validation/permission), `isRetryable` i poruku čitljivu ljudima
 - Koristiti `retryable: false` za kršenja poslovnih pravila uz jasna objašnjenja namenjena korisniku
-- Lokalni oporavak unutar podagenata za prolazne greške; propagirati samo greške koje oni ne mogu da reše
-- Razlikovati greške pristupa (odluka o ponavljanju) od validnih praznih rezultata (nema poklapanja)
+- Oporavak od prolaznih grešaka obavljati lokalno unutar podagenata; propagirati samo greške koje oni ne mogu da reše
+- Razlikovati greške pristupa (odluka o ponovnom pokušaju) od validnih praznih rezultata (nema poklapanja)
 ## 2.3 Raspodela alata po agentima i konfigurisanje `tool_choice`
 
 ### Ključno znanje:
 
 - Previše alata po agentu (npr. 18 umesto 4–5) **smanjuje** pouzdanost izbora alata
-- Agenti sa alatima izvan svoje specijalizacije skloni su njihovoj zloupotrebi
+- Agenti sa alatima izvan svoje specijalizacije skloni su da ih pogrešno koriste
 - Ograničen pristup alatima: samo alati relevantni za ulogu plus ograničen skup uslužnih alata zajedničkih za više uloga
 - `tool_choice`: `"auto"`, `"any"` i prinudni izbor alata (`{"type": "tool", "name": "..."}`)
 ### Ključne veštine:
@@ -1589,7 +1589,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Ograničiti skup alata svakog podagenta na ono što je relevantno za njegovu ulogu
 - Zameniti opšte alate ograničenim alternativama (npr. `fetch_url` -> `load_document`)
 - Koristiti `tool_choice: "any"` da bi se garantovao poziv alata umesto tekstualnog odgovora
-- Prinudno nametnuti određeni alat da bi se osigurao redosled izvršavanja
+- Nametnuti određeni alat da bi se osigurao redosled izvršavanja
 ## 2.4 Integracija MCP servera u Claude Code i radne tokove agenata
 
 ### Ključno znanje:
@@ -1602,7 +1602,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - Konfigurisati zajedničke MCP servere u projektnom `.mcp.json` sa tokenima zasnovanim na promenljivama okruženja
 - Držati lične/eksperimentalne servere u `~/.claude.json`
-- Davati prednost MCP serverima zajednice nad prilagođenim serverima za standardne integracije
+- Za standardne integracije davati prednost MCP serverima iz zajednice nad sopstvenim serverima
 ## 2.5 Izbor i primena ugrađenih alata (Read, Write, Edit, Bash, Grep, Glob)
 
 ### Ključno znanje:
@@ -1615,7 +1615,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - Koristiti Grep za pretragu sadržaja i Glob za pronalaženje datoteka po obrascima
 - Graditi razumevanje postepeno: Grep za ulazne tačke, zatim Read za praćenje tokova
-- Pratiti upotrebu funkcija kroz omotačke (wrapper) module
+- Pratiti upotrebu funkcija kroz wrapper module
 # Domen 3: Konfiguracija i radni tokovi Claude Code-a (20%)
 
 ## 3.1 Konfigurisanje CLAUDE.md sa hijerarhijom, opsegom i modularnom organizacijom
@@ -1625,10 +1625,10 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Hijerarhija CLAUDE.md: korisnički nivo (`~/.claude/CLAUDE.md`), projektni nivo (`.claude/CLAUDE.md` ili koreni `CLAUDE.md`) i nivo direktorijuma (CLAUDE.md u poddirektorijumima)
 - Podešavanja na korisničkom nivou važe samo za jednog korisnika i ne dele se preko VCS-a
 - `@path` sintaksa za referenciranje eksternih fajlova (npr. `@./standards/coding-style.md`) radi modularizacije CLAUDE.md
-- Direktorijum `.claude/rules/` za fajlove pravila usredsređene na pojedine teme umesto monolitnog CLAUDE.md
+- Direktorijum `.claude/rules/` za tematski fokusirane fajlove pravila umesto monolitnog CLAUDE.md
 ### Ključne veštine:
 
-- Dijagnostikovanje problema sa hijerarhijom (novom članu tima izmiču instrukcije jer su na korisničkom umesto na projektnom nivou)
+- Dijagnostikovanje problema sa hijerarhijom (novi član tima ne dobija instrukcije jer su na korisničkom umesto na projektnom nivou)
 - Korišćenje `@path` (npr. `@./standards/testing.md`) za selektivno uključivanje standarda u CLAUDE.md svakog paketa
 - Razbijanje velikog CLAUDE.md na više `.claude/rules/` fajlova (testing.md, api-conventions.md, deployment.md)
 ## 3.2 Kreiranje i konfigurisanje prilagođenih slash komandi i veština (skills)
@@ -1643,8 +1643,8 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - Čuvanje projektnih slash komandi u `.claude/commands/` da bi ih dobio ceo tim
 - Korišćenje `context: fork` za izolovanje veština sa opširnim izlazom
-- Korišćenje `allowed-tools` za ograničavanje toga koje alate veština sme da koristi
-- Korišćenje `argument-hint` da bi se programeri podstakli da unesu obavezne parametre
+- Korišćenje `allowed-tools` da se ograniči koje alate veština sme da koristi
+- Korišćenje `argument-hint` da se od programera zatraže obavezni parametri
 ## 3.3 Korišćenje pravila specifičnih za putanje za uslovno učitavanje konvencija
 
 ### Ključno znanje:
@@ -1661,8 +1661,8 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ### Ključno znanje:
 
-- **Režim planiranja**: za složene zadatke sa velikim izmenama, više održivih pristupa i arhitektonskim odlukama
-- **Direktno izvršavanje**: za jednostavne, dobro razumljive izmene (npr. dodavanje jedne validacije)
+- **Režim planiranja**: za složene zadatke koji uključuju velike izmene, više održivih pristupa i arhitektonske odluke
+- **Direktno izvršavanje**: za jednostavne, dobro poznate izmene (npr. dodavanje jedne validacije)
 - Režim planiranja omogućava bezbedno istraživanje baze koda pre nego što se naprave izmene
 - Explore podagent izoluje opširan izlaz istraživanja
 ### Ključne veštine:
@@ -1675,21 +1675,21 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ### Ključno znanje:
 
-- Konkretni primeri ulaza/izlaza najefikasniji su način za saopštavanje očekivanja
-- **Iteracija vođena testovima**: prvo se pišu testovi, zatim se iterira na osnovu neuspeha
-- Obrazac „intervju”: Claude postavlja pitanja da bi izneo na površinu neočigledna projektantska razmatranja
-- Kada navesti sve probleme u jednoj poruci (međuzavisni) nasuprot pojedinačno (nezavisni)
+- Konkretni primeri ulaza/izlaza najefikasniji su način da se prenesu očekivanja
+- **Iteracija vođena testovima**: prvo se pišu testovi, zatim se iterira na osnovu onih koji padaju
+- Obrazac „intervju”: Claude postavlja pitanja da bi izneo na površinu neočigledne aspekte dizajna
+- Kada navesti sve probleme u jednoj poruci (međuzavisni), a kada jedan po jedan (nezavisni)
 ### Ključne veštine:
 
 - Navođenje 2–3 konkretna primera ulaza/izlaza radi razjašnjenja zahteva za transformaciju
 - Izrada skupova testova sa očekivanim ponašanjem, graničnim slučajevima i zahtevima za performanse pre implementacije
-- Korišćenje obrasca intervjua da bi se izneli na površinu projektantski aspekti (invalidacija keša, načini otkazivanja)
+- Korišćenje obrasca intervjua da bi se izneli na površinu aspekti dizajna (invalidacija keša, načini otkazivanja)
 - Navođenje konkretnih test slučajeva sa primerima ulaza i očekivanim izlazima za granične slučajeve
-## 3.6 Integracija Claude Code-a u CI/CD tokove (pipelines)
+## 3.6 Integracija Claude Code-a u CI/CD pipeline-ove
 
 ### Ključno znanje:
 
-- Zastavica `-p` (ili `--print`) za neinteraktivni režim u automatizovanim tokovima
+- Zastavica `-p` (ili `--print`) za neinteraktivni režim u automatizovanim pipeline-ovima
 - `--output-format json` i `--json-schema` za strukturirani izlaz u CI-ju
 - CLAUDE.md pruža projektni kontekst (standardi testiranja, kriterijumi pregleda) za Claude Code pokrenut iz CI-ja
 - **Izolacija konteksta sesije**: ista sesija koja je generisala kod manje je delotvorna u njegovom pregledu nego nezavisna instanca
@@ -1707,11 +1707,11 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 ### Ključno znanje:
 
 - Eksplicitni kriterijumi su delotvorniji od nejasnih uputstava (npr. „označavaj komentare samo kada protivreče kodu” naspram „proveri tačnost komentara”)
-- Generičke smernice poput „budi konzervativniji” rade slabije od konkretnih kategorijalnih kriterijuma
+- Generičke smernice poput „budi konzervativniji” daju slabije rezultate od konkretnih kategorijalnih kriterijuma
 - Uticaj lažno pozitivnih rezultata na poverenje programera: visoke stope lažno pozitivnih u nekim kategorijama narušavaju poverenje u tačne kategorije
 ### Ključne veštine:
 
-- Definiši kriterijume pregleda: šta prijaviti (bagovi, bezbednost) naspram šta ignorisati (sitan stil)
+- Definiši kriterijume pregleda: šta prijaviti (bagovi, bezbednost), a šta ignorisati (sitan stil)
 - Privremeno onemogući kategorije sa visokim stopama lažno pozitivnih
 - Definiši eksplicitne kriterijume ozbiljnosti sa primerima koda za svaki nivo
 ## 4.2 Korišćenje few-shot promptovanja radi poboljšanja konzistentnosti izlaza
@@ -1735,12 +1735,12 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - `tool_use` sa JSON šemama je najpouzdaniji način da se garantuje izlaz usklađen sa šemom i eliminišu JSON sintaksne greške
 - Sa `tool_choice: "auto"` model može da vrati tekst; sa `"any"` mora da pozove alat; prinudni izbor bira određeni alat
 - Stroge JSON šeme eliminišu sintaksne greške, ali ne sprečavaju semantičke greške (zbirovi se ne slažu; vrednosti u pogrešnim poljima)
-- Dizajn šeme: obavezna naspram opcionih polja; enumeracije sa „other” plus string sa detaljima radi proširivosti
+- Dizajn šeme: obavezna polja naspram opcionih; enumeracije sa „other” plus string sa detaljima radi proširivosti
 ### Ključne veštine:
 
 - Definiši alate za ekstrakciju sa JSON šemama i parsiraj podatke iz `tool_use` rezultata
 - Koristi `tool_choice: "any"` da garantuješ strukturirani izlaz kada postoji više šema
-- Prinudi poziv određenog alata: `tool_choice: {"type": "tool", "name": "extract_metadata"}`
+- Forsiraj poziv određenog alata: `tool_choice: {"type": "tool", "name": "extract_metadata"}`
 - Učini polja opcionim/nulabilnim kada izvor možda ne sadrži informaciju, da bi se izbeglo izmišljanje vrednosti
 - Koristi enum vrednosti poput `"unclear"` i `"other"` plus polja sa detaljima za proširivu kategorizaciju
 ## 4.4 Implementacija validacije, ponovnih pokušaja i povratnih petlji za kvalitet ekstrakcije
@@ -1756,7 +1756,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Naknadni promptovi sa originalnim dokumentom, netačnom ekstrakcijom i konkretnim validacionim greškama
 - Identifikuj kada će ponovni pokušaj biti nedelotvoran (potrebna informacija je samo u spoljnom dokumentu)
 - Uključi `detected_pattern` polja u nalaze radi analize lažno pozitivnih
-- Dizajniraj samokorekciju izvlačenjem i `calculated_total` i `stated_total` radi otkrivanja nepodudaranja
+- Dizajniraj samokorekciju tako što ekstrahuješ i `calculated_total` i `stated_total` radi otkrivanja nepodudaranja
 ## 4.5 Dizajn efikasnih strategija paketne obrade
 
 ### Ključno znanje:
@@ -1767,21 +1767,21 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - `custom_id` polja koreliraju zahtev/odgovor unutar paketa
 ### Ključne veštine:
 
-- Koristi sinhroni API za blokirajuće provere; koristi Batch API za noćna/nedeljna opterećenja
+- Koristi sinhroni API za blokirajuće provere; koristi Batch API za noćne/nedeljne poslove
 - Planiraj ritam predaje paketa na osnovu SLA potreba (npr. prozori od 4 sata za garanciju od 30 sati uz obradu od 24 sata)
-- Rukuj neuspesima ponovnom predajom samo neuspelih dokumenata (identifikovanih preko `custom_id`)
-- Iteriraj nad promptovima koristeći uzorak pre pokretanja obrade velikih razmera
+- Neuspehe rešavaj ponovnom predajom samo neuspelih dokumenata (identifikovanih preko `custom_id`)
+- Iteriraj nad promptovima na uzorku pre pokretanja obrade velikog obima
 ## 4.6 Dizajn arhitektura pregleda sa više instanci i više prolaza
 
 ### Ključno znanje:
 
 - Ograničenja samopregleda: model zadržava svoj kontekst rezonovanja i manja je verovatnoća da će preispitati sopstvene odluke
 - Nezavisne instance pregleda (bez konteksta generisanja) bolje pronalaze suptilne probleme
-- Pregled u više prolaza: lokalna analiza po fajlu plus integracioni prolaz preko fajlova radi izbegavanja razblaživanja pažnje
+- Pregled u više prolaza: lokalna analiza po fajlu plus integracioni prolaz kroz više fajlova, da bi se izbeglo razvodnjavanje pažnje
 ### Ključne veštine:
 
 - Koristi drugu nezavisnu Claude instancu za pregled izmena bez konteksta generisanja
-- Podeli preglede više fajlova na prolaze po fajlu plus integracione prolaze za analizu protoka podataka preko fajlova
+- Podeli preglede više fajlova na prolaze po fajlu plus integracione prolaze za analizu protoka podataka kroz više fajlova
 - Koristi verifikacione prolaze sa samoocenjenom pouzdanošću da bi kalibrisano usmeravao preglede
 # Domen 5: Upravljanje kontekstom i pouzdanost (15%)
 
@@ -1789,7 +1789,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ### Ključno znanje:
 
-- Rizici progresivnog sažimanja: numeričke vrednosti, procenti i datumi se sažimaju u nejasne rezimee
+- Rizici progresivnog sažimanja: numeričke vrednosti, procenti i datumi se svode na nejasne rezimee
 - Efekat „izgubljeno u sredini”: modeli pouzdano obrađuju početak i kraj dugačkih ulaza, ali mogu da propuste nalaze iz sredine
 - Izlazi alata mogu da se gomilaju u kontekstu nesrazmerno svojoj relevantnosti (40+ polja kada je potrebno 5)
 - Važnost slanja kompletne istorije razgovora u narednim API zahtevima
@@ -1820,7 +1820,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Strukturirani kontekst greške (tip otkaza, upit, delimični rezultati, alternative) omogućava pametniji oporavak koordinatora
 - Razlikovanje otkaza pristupa (tajmauti zahtevaju odluku o ponovnom pokušaju) od validnih praznih rezultata (nema podudaranja)
 - Generički statusi greške („pretraga nedostupna”) skrivaju dragocen kontekst od koordinatora
-- Nečujno potiskivanje ili prekidanje celog toka rada zbog jednog otkaza su oba antiobrasci
+- Nečujno potiskivanje ili prekidanje celog radnog toka zbog jednog otkaza — oba su antiobrasci
 ### Ključne veštine:
 
 - Vraćanje strukturiranog konteksta greške: tip otkaza, šta je pokušano, delimični rezultati, moguće alternative
@@ -1833,7 +1833,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - Degradacija konteksta u dugim sesijama: model počinje da daje nestabilne odgovore i da se poziva na „tipične obrasce” umesto na konkretne klase
 - Scratchpad fajlovi čuvaju ključne nalaze preko granica konteksta
-- Delegiranje podagentima izoluje opširan izlaz otkrivanja
+- Delegiranje podagentima izoluje opširan izlaz faze otkrivanja
 - Strukturirano trajno čuvanje stanja omogućava oporavak nakon pada
 ### Ključne veštine:
 
@@ -1841,19 +1841,19 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Korišćenje scratchpad fajlova za čuvanje ključnih nalaza i kasnije pozivanje na njih
 - Sažimanje ključnih nalaza pre pokretanja podagenata sledeće faze
 - Korišćenje `/compact` za smanjenje potrošnje konteksta tokom dugih istraga
-## 5.5 Projektovanje tokova rada sa ljudskim nadzorom i kalibracijom poverenja
+## 5.5 Projektovanje radnih tokova sa ljudskim nadzorom i kalibracijom poverenja
 
 ### Ključno znanje:
 
-- Agregirane metrike (npr. 97% ukupne tačnosti) mogu da maskiraju lošu performansu na određenim tipovima dokumenata ili poljima
+- Agregirane metrike (npr. 97% ukupne tačnosti) mogu da maskiraju loše performanse na određenim tipovima dokumenata ili poljima
 - Stratifikovano slučajno uzorkovanje meri stope grešaka u ekstrakcijama sa visokim poverenjem
 - Kalibracija poverenja na nivou polja korišćenjem označenih validacionih skupova
 - Validacija tačnosti po tipu dokumenta i segmentu polja pre automatizacije
 ### Ključne veštine:
 
 - Implementacija stratifikovanog slučajnog uzorkovanja radi otkrivanja novih obrazaca grešaka
-- Analiza tačnosti po tipu dokumenta i polju radi validacije stabilne performanse
-- Izdavanje ocena poverenja na nivou polja i kalibracija pragova za pregled korišćenjem označenih podataka
+- Analiza tačnosti po tipu dokumenta i polju radi validacije stabilnih performansi
+- Generisanje ocena poverenja na nivou polja i kalibracija pragova za pregled korišćenjem označenih podataka
 - Usmeravanje ekstrakcija sa niskim poverenjem ili dvosmislenim izvorom na ljudski pregled
 ## 5.6 Očuvanje porekla i upravljanje neizvesnošću u sintezi iz više izvora
 
@@ -1865,7 +1865,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - Uključivanje datuma objavljivanja/prikupljanja radi izbegavanja pogrešnog tumačenja vremenskih razlika kao protivrečnosti
 ### Ključne veštine:
 
-- Zahtevanje od podagenata da izdaju mapiranja „tvrdnja → izvor” (URL, naziv dokumenta, citati)
+- Zahtevanje od podagenata da vraćaju mapiranja „tvrdnja → izvor” (URL, naziv dokumenta, citati)
 - Strukturiranje izveštaja tako da se stabilni nalazi odvoje od spornih
 - Očuvanje konfliktnih vrednosti uz napomene i njihovo prosleđivanje koordinatoru radi usaglašavanja
 - Uključivanje datuma objavljivanja radi ispravnog vremenskog tumačenja
@@ -1882,7 +1882,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Poboljšati sistemski prompt
 - C) Dodati few-shot primere
 - D) Implementirati klasifikator za rutiranje
-**Zašto A:** Kada kritična poslovna logika zahteva tačan redosled alata, softver pruža **determinističke garancije** koje pristupi zasnovani na promptu (B, C) ne mogu. D rešava dostupnost, a ne redosled alata.
+**Zašto A:** Kada kritična poslovna logika zahteva određen redosled alata, softver pruža **determinističke garancije** koje pristupi zasnovani na promptu (B, C) ne mogu da pruže. D rešava dostupnost, a ne redosled alata.
 
 ## Pitanje 2 (Scenario: agent za korisničku podršku)
 
@@ -1894,7 +1894,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Proširiti opis svakog alata formatima ulaza, primerima i granicama **[CORRECT]**
 - C) Dodati sloj za rutiranje
 - D) Spojiti alate
-**Zašto B:** Opisi alata su primarni mehanizam modela za izbor. Ovo je popravka sa najmanje truda i najvećim uticajem. A dodaje tokene bez rešavanja korenskog uzroka. C je preinženjering. D zahteva više truda nego što je opravdano.
+**Zašto B:** Opisi alata su primarni mehanizam preko kojeg model bira alat. Ovo je ispravka sa najmanje truda i najvećim učinkom. A dodaje tokene bez rešavanja osnovnog uzroka. C je overengineering. D zahteva više truda nego što je opravdano.
 
 ## Pitanje 3 (Scenario: agent za korisničku podršku)
 
@@ -1906,7 +1906,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Samoocenjivanje pouzdanosti (1–10) sa automatskom eskalacijom
 - C) Zaseban klasifikator obučen na istorijskim podacima
 - D) Analiza sentimenta
-**Zašto A:** Direktno rešava korenski uzrok — nejasne granice odlučivanja. B je nepouzdano (model može samouvereno da pogreši). C je preinženjering. D rešava drugačiji problem (raspoloženje != složenost).
+**Zašto A:** Direktno rešava osnovni uzrok — nejasne granice odlučivanja. B je nepouzdano (model može samouvereno da greši). C je overengineering. D rešava drugačiji problem (raspoloženje != složenost).
 
 ## Pitanje 4 (Scenario: generisanje koda sa Claude Code)
 
@@ -1927,7 +1927,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 **Koji pristup treba da koristiš?**
 
 - A) Režim planiranja: istraži kod, razumi zavisnosti, osmisli pristup **[CORRECT]**
-- B) Direktno izvršavanje inkrementalno
+- B) Inkrementalno direktno izvršavanje
 - C) Direktno izvršavanje sa detaljnim unapred zadatim instrukcijama
 - D) Direktno izvršavanje uz prelazak na planiranje kada postane teško
 **Zašto A:** Režim planiranja je namenjen velikim izmenama, više mogućih pristupa i arhitektonskim odlukama. B rizikuje skupu preradu. C pretpostavlja da već znaš strukturu. D je reaktivan.
@@ -1952,33 +1952,33 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - A) Agent za sintezu ne otkriva praznine
 - B) Koordinator je previše usko dekomponovao zadatak **[CORRECT]**
-- C) Agent za veb-pretragu ne pretražuje dovoljno temeljno
+- C) Agent za pretragu veba ne pretražuje dovoljno temeljno
 - D) Agent za analizu dokumenata filtrira nevizuelne izvore
-**Zašto B:** Logovi pokazuju da je koordinator dekomponovao „kreativne industrije” samo na vizuelne podteme, potpuno izostavivši muziku, književnost i film. Podagenti su izvršili ispravno — problem je u tome šta im je dodeljeno.
+**Zašto B:** Logovi pokazuju da je koordinator dekomponovao „kreativne industrije” samo na vizuelne podteme, potpuno izostavivši muziku, književnost i film. Podagenti su svoj deo posla obavili ispravno — problem je u tome šta im je dodeljeno.
 
 ## Pitanje 8 (Scenario: višeagentski istraživački sistem)
 
-**Situacija:** Podagent za veb-pretragu prekoračuje vreme dok istražuje složenu temu. Treba da osmisliš kako se informacija o grešci prosleđuje nazad koordinatoru.
+**Situacija:** Podagent za pretragu veba prekorači vremensko ograničenje dok istražuje složenu temu. Treba da osmisliš kako se informacija o grešci prosleđuje nazad koordinatoru.
 
 **Koji pristup propagaciji grešaka najbolje omogućava inteligentan oporavak?**
 
 - A) Vratiti koordinatoru strukturiran kontekst greške: tip otkaza, upit, delimične rezultate i alternative **[CORRECT]**
 - B) Implementirati automatske ponovne pokušaje sa eksponencijalnim odlaganjem unutar podagenta, pa vratiti generički status „pretraga nedostupna”
 - C) Uhvatiti istek vremena unutar podagenta i vratiti prazan skup rezultata označen kao uspeh
-- D) Propagirati izuzetak isteka vremena do rukovaoca na najvišem nivou koji prekida ceo tok rada
-**Zašto A:** Strukturiran kontekst greške daje koordinatoru ono što mu treba da odluči da li da ponovi pokušaj sa izmenjenim upitom, proba alternativni pristup ili nastavi sa delimičnim rezultatima. B skriva kontekst iza generičkog statusa. C maskira otkaz kao uspeh. D nepotrebno prekida ceo tok rada.
+- D) Propagirati izuzetak isteka vremena do handler-a na najvišem nivou koji prekida ceo radni tok
+**Zašto A:** Strukturiran kontekst greške daje koordinatoru ono što mu treba da odluči da li da ponovi pokušaj sa izmenjenim upitom, proba alternativni pristup ili nastavi sa delimičnim rezultatima. B skriva kontekst iza generičkog statusa. C maskira otkaz kao uspeh. D nepotrebno prekida ceo radni tok.
 
 ## Pitanje 9 (Scenario: višeagentski istraživački sistem)
 
-**Situacija:** Agent za sintezu često treba da proveri određene tvrdnje dok spaja rezultate. Trenutno, kada je potrebna provera, agent za sintezu vraća kontrolu koordinatoru, koji poziva agenta za veb-pretragu, a zatim ponovo pokreće sintezu sa novim rezultatima. Ovo dodaje 2–3 dodatna kruga po zadatku i povećava latenciju za 40%. Tvoja procena pokazuje da je 85% ovih provera jednostavna provera činjenica (datumi, imena, statistike), dok 15% zahteva dublje istraživanje.
+**Situacija:** Agent za sintezu često mora da proveri određene tvrdnje dok spaja rezultate. Trenutno, kada je potrebna provera, agent za sintezu vraća kontrolu koordinatoru, koji poziva agenta za pretragu veba, a zatim ponovo pokreće sintezu sa novim rezultatima. To dodaje 2–3 dodatna kruga po zadatku i povećava latenciju za 40%. Tvoja procena pokazuje da 85% ovih provera čine jednostavne provere činjenica (datumi, imena, statistike), dok 15% zahteva dublje istraživanje.
 
 **Kako smanjiti dodatne troškove uz održavanje pouzdanosti?**
 
-- A) Dati agentu za sintezu ograničen `verify_fact` alat za jednostavne provere, a složenu proveru nastaviti da rutiraš preko koordinatora **[CORRECT]**
+- A) Dati agentu za sintezu ograničen alat `verify_fact` za jednostavne provere, a složene provere i dalje rutirati preko koordinatora **[CORRECT]**
 - B) Akumulirati sve potrebe za proverom u grupu i vratiti ih koordinatoru na kraju
-- C) Dati agentu za sintezu pun pristup svim alatima za veb-pretragu
+- C) Dati agentu za sintezu pun pristup svim alatima za pretragu veba
 - D) Proaktivno keširati dodatni kontekst oko svakog izvora
-**Zašto A:** Ovo primenjuje princip najmanje privilegije: agent za sintezu dobija tačno ono što mu treba za uobičajen slučaj od 85% (jednostavne provere činjenica), uz očuvanje puta posredovanog koordinatorom za složena istraživanja. B uvodi blokirajuće zavisnosti (kasniji koraci sinteze mogu zavisiti od ranije proverenih činjenica). C narušava razdvajanje odgovornosti. D se oslanja na špekulativno keširanje koje ne može pouzdano da predvidi potrebe.
+**Zašto A:** Ovo primenjuje princip najmanje privilegije: agent za sintezu dobija tačno ono što mu treba za uobičajeni slučaj od 85% (jednostavne provere činjenica), dok put preko koordinatora ostaje za složena istraživanja. B uvodi blokirajuće zavisnosti (kasniji koraci sinteze mogu zavisiti od ranije proverenih činjenica). C narušava razdvajanje odgovornosti. D se oslanja na špekulativno keširanje koje ne može pouzdano da predvidi potrebe.
 
 ## Pitanje 10 (Scenario: Claude Code za CI)
 
@@ -1994,15 +1994,15 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 11 (Scenario: Claude Code za CI)
 
-**Situacija:** Tim želi da smanji trošak API-ja za automatizovanu analizu. Claude trenutno opslužuje dva toka rada u realnom vremenu: (1) blokirajuću pre-merge proveru koja mora da se završi pre nego što programeri mogu da spoje PR, i (2) izveštaj o tehničkom dugu koji se generiše tokom noći za jutarnji pregled. Menadžer predlaže da se oba prebace na Message Batches API radi uštede od 50%.
+**Situacija:** Tim želi da smanji trošak API-ja za automatizovanu analizu. Claude trenutno opslužuje dva radna toka u realnom vremenu: (1) blokirajuću pre-merge proveru koja mora da se završi pre nego što programeri mogu da spoje PR, i (2) izveštaj o tehničkom dugu koji se generiše tokom noći za jutarnji pregled. Menadžer predlaže da se oba prebace na Message Batches API radi uštede od 50%.
 
 **Kako treba da proceniš ovaj predlog?**
 
 - A) Koristiti grupno (batch) procesiranje samo za izveštaje o tehničkom dugu; zadržati pozive u realnom vremenu za pre-merge provere **[CORRECT]**
-- B) Prebaciti oba toka rada na grupno procesiranje i anketirati za završetak
+- B) Prebaciti oba radna toka na grupno procesiranje i periodično proveravati da li su završeni
 - C) Zadržati pozive u realnom vremenu za oba kako bi se izbegli problemi sa redosledom u grupnim rezultatima
 - D) Prebaciti oba na grupno procesiranje uz rezervni prelazak na realno vreme ako grupa traje predugo
-**Zašto A:** Message Batches API štedi 50%, ali vreme obrade može biti i do 24 sata bez zagarantovanog SLA za latenciju. To ga čini neprikladnim za blokirajuće pre-merge provere gde programeri čekaju, ali idealnim za noćna grupna opterećenja poput izveštaja o tehničkom dugu.
+**Zašto A:** Message Batches API štedi 50%, ali obrada može da traje i do 24 sata bez zagarantovanog SLA za latenciju. To ga čini neprikladnim za blokirajuće pre-merge provere gde programeri čekaju, ali idealnim za noćne grupne (batch) poslove poput izveštaja o tehničkom dugu.
 
 ## Pitanje 12 (Scenario: pregled koda u više fajlova)
 
@@ -2012,9 +2012,9 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - A) Podeliti na fokusirane prolaze: analizirati svaki fajl pojedinačno za lokalne probleme, pa pokrenuti zaseban integracioni prolaz za tokove podataka između fajlova **[CORRECT]**
 - B) Zahtevati od programera da podele velike PR-ove na predaje od 3–4 fajla
-- C) Preći na model višeg ranga sa većim kontekstnim prozorom da bi se svih 14 fajlova pregledalo u jednom prolazu
+- C) Preći na model više klase sa većim kontekstnim prozorom da bi se svih 14 fajlova pregledalo u jednom prolazu
 - D) Pokrenuti tri nezavisna prolaza pregleda celog PR-a i prijaviti samo probleme pronađene u najmanje dva pokretanja
-**Zašto A:** Fokusirani prolazi direktno rešavaju korenski uzrok — razblaživanje pažnje pri obradi mnogo fajlova odjednom. Analiza po fajlu obezbeđuje konzistentnu dubinu, a zaseban integracioni prolaz hvata probleme između fajlova. B prebacuje teret na programere bez poboljšanja sistema. C je zabluda: veći kontekst ne popravlja kvalitet pažnje. D potiskuje stvarne greške zahtevajući konsenzus među nekonzistentnim detekcijama.
+**Zašto A:** Fokusirani prolazi direktno rešavaju osnovni uzrok — razblaživanje pažnje pri obradi mnogo fajlova odjednom. Analiza po fajlu obezbeđuje konzistentnu dubinu, a zaseban integracioni prolaz hvata probleme između fajlova. B prebacuje teret na programere bez poboljšanja sistema. C je zabluda: veći kontekst ne popravlja kvalitet pažnje. D potiskuje stvarne greške zahtevajući konsenzus među nekonzistentnim detekcijama.
 
 # Probni test
 
@@ -2031,7 +2031,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 **Koji pristup je najefikasniji?**
 
 - A) Primeniti heuristike verodostojnosti da bi se izabrao najverovatnije tačan broj, završiti analizu s tom vrednošću i dodati fusnotu koja pominje neslaganje.
-- B) Uključiti oba broja u izlaz analize bez označavanja da su protivrečni, prepuštajući sintezičkom agentu da odluči koji da koristi na osnovu šireg konteksta.
+- B) Uključiti oba broja u izlaz analize bez označavanja da su protivrečni, prepuštajući agentu za sintezu da odluči koji da koristi na osnovu šireg konteksta.
 - C) Zaustaviti analizu i odmah eskalirati koordinatoru, tražeći od njega da odluči koji je izvor merodavniji pre nastavka.
 - D) Završiti analizu s oba broja, eksplicitno anotirati sukob uz pripisivanje izvora i prepustiti koordinatoru da odluči kako da usaglasi podatke pre prosleđivanja na sintezu. **[CORRECT]**
 **Zašto D:** Ovaj pristup čuva razdvajanje odgovornosti: agent za analizu završava svoj osnovni posao bez blokiranja, čuva obe protivrečne vrednosti uz jasno pripisivanje i ispravno prepušta usaglašavanje koordinatoru, koji ima širi kontekst.
@@ -2044,9 +2044,9 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - A) Svaki agent šalje svoje rezultate direktno agentu za pisanje izveštaja, zaobilazeći koordinatora.
 - B) Agent za analizu dokumenata zahteva rezultate pretrage veba i interno ih spaja.
-- C) Koordinator prosleđuje oba skupa rezultata sintezičkom agentu radi objedinjene integracije. **[CORRECT]**
+- C) Koordinator prosleđuje oba skupa rezultata agentu za sintezu radi objedinjene integracije. **[CORRECT]**
 - D) Koordinator nadovezuje sirove izlaze oba agenta i vraća ih kao konačan rezultat.
-**Zašto C:** U arhitekturi koordinator–podagent, koordinator prosleđuje oba skupa rezultata sintezičkom agentu radi centralizovane integracije, čuvajući kontrolu i obezbeđujući kvalitetno spajanje.
+**Zašto C:** U arhitekturi koordinator–podagent, koordinator prosleđuje oba skupa rezultata agentu za sintezu radi centralizovane integracije, čuvajući kontrolu i obezbeđujući kvalitetno spajanje.
 
 ## Pitanje 3 (Scenario: Multi-agent Research System)
 
@@ -2062,25 +2062,25 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 4 (Scenario: Multi-agent Research System)
 
-**Situacija:** Nakon pokretanja sistema na temi „AI impact on creative industries“, primećujete da svaki podagent uspešno završava: agent za pretragu veba nalazi relevantne članke, agent za analizu dokumenata ih ispravno sažima, a sintezički agent proizvodi koherentan tekst. Međutim, konačni izveštaji pokrivaju samo vizuelnu umetnost, a potpuno propuštaju muziku, književnost i film. U logovima koordinatora vidite da je temu razložio na tri podzadatka: „AI in digital art“, „AI in graphic design“ i „AI in photography“. Koji je najverovatniji koreni uzrok?
+**Situacija:** Nakon pokretanja sistema na temi „AI impact on creative industries“, primećujete da svaki podagent uspešno završava: agent za pretragu veba nalazi relevantne članke, agent za analizu dokumenata ih ispravno sažima, a agent za sintezu proizvodi koherentan tekst. Međutim, konačni izveštaji pokrivaju samo vizuelnu umetnost, a potpuno propuštaju muziku, književnost i film. U logovima koordinatora vidite da je temu razložio na tri podzadatka: „AI in digital art“, „AI in graphic design“ i „AI in photography“. Koji je najverovatniji osnovni uzrok?
 
-**Koji je najverovatniji koreni uzrok?**
+**Koji je najverovatniji osnovni uzrok?**
 
-- A) Sintezičkom agentu nedostaju instrukcije za detekciju praznina u pokrivenosti.
+- A) Agentu za sintezu nedostaju instrukcije za detekciju praznina u pokrivenosti.
 - B) Agent za analizu dokumenata filtrira nevizuelne izvore zbog previše strogih kriterijuma relevantnosti.
 - C) Koordinatorovo razlaganje zadatka je preusko, dodeljujući podagentima posao koji ne pokriva sve relevantne oblasti. **[CORRECT]**
 - D) Upiti agenta za pretragu veba su nedovoljni i treba ih proširiti da pokriju više sektora.
-**Zašto C:** Koordinator je široku temu razložio samo na podzadatke iz vizuelne umetnosti, potpuno propustivši muziku, književnost i film. Pošto su podagenti ispravno izvršili svoje zadatke, usko razlaganje je očigledan koreni uzrok.
+**Zašto C:** Koordinator je široku temu razložio samo na podzadatke iz vizuelne umetnosti, potpuno propustivši muziku, književnost i film. Pošto su podagenti ispravno izvršili svoje zadatke, usko razlaganje je očigledan osnovni uzrok.
 
 ## Pitanje 5 (Scenario: Multi-agent Research System)
 
-**Situacija:** Podagent za pretragu veba vraća rezultate za samo 3 od 5 zatraženih kategorija izvora (sajtovi konkurenata i industrijski izveštaji uspevaju, ali novinski arhivi i društveni feedovi isteknu po vremenu). Podagent za analizu dokumenata uspešno obrađuje sve dostavljene dokumente. Sintezički podagent mora da proizvede sažetak iz uzvodnih ulaza mešovitog kvaliteta. Koja strategija propagacije grešaka je najefikasnija?
+**Situacija:** Podagent za pretragu veba vraća rezultate za samo 3 od 5 zatraženih kategorija izvora (sajtovi konkurenata i industrijski izveštaji uspevaju, ali novinski arhivi i društveni feedovi doživljavaju tajmaut). Podagent za analizu dokumenata uspešno obrađuje sve dostavljene dokumente. Podagent za sintezu mora da proizvede sažetak iz uzvodnih ulaza mešovitog kvaliteta. Koja strategija propagacije grešaka je najefikasnija?
 
 **Koja strategija propagacije grešaka je najefikasnija?**
 
 - A) Nastaviti sintezu koristeći samo uspešne izvore i proizvesti izlaz bez pominjanja koji podaci nisu bili dostupni.
-- B) Sintezički podagent vraća grešku koordinatoru, pokrećući pun ponovni pokušaj ili otkaz zadatka zbog nepotpunih podataka.
-- C) Sintezički podagent traži od koordinatora da ponovo pokuša izvore koji su istekli, sa dužim tajmautom, pre početka sinteze.
+- B) Podagent za sintezu vraća grešku koordinatoru, pokrećući pun ponovni pokušaj ili otkaz zadatka zbog nepotpunih podataka.
+- C) Podagent za sintezu traži od koordinatora da izvore koji su doživeli tajmaut ponovo pokuša sa dužim tajmautom pre početka sinteze.
 - D) Strukturirati izlaz sinteze sa anotacijama pokrivenosti koje označavaju koji su zaključci dobro potkrepljeni i gde postoje praznine zbog nedostupnih izvora. **[CORRECT]**
 **Zašto D:** Anotacije pokrivenosti implementiraju gracioznu degradaciju uz transparentnost, čuvajući vrednost obavljenog posla, dok propagiraju neizvesnost kako bi omogućile informisane odluke o pouzdanosti.
 
@@ -2102,15 +2102,15 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 **Kako biste rešili problem pogrešnog usmeravanja?**
 
-- A) Dodati klasifikator pre usmeravanja koji detektuje da li se korisnik odnosi na otpremljene fajlove ili veb sadržaj pre nego što koordinator odluči o delegiranju.
+- A) Dodati klasifikator pre usmeravanja koji detektuje da li korisnik misli na otpremljene fajlove ili na veb sadržaj pre nego što koordinator odluči o delegiranju.
 - B) Preimenovati alat za pretragu veba u `extract_web_results` i ažurirati njegov opis u „processes and returns information retrieved from web search and URLs“. **[CORRECT]**
 - C) Dodati few-shot primere u prompt koordinatora koji prikazuju ispravno usmeravanje: „User uploads a quarterly report → document analysis agent“ i „User asks about a web page → web-search agent“.
 - D) Proširiti opis alata za analizu dokumenata primerima upotrebe poput „Use for uploaded PDFs, Word docs, and spreadsheets“, ostavljajući alat za pretragu veba nepromenjenim.
-**Zašto B:** Preimenovanje alata za pretragu veba u `extract_web_results` i ažuriranje njegovog opisa da eksplicitno upućuje na pretragu veba i URL-ove direktno uklanja koreni uzrok eliminisanjem semantičkog preklapanja između imena i opisa dva alata. Time svrha svakog alata postaje nedvosmislena, omogućavajući koordinatoru da pouzdano razlikuje analizu dokumenata od pretrage veba.
+**Zašto B:** Preimenovanje alata za pretragu veba u `extract_web_results` i ažuriranje njegovog opisa da eksplicitno upućuje na pretragu veba i URL-ove direktno uklanja osnovni uzrok eliminisanjem semantičkog preklapanja između imena i opisa dva alata. Time svrha svakog alata postaje nedvosmislena, omogućavajući koordinatoru da pouzdano razlikuje analizu dokumenata od pretrage veba.
 
 ## Pitanje 8 (Scenario: Multi-agent Research System)
 
-**Situacija:** Kolega predlaže da agent za analizu dokumenata šalje svoje rezultate direktno sintezičkom agentu, zaobilazeći koordinatora. Koja je glavna prednost zadržavanja koordinatora kao centralnog čvorišta za svu komunikaciju među podagentima?
+**Situacija:** Kolega predlaže da agent za analizu dokumenata šalje svoje rezultate direktno agentu za sintezu, zaobilazeći koordinatora. Koja je glavna prednost zadržavanja koordinatora kao centralnog čvorišta za svu komunikaciju među podagentima?
 
 **Koja je glavna prednost zadržavanja koordinatora kao centralnog čvorišta?**
 
@@ -2122,7 +2122,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 9 (Scenario: Multi-agent Research System)
 
-**Situacija:** Podagent za pretragu veba istekne po vremenu dok istražuje složenu temu. Treba da projektujete kako se informacija o ovom otkazu vraća koordinatoru. Koji pristup propagacije grešaka najbolje omogućava inteligentan oporavak?
+**Situacija:** Podagent za pretragu veba doživi tajmaut dok istražuje složenu temu. Treba da projektujete kako se informacija o ovom otkazu vraća koordinatoru. Koji pristup propagacije grešaka najbolje omogućava inteligentan oporavak?
 
 **Koji pristup propagacije grešaka najbolje omogućava inteligentan oporavak?**
 
@@ -2142,7 +2142,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Ukloniti `fetch_url` iz agenta za analizu dokumenata i usmeriti sva preuzimanja URL-ova kroz koordinatora ka agentu za pretragu veba.
 - C) Implementirati filtriranje koje blokira `fetch_url` pozive ka poznatim domenima pretraživača, dozvoljavajući druge URL-ove.
 - D) Dodati u prompt agenta za analizu dokumenata instrukcije da `fetch_url` treba koristiti samo za preuzimanje URL-ova dokumenata, ne za pretragu.
-**Zašto A:** Zamena alata opšte namene alatom specifičnim za dokumente koji validira URL-ove u odnosu na formate dokumenata otklanja koreni uzrok ograničavanjem mogućnosti na nivou interfejsa. Ovo prati princip najmanje privilegije, čineći neželjeno ponašanje pretrage nemogućim, a ne samo obeshrabrenim.
+**Zašto A:** Zamena alata opšte namene alatom specifičnim za dokumente koji validira URL-ove u odnosu na formate dokumenata otklanja osnovni uzrok ograničavanjem mogućnosti na nivou interfejsa. Ovo prati princip najmanje privilegije, čineći neželjeno ponašanje pretrage nemogućim, a ne samo obeshrabrenim.
 
 ## Pitanje 11 (Scenario: Multi-agent Research System)
 
@@ -2150,15 +2150,15 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 **Koji je najefikasniji način da se ovo reši?**
 
-- A) Dozvoliti oba agenta da završe paralelno, a zatim da koordinator deduplicira preklapajuće rezultate pre prosleđivanja sintezičkom agentu.
+- A) Dozvoliti da oba agenta završe paralelno, a zatim da koordinator deduplicira preklapajuće rezultate pre prosleđivanja agentu za sintezu.
 - B) Koordinator eksplicitno particioniše istraživački prostor pre delegiranja, dodeljujući svakom agentu zasebne podteme ili tipove izvora. **[CORRECT]**
 - C) Implementirati mehanizam deljenog stanja u kome agenti beleže svoju trenutnu oblast fokusa kako bi drugi agenti dinamički izbegavali dupliranje tokom izvršavanja.
 - D) Preći na sekvencijalno izvršavanje gde analiza dokumenata teče tek nakon što se pretraga veba završi, koristeći rezultate pretrage veba kao kontekst da bi se izbeglo dupliranje.
-**Zašto B:** To što koordinator eksplicitno particioniše istraživački prostor pre delegiranja je najefikasnije jer rešava koreni uzrok — nejasne granice zadataka — pre nego što ijedan posao počne. Čuva paralelizam, dok sprečava dupliran trud i protraćene tokene.
+**Zašto B:** To što koordinator eksplicitno particioniše istraživački prostor pre delegiranja najefikasnije je jer rešava osnovni uzrok — nejasne granice zadataka — pre nego što ijedan posao počne. Čuva paralelizam, a istovremeno sprečava dupliranje truda i traćenje tokena.
 
 ## Pitanje 12 (Scenario: Multi-agent Research System)
 
-**Situacija:** Tokom istraživanja, podagent za pretragu veba upituje tri kategorije izvora sa različitim ishodima: akademske baze vraćaju 15 relevantnih radova, industrijski izveštaji vraćaju „0 results“, a baze patenata vraćaju „Connection timeout“. Pri projektovanju propagacije grešaka ka koordinatoru, koji pristup omogućava najbolje odluke o oporavku?
+**Situacija:** Tokom istraživanja, podagent za pretragu veba šalje upite ka tri kategorije izvora sa različitim ishodima: akademske baze vraćaju 15 relevantnih radova, industrijski izveštaji vraćaju „0 results“, a baze patenata vraćaju „Connection timeout“. Pri projektovanju propagacije grešaka ka koordinatoru, koji pristup omogućava najbolje odluke o oporavku?
 
 **Koji pristup omogućava najbolje odluke o oporavku?**
 
@@ -2170,45 +2170,45 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 13 (Scenario: Multi-agent Research System)
 
-**Situacija:** Produkcioni nadzor pokazuje nedoslednost u kvalitetu sinteze. Kada su agregirani rezultati ~75K tokena, sintezički agent pouzdano citira informacije iz prvih 15K tokena (naslovi/isečci pretrage veba) i poslednjih 10K tokena (zaključci analize dokumenata), ali često propušta kritične nalaze u srednjih 50K tokena — čak i kada oni direktno odgovaraju na istraživačko pitanje. Kako biste restrukturirali agregirani ulaz?
+**Situacija:** Produkcioni nadzor pokazuje nedoslednost u kvalitetu sinteze. Kada su agregirani rezultati ~75K tokena, agent za sintezu pouzdano citira informacije iz prvih 15K tokena (naslovi/isečci pretrage veba) i poslednjih 10K tokena (zaključci analize dokumenata), ali često propušta kritične nalaze u srednjih 50K tokena — čak i kada oni direktno odgovaraju na istraživačko pitanje. Kako biste restrukturirali agregirani ulaz?
 
 **Kako biste restrukturirali agregirani ulaz?**
 
 - A) Sažeti sve izlaze podagenata na ispod 20K tokena pre agregacije kako bi sadržaj ostao unutar pouzdanog opsega obrade modela.
-- B) Strimovati rezultate podagenata sintezičkom agentu inkrementalno, obrađujući prvo rezultate pretrage veba do kraja, a zatim dodajući rezultate analize dokumenata.
+- B) Strimovati rezultate podagenata agentu za sintezu inkrementalno, tako da se prvo do kraja obrade rezultati pretrage veba, a zatim dodaju rezultati analize dokumenata.
 - C) Postaviti sažetak ključnih nalaza na početak agregiranog ulaza i organizovati detaljne rezultate sa eksplicitnim naslovima sekcija radi lakše navigacije. **[CORRECT]**
-- D) Implementirati rotaciju koja naizmenično menja čiji rezultati podagenta se pojavljuju prvi kroz istraživačke zadatke kako bi oba izvora vremenom dobila jednako gornje pozicioniranje.
+- D) Implementirati rotaciju koja kroz istraživačke zadatke naizmenično menja koji se rezultati podagenata pojavljuju prvi, kako bi oba izvora vremenom dobila ravnopravnu poziciju na vrhu.
 **Zašto C:** Postavljanje sažetka ključnih nalaza na početak iskorišćava efekat prvenstva (primacy) tako da kritične informacije stoje na najpouzdanije obrađivanoj poziciji. Dodavanje eksplicitnih naslova sekcija kroz ceo ulaz pomaže modelu da navigira i obrati pažnju na sadržaj iz sredine ulaza, direktno ublažavajući fenomen „lost in the middle“.
 
 ## Pitanje 14 (Scenario: Multi-agent Research System)
 
-**Situacija:** Pri testiranju, kombinovani izlaz agenta za pretragu veba (85K tokena uključujući sadržaj stranica) i agenta za analizu dokumenata (70K tokena uključujući lance razmišljanja) iznosi ukupno 155K tokena, ali sintezički agent najbolje radi sa ulazima ispod 50K tokena. Koje rešenje je najefikasnije?
+**Situacija:** Pri testiranju, kombinovani izlaz agenta za pretragu veba (85K tokena uključujući sadržaj stranica) i agenta za analizu dokumenata (70K tokena uključujući lance razmišljanja) iznosi ukupno 155K tokena, ali agent za sintezu najbolje radi sa ulazima ispod 50K tokena. Koje rešenje je najefikasnije?
 
 **Koje rešenje je najefikasnije?**
 
 - A) Izmeniti uzvodne agente da vraćaju strukturirane podatke (ključne činjenice, citate, ocene relevantnosti) umesto opširnog sadržaja i rezonovanja. **[CORRECT]**
-- B) Dodati posrednog agenta za sažimanje koji sažima nalaze pre prosleđivanja na sintezu.
-- C) Da sintezički agent obrađuje nalaze u sekvencijalnim grupama, održavajući stanje između poziva.
-- D) Skladištiti nalaze u vektorsku bazu podataka i dati sintezičkom agentu alate za pretragu da upituje tokom svog rada.
-**Zašto A:** Izmena uzvodnih agenata da vraćaju strukturirane podatke otklanja koreni uzrok smanjenjem obima tokena na izvoru, uz očuvanje suštinskih informacija. Time se izbegava prosleđivanje glomaznog sadržaja stranica i tragova rezonovanja koji naduvavaju tokene bez poboljšanja koraka sinteze.
+- B) Dodati posrednog agenta za sažimanje koji kondenzuje nalaze pre prosleđivanja na sintezu.
+- C) Neka agent za sintezu obrađuje nalaze u sekvencijalnim grupama, održavajući stanje između poziva.
+- D) Skladištiti nalaze u vektorskoj bazi podataka i dati agentu za sintezu alate za pretragu kojima može da postavlja upite tokom rada.
+**Zašto A:** Izmena uzvodnih agenata da vraćaju strukturirane podatke otklanja osnovni uzrok tako što smanjuje obim tokena na samom izvoru, uz očuvanje suštinskih informacija. Time se izbegava prosleđivanje glomaznog sadržaja stranica i tragova rezonovanja koji naduvavaju broj tokena, a ne poboljšavaju korak sinteze.
 
 ## Pitanje 15 (Scenario: Multi-agent Research System)
 
-**Situacija:** Pri testiranju primećujete da sintezičkom agentu često treba da verifikuje konkretne tvrdnje dok spaja rezultate. Trenutno, kada je verifikacija potrebna, sintezički agent vraća kontrolu koordinatoru, koji poziva agenta za pretragu veba i zatim ponovo poziva sintezu sa rezultatima. Ovo dodaje 2–3 dodatne petlje po zadatku i povećava latenciju za 40%. Vaša procena pokazuje da je 85% ovih verifikacija jednostavna provera činjenica (datumi, imena, statistike), a 15% zahteva dublje istraživanje. Koji pristup najefikasnije smanjuje režijske troškove, dok čuva pouzdanost sistema?
+**Situacija:** Pri testiranju primećujete da agent za sintezu često mora da verifikuje konkretne tvrdnje dok spaja rezultate. Trenutno, kada je verifikacija potrebna, agent za sintezu vraća kontrolu koordinatoru, koji poziva agenta za pretragu veba i zatim ponovo poziva sintezu sa rezultatima. To dodaje 2–3 dodatne petlje po zadatku i povećava latenciju za 40%. Vaša procena pokazuje da 85% ovih verifikacija čine jednostavne provere činjenica (datumi, imena, statistike), a 15% zahteva dublje istraživanje. Koji pristup najefikasnije smanjuje režijske troškove uz očuvanje pouzdanosti sistema?
 
 **Koji pristup je najefikasniji?**
 
-- A) Dati sintezičkom agentu pristup svim alatima za pretragu veba kako bi mogao da obradi bilo koju potrebu za verifikacijom direktno, bez petlji preko koordinatora.
-- B) Da sintezički agent akumulira sve potrebe za verifikacijom i vrati ih kao grupu koordinatoru na kraju, koji ih potom sve odjednom šalje agentu za pretragu veba.
-- C) Da agent za pretragu veba proaktivno kešira dodatni kontekst oko svakog izvora tokom početnog istraživanja, u očekivanju da će sintezi trebati verifikacija.
-- D) Dati sintezičkom agentu alat ograničenog obima `verify_fact` za jednostavne provere, dok se složene verifikacije usmeravaju kroz koordinatora ka agentu za pretragu veba. **[CORRECT]**
-**Zašto D:** Alat ograničenog obima za verifikaciju činjenica omogućava sintezičkom agentu da obradi 85% jednostavnih provera direktno, eliminišući većinu petlji, dok čuva put delegiranja preko koordinatora za 15% složenih verifikacija. Ovo primenjuje princip najmanje privilegije, uz značajno smanjenje latencije.
+- A) Dati agentu za sintezu pristup svim alatima za pretragu veba kako bi svaku potrebu za verifikacijom mogao da reši direktno, bez petlji preko koordinatora.
+- B) Neka agent za sintezu akumulira sve potrebe za verifikacijom i na kraju ih kao grupu vrati koordinatoru, koji ih zatim sve odjednom šalje agentu za pretragu veba.
+- C) Neka agent za pretragu veba tokom početnog istraživanja proaktivno kešira dodatni kontekst oko svakog izvora, u očekivanju da će sintezi zatrebati verifikacija.
+- D) Dati agentu za sintezu alat ograničenog obima `verify_fact` za jednostavne provere, dok se složene verifikacije usmeravaju preko koordinatora ka agentu za pretragu veba. **[CORRECT]**
+**Zašto D:** Alat ograničenog obima za verifikaciju činjenica omogućava agentu za sintezu da 85% jednostavnih provera obavi direktno, čime se eliminiše većina petlji, dok put delegiranja preko koordinatora ostaje za 15% složenih verifikacija. Time se primenjuje princip najmanjih privilegija uz značajno smanjenje latencije.
 
 ## Scenario: Claude Code za kontinuiranu integraciju
 
 ## Pitanje 16 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš CI pipeline pokreće Claude Code CLI (u `--print` režimu) koristeći CLAUDE.md da obezbedi kontekst projekta za pregled koda, i programeri uglavnom smatraju da su pregledi sadržajni. Međutim, javljaju da je integrisanje nalaza u radni tok teško—Claude ispisuje narativne pasuse koji se moraju ručno kopirati u PR komentare. Tim želi da automatski objavi svaki nalaz kao zaseban inline PR komentar na odgovarajućem mestu u kodu, što zahteva strukturirane podatke sa putanjom fajla, brojem linije, nivoom ozbiljnosti i predloženom ispravkom. Koji pristup je najefikasniji?
+**Situacija:** Vaš CI pipeline pokreće Claude Code CLI (u `--print` režimu) koristeći CLAUDE.md da obezbedi kontekst projekta za pregled koda, i programeri uglavnom smatraju da su pregledi sadržajni. Međutim, javljaju da je nalaze teško uklopiti u radni tok — Claude ispisuje narativne pasuse koji se moraju ručno kopirati u PR komentare. Tim želi da svaki nalaz automatski objavi kao zaseban inline PR komentar na odgovarajućem mestu u kodu, što zahteva strukturirane podatke sa putanjom fajla, brojem linije, nivoom ozbiljnosti i predloženom ispravkom. Koji pristup je najefikasniji?
 
 **Koji pristup je najefikasniji?**
 
@@ -2220,15 +2220,15 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 17 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš tim koristi Claude Code za generisanje predloga koda, ali primećujete obrazac: neočigledni problemi—optimizacije performansi koje ruše granične slučajeve, čišćenja koja neočekivano menjaju ponašanje—uhvate se tek kada drugi član tima pregleda PR. Claude-ovo rezonovanje tokom generisanja pokazuje da je razmatrao te slučajeve ali je zaključio da je njegov pristup ispravan. Koji pristup direktno rešava osnovni uzrok ovog ograničenja samoprovere?
+**Situacija:** Vaš tim koristi Claude Code za generisanje predloga koda, ali primećujete obrazac: neočigledni problemi — optimizacije performansi koje ruše granične slučajeve, čišćenja koja neočekivano menjaju ponašanje — otkrivaju se tek kada drugi član tima pregleda PR. Claude-ovo rezonovanje tokom generisanja pokazuje da je razmatrao te slučajeve, ali je zaključio da je njegov pristup ispravan. Koji pristup direktno rešava osnovni uzrok ovog ograničenja samoprovere?
 
 **Koji pristup direktno rešava osnovni uzrok?**
 
 - A) Pokrenuti drugu nezavisnu instancu Claude Code-a da pregleda izmene bez pristupa rezonovanju generatora. **[CORRECT]**
-- B) Omogućiti režim proširenog razmišljanja za fazu generisanja kako bi se dozvolilo temeljnije promišljanje pre nego što se proizvedu predlozi.
+- B) Uključiti režim proširenog razmišljanja u fazi generisanja kako bi model mogao temeljnije da promisli pre nego što proizvede predloge.
 - C) Dodati eksplicitna uputstva za samopregled u prompt za generisanje koja traže od Claude-a da kritikuje sopstvene predloge pre finalizovanja izlaza.
 - D) Uključiti kompletne test fajlove i dokumentaciju u kontekst prompta kako bi Claude bolje razumeo očekivano ponašanje tokom generisanja.
-**Zašto A:** Druga nezavisna Claude Code instanca bez pristupa rezonovanju generatora direktno rešava osnovni uzrok izbegavanjem pristrasnosti potvrde. Ova perspektiva „svežih očiju“ oslikava ljudski peer pregled, gde drugi recenzent uhvati probleme koje je autor racionalizovao.
+**Zašto A:** Druga nezavisna instanca Claude Code-a bez pristupa rezonovanju generatora direktno rešava osnovni uzrok jer izbegava pristrasnost potvrđivanja. Ova perspektiva „svežih očiju“ preslikava ljudski peer review, gde drugi recenzent uhvati probleme koje je autor racionalizovao.
 
 ## Pitanje 18 (Scenario: Claude Code za kontinuiranu integraciju)
 
@@ -2239,36 +2239,36 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - A) Batch obrada ne uključuje korelacione ID-jeve za mapiranje izlaza nazad na ulazne zahteve.
 - B) Asinhroni model ne može da izvrši alate usred zahteva i vrati rezultate da bi Claude nastavio analizu. **[CORRECT]**
 - C) Batch API ne podržava definicije alata u parametrima zahteva.
-- D) Latencija batch obrade od do 24 sata je previše spora za feedback na pull request, iako bi radni tok inače funkcionisao.
+- D) Latencija batch obrade do 24 sata previše je spora za feedback na pull request, iako bi radni tok inače funkcionisao.
 **Zašto B:** „Fire-and-forget“ asinhroni model Batch API-ja nema mehanizam da presretne poziv alata tokom zahteva, izvrši alat i vrati rezultate da bi Claude nastavio analizu. To je fundamentalno nekompatibilno sa iterativnim radnim tokovima poziva alata koji zahtevaju više rundi zahtev/odgovor alata unutar jedne logičke interakcije.
 
 ## Pitanje 19 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš CI/CD sistem pokreće tri analize bazirane na Claude-u: (1) brze provere stila na svakom PR-u koje blokiraju merge do završetka, (2) sveobuhvatne nedeljne bezbednosne revizije celog codebase-a, i (3) noćno generisanje test slučajeva za nedavno izmenjene module. Message Batches API nudi 50% uštede ali obrada može trajati do 24 sata. Želite da optimizujete trošak API-ja uz održavanje prihvatljivog iskustva za programere. Koja kombinacija ispravno upariva svaki zadatak sa API pristupom?
+**Situacija:** Vaš CI/CD sistem pokreće tri analize bazirane na Claude-u: (1) brze provere stila na svakom PR-u koje blokiraju merge do završetka, (2) sveobuhvatne nedeljne bezbednosne revizije celog codebase-a, i (3) noćno generisanje test slučajeva za nedavno izmenjene module. Message Batches API nudi 50% uštede, ali obrada može trajati do 24 sata. Želite da optimizujete trošak API-ja uz održavanje prihvatljivog iskustva za programere. Koja kombinacija ispravno uparuje svaki zadatak sa API pristupom?
 
 **Koja kombinacija je ispravna?**
 
-- A) Koristiti Message Batches API za sva tri zadatka radi maksimizovanja 50% uštede, konfigurišući pipeline da anketira (poll) za završetak batch-a.
+- A) Koristiti Message Batches API za sva tri zadatka kako bi se maksimalno iskoristila ušteda od 50%, uz konfigurisanje pipeline-a da periodično proverava (poll) završetak batch-a.
 - B) Koristiti sinhrone pozive za PR provere stila; koristiti Message Batches API za nedeljne bezbednosne revizije i noćno generisanje testova. **[CORRECT]**
-- C) Koristiti sinhrone pozive za sva tri zadatka radi doslednih vremena odziva, oslanjajući se na prompt keširanje za smanjenje troškova kroz radna opterećenja.
+- C) Koristiti sinhrone pozive za sva tri zadatka radi doslednih vremena odziva, oslanjajući se na prompt keširanje da smanji troškove u svim radnim opterećenjima.
 - D) Koristiti sinhrone pozive za PR provere stila i noćno generisanje testova; koristiti Message Batches API samo za nedeljne bezbednosne revizije.
-**Zašto B:** PR provere stila blokiraju programere i zahtevaju trenutne odgovore preko sinhronih poziva, dok su nedeljne bezbednosne revizije i noćno generisanje testova zakazani zadaci sa fleksibilnim rokovima koji mogu tolerisati batch prozor do 24 sata—obezbeđujući 50% uštede za oba.
+**Zašto B:** PR provere stila blokiraju programere i zahtevaju trenutne odgovore preko sinhronih poziva, dok su nedeljne bezbednosne revizije i noćno generisanje testova zakazani zadaci sa fleksibilnim rokovima koji mogu da tolerišu batch prozor do 24 sata — čime se ostvaruje 50% uštede za oba.
 
 ## Pitanje 20 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaši automatizovani pregledi pronalaze stvarne probleme, ali programeri javljaju da feedback nije primenljiv. Nalazi sadrže fraze poput „complex ticket routing logic“ ili „potential null pointer“ bez navođenja šta tačno treba promeniti. Kada dodate detaljna uputstva poput „always include concrete fix suggestions“, model i dalje proizvodi nedosledan izlaz—ponekad detaljan, ponekad neodređen. Koja tehnika prompting-a najpouzdanije proizvodi dosledno primenljiv feedback?
+**Situacija:** Vaši automatizovani pregledi pronalaze stvarne probleme, ali programeri javljaju da feedback nije primenljiv. Nalazi sadrže fraze poput „complex ticket routing logic“ ili „potential null pointer“ bez navođenja šta tačno treba promeniti. Kada dodate detaljna uputstva poput „always include concrete fix suggestions“, model i dalje proizvodi nedosledan izlaz — ponekad detaljan, ponekad neodređen. Koja tehnika prompting-a najpouzdanije proizvodi dosledno primenljiv feedback?
 
 **Koja tehnika prompting-a je najpouzdanija?**
 
 - A) Dalje precizirati uputstva sa eksplicitnijim zahtevima za svaki deo formata feedback-a (lokacija, problem, ozbiljnost, predložena ispravka).
-- B) Proširiti kontekstni prozor da uključi više okolnog codebase-a kako bi model imao dovoljno informacija da predloži konkretne ispravke.
-- C) Implementirati pristup u dva prolaza gde jedan prompt identifikuje probleme a drugi generiše ispravke, omogućavajući specijalizaciju.
+- B) Proširiti kontekstni prozor da obuhvati više okolnog koda iz codebase-a, kako bi model imao dovoljno informacija da predloži konkretne ispravke.
+- C) Implementirati pristup u dva prolaza, gde jedan prompt identifikuje probleme, a drugi generiše ispravke, što omogućava specijalizaciju.
 - D) Dodati 3–4 few-shot primera koji prikazuju tačan zahtevani format: identifikovani problem, lokacija u kodu, konkretan predlog ispravke. **[CORRECT]**
-**Zašto D:** Few-shot primeri su najefikasnija tehnika za postizanje doslednog formata izlaza kada sama uputstva proizvode promenljive rezultate. Pružanje 3–4 primera koji prikazuju tačno željenu strukturu (problem, lokacija, konkretna ispravka) daje modelu konkretan obrazac za praćenje, što je pouzdanije od apstraktnih uputstava.
+**Zašto D:** Few-shot primeri su najefikasnija tehnika za postizanje doslednog formata izlaza kada sama uputstva daju promenljive rezultate. Pružanje 3–4 primera koji prikazuju tačno željenu strukturu (problem, lokacija, konkretna ispravka) daje modelu konkretan obrazac koji može da sledi, što je pouzdanije od apstraktnih uputstava.
 
 ## Pitanje 21 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš CI pipeline uključuje dva režima pregleda koda bazirana na Claude-u: pre-merge-commit hook koji blokira merge PR-a do završetka, i „deep analysis“ koja se izvršava preko noći, anketira za završetak batch-a i objavljuje detaljne predloge na PR. Želite da smanjite trošak API-ja koristeći Message Batches API, koji nudi 50% uštede ali zahteva anketiranje (polling) i može trajati do 24 sata. Koji režim bi trebalo da koristi batch obradu?
+**Situacija:** Vaš CI pipeline uključuje dva režima pregleda koda bazirana na Claude-u: pre-merge-commit hook koji blokira merge PR-a do završetka, i „deep analysis“ koja se izvršava preko noći, periodično proverava završetak batch-a i objavljuje detaljne predloge na PR. Želite da smanjite trošak API-ja koristeći Message Batches API, koji nudi 50% uštede, ali zahteva periodično proveravanje (polling) i može trajati do 24 sata. Koji režim bi trebalo da koristi batch obradu?
 
 **Koji režim bi trebalo da koristi batch obradu?**
 
@@ -2276,59 +2276,59 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Samo deep analysis. **[CORRECT]**
 - C) Oba režima.
 - D) Nijedan režim.
-**Zašto B:** Deep analysis je idealan kandidat za batch obradu jer se već izvršava preko noći, toleriše kašnjenje i koristi model anketiranja pre objavljivanja rezultata—poklapajući se sa asinhronom arhitekturom Message Batches API-ja zasnovanom na anketiranju uz obezbeđivanje 50% uštede.
+**Zašto B:** Deep analysis je idealan kandidat za batch obradu jer se već izvršava preko noći, toleriše kašnjenje i koristi model periodičnog proveravanja pre objavljivanja rezultata — što odgovara asinhronoj arhitekturi Message Batches API-ja zasnovanoj na polling-u, uz ostvarivanje 50% uštede.
 
 ## Pitanje 22 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš automatizovani pregled analizira komentare i docstring-ove. Trenutni prompt instruira Claude da „check that comments are accurate and up to date“. Nalazi često označavaju prihvatljive obrasce (TODO markeri, jednostavni opisi) dok propuštaju komentare koji opisuju ponašanje koje kod više ne implementira. Koja izmena rešava osnovni uzrok ove nedosledne analize?
+**Situacija:** Vaš automatizovani pregled analizira komentare i docstring-ove. Trenutni prompt nalaže Claude-u da „check that comments are accurate and up to date“. Nalazi često označavaju prihvatljive obrasce (TODO markere, jednostavne opise), dok propuštaju komentare koji opisuju ponašanje koje kod više ne implementira. Koja izmena rešava osnovni uzrok ove nedosledne analize?
 
 **Koja izmena rešava osnovni uzrok?**
 
 - A) Uključiti `git blame` podatke kako bi Claude mogao da identifikuje komentare koji prethode nedavnim izmenama koda.
 - B) Dodati few-shot primere obmanjujućih komentara kako bi se pomoglo modelu da prepozna slične obrasce u codebase-u.
 - C) Filtrirati TODO, FIXME i deskriptivne obrasce komentara pre analize radi smanjenja šuma.
-- D) Navesti eksplicitne kriterijume: označavati komentare samo kada ponašanje koje tvrde protivreči stvarnom ponašanju koda. **[CORRECT]**
-**Zašto D:** Eksplicitni kriterijumi—označavanje komentara samo kada tvrđeno ponašanje protivreči stvarnom ponašanju koda—direktno rešavaju osnovni uzrok zamenjujući neodređeno uputstvo preciznom definicijom šta predstavlja problem. To smanjuje lažne pozitive na prihvatljivim obrascima i propuste istinski obmanjujućih komentara.
+- D) Navesti eksplicitne kriterijume: označavati komentare samo kada ponašanje koje navode protivreči stvarnom ponašanju koda. **[CORRECT]**
+**Zašto D:** Eksplicitni kriterijumi — označavanje komentara samo kada navedeno ponašanje protivreči stvarnom ponašanju koda — direktno rešavaju osnovni uzrok tako što neodređeno uputstvo zamenjuju preciznom definicijom toga šta predstavlja problem. Time se smanjuju i lažni pozitivi na prihvatljivim obrascima i propusti zaista obmanjujućih komentara.
 
 ## Pitanje 23 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš automatizovani sistem za pregled koda pokazuje nedosledne ocene ozbiljnosti—slični problemi poput rizika od null pokazivača ocenjeni su kao „critical“ u nekim PR-ovima ali samo „medium“ u drugima. Ankete programera pokazuju rastuće nepoverenje—mnogi počinju da odbacuju nalaze bez čitanja jer su „half are wrong“. Kategorije sa visokom stopom lažnih pozitiva nagrizaju poverenje u tačne kategorije. Koji pristup najbolje vraća poverenje programera uz poboljšanje sistema?
+**Situacija:** Vaš automatizovani sistem za pregled koda pokazuje nedosledne ocene ozbiljnosti — slični problemi, poput rizika od null pokazivača, u nekim PR-ovima ocenjeni su kao „critical“, a u drugima samo kao „medium“. Ankete programera pokazuju rastuće nepoverenje — mnogi počinju da odbacuju nalaze bez čitanja, jer „half are wrong“. Kategorije sa visokom stopom lažnih pozitiva nagrizaju poverenje u tačne kategorije. Koji pristup najbolje vraća poverenje programera uz poboljšanje sistema?
 
 **Koji pristup najbolje vraća poverenje programera?**
 
 - A) Privremeno onemogućiti kategorije sa visokom stopom lažnih pozitiva (stil, imenovanje, dokumentacija) i zadržati samo kategorije visoke preciznosti dok se poboljšavaju promptovi. **[CORRECT]**
-- B) Zadržati sve kategorije omogućene ali prikazivati skorove pouzdanosti uz svaki nalaz kako bi programeri mogli da odluče šta da istraže.
-- C) Zadržati sve kategorije omogućene i dodati few-shot primere za poboljšanje tačnosti svake kategorije tokom narednih nekoliko nedelja.
-- D) Primeniti uniformno smanjenje strogosti kroz sve kategorije kako bi se ukupna stopa lažnih pozitiva snizila.
-**Zašto A:** Privremeno onemogućavanje kategorija sa visokom stopom lažnih pozitiva odmah zaustavlja eroziju poverenja uklanjanjem bučnih nalaza koji navode programere da odbace sve, dok očuvava vrednost kategorija visoke preciznosti poput bezbednosti i ispravnosti. Takođe stvara prostor za poboljšanje promptova za problematične kategorije pre njihovog ponovnog omogućavanja.
+- B) Zadržati sve kategorije omogućene, ali prikazivati skor pouzdanosti uz svaki nalaz, kako bi programeri mogli da odluče šta da istraže.
+- C) Zadržati sve kategorije omogućene i dodati few-shot primere kako bi se tokom narednih nekoliko nedelja poboljšala tačnost svake kategorije.
+- D) Ujednačeno smanjiti strogost u svim kategorijama kako bi se snizila ukupna stopa lažnih pozitiva.
+**Zašto A:** Privremeno onemogućavanje kategorija sa visokom stopom lažnih pozitiva odmah zaustavlja eroziju poverenja uklanjanjem bučnih nalaza zbog kojih programeri odbacuju sve, a istovremeno čuva vrednost kategorija visoke preciznosti, poput bezbednosti i ispravnosti. Takođe stvara prostor da se promptovi problematičnih kategorija poboljšaju pre ponovnog omogućavanja.
 
 ## Pitanje 24 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš automatizovani pregled generiše predloge test slučajeva za svaki PR. Pregledajući PR koji dodaje praćenje završetka kursa, Claude predlaže 10 test slučajeva, ali feedback programera pokazuje da 6 njih duplira scenarije koje već pokriva postojeći skup testova. Koja izmena najefikasnije smanjuje duplikatne predloge?
+**Situacija:** Vaš automatizovani pregled generiše predloge test slučajeva za svaki PR. Pregledajući PR koji dodaje praćenje završetka kursa, Claude predlaže 10 test slučajeva, ali feedback programera pokazuje da ih 6 duplira scenarije koje već pokriva postojeći skup testova. Koja izmena najefikasnije smanjuje duplirane predloge?
 
 **Koja izmena je najefikasnija?**
 
 - A) Uključiti postojeći test fajl u kontekst kako bi Claude mogao da utvrdi koji scenariji su već pokriveni. **[CORRECT]**
-- B) Smanjiti traženi broj predloga sa 10 na 5, pretpostavljajući da Claude prvo prioritizuje najvrednije slučajeve.
-- C) Dodati uputstva koja usmeravaju Claude da se fokusira isključivo na granične slučajeve i uslove grešaka umesto na uspešne putanje.
+- B) Smanjiti traženi broj predloga sa 10 na 5, pod pretpostavkom da Claude prioritet daje najvrednijim slučajevima.
+- C) Dodati uputstva koja usmeravaju Claude-a da se fokusira isključivo na granične slučajeve i uslove grešaka, umesto na uspešne putanje.
 - D) Implementirati naknadnu obradu koja filtrira predloge čiji opisi odgovaraju postojećim nazivima testova preko preklapanja ključnih reči.
 **Zašto A:** Uključivanje postojećeg test fajla rešava osnovni uzrok dupliranja: Claude može izbeći predlaganje već pokrivenih scenarija samo ako zna koji testovi već postoje. To daje Claude-u informacije potrebne da predloži istinski nove, vredne testove.
 
 ## Pitanje 25 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Nakon što početni automatizovani pregled identifikuje 12 nalaza, programer push-uje nove commit-e da reši probleme. Ponovno pokretanje pregleda proizvodi 8 nalaza, ali programeri javljaju da 5 njih duplira prethodne komentare na kodu koji je već ispravljen u novim commit-ima. Koji je najefikasniji način da se eliminiše ovaj redundantni feedback uz održavanje temeljnosti?
+**Situacija:** Nakon što početni automatizovani pregled identifikuje 12 nalaza, programer push-uje nove commit-e kojima rešava probleme. Ponovno pokretanje pregleda daje 8 nalaza, ali programeri javljaju da ih 5 duplira ranije komentare na kodu koji je u novim commit-ima već ispravljen. Koji je najefikasniji način da se eliminiše ovaj redundantni feedback uz očuvanje temeljnosti?
 
 **Koji je najefikasniji način da se eliminiše redundantni feedback?**
 
-- A) Pokretati pregled samo kada se PR kreira i u finalnom stanju pre merge-a, preskačući međukomit-e.
-- B) Dodati filter naknadne obrade koji uklanja nalaze koji odgovaraju prethodnim po putanjama fajlova i opisima problema pre objavljivanja komentara.
+- A) Pokretati pregled samo pri kreiranju PR-a i u finalnom stanju pre merge-a, preskačući commit-e između.
+- B) Dodati filter u naknadnoj obradi koji, pre objavljivanja komentara, uklanja nalaze koji se po putanjama fajlova i opisima problema poklapaju sa prethodnim.
 - C) Ograničiti obim pregleda na fajlove izmenjene u najnovijem push-u, isključujući fajlove iz ranijih commit-a.
-- D) Uključiti prethodne nalaze pregleda u kontekst i instruirati Claude da prijavi samo nove ili još nerešene probleme. **[CORRECT]**
-**Zašto D:** Uključivanje prethodnih nalaza pregleda u kontekst omogućava Claude-u da razlikuje nove probleme od onih već rešenih u nedavnim commit-ima. To očuvava temeljnost pregleda dok koristi Claude-ovo rezonovanje za izbegavanje redundantnog feedback-a na ispravljenom kodu.
+- D) Uključiti prethodne nalaze pregleda u kontekst i naložiti Claude-u da prijavi samo nove ili još nerešene probleme. **[CORRECT]**
+**Zašto D:** Uključivanje prethodnih nalaza pregleda u kontekst omogućava Claude-u da razlikuje nove probleme od onih već rešenih u nedavnim commit-ima. Time se čuva temeljnost pregleda, a Claude-ovo rezonovanje se koristi da se izbegne redundantni feedback na ispravljenom kodu.
 
 ## Pitanje 26 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaša pipeline skripta pokreće `claude "Analyze this pull request for security issues"`, ali se posao zaglavljuje na neodređeno vreme. Logovi pokazuju da Claude Code čeka interaktivni ulaz. Koji je ispravan pristup za pokretanje Claude Code-a u automatizovanom pipeline-u?
+**Situacija:** Vaša pipeline skripta pokreće `claude "Analyze this pull request for security issues"`, ali posao visi u nedogled. Logovi pokazuju da Claude Code čeka interaktivni unos. Koji je ispravan pristup za pokretanje Claude Code-a u automatizovanom pipeline-u?
 
 **Koji je ispravan pristup?**
 
@@ -2336,73 +2336,73 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Dodati `-p` fleg: `claude -p "Analyze this pull request for security issues"`. **[CORRECT]**
 - C) Preusmeriti stdin sa `/dev/null`: `claude "Analyze this pull request for security issues" < /dev/null`.
 - D) Postaviti promenljivu okruženja `CLAUDE_HEADLESS=true` pre pokretanja komande.
-**Zašto B:** Fleg `-p` (ili `--print`) je dokumentovani način da se Claude Code pokrene neinteraktivno. Obrađuje prompt, ispisuje rezultat na stdout i izlazi bez čekanja na korisnički ulaz—idealno za CI/CD pipeline-ove.
+**Zašto B:** Fleg `-p` (ili `--print`) je dokumentovani način da se Claude Code pokrene neinteraktivno. Obrađuje prompt, ispisuje rezultat na stdout i izlazi bez čekanja na korisnički unos — idealno za CI/CD pipeline-ove.
 
 ## Pitanje 27 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Pull request menja 14 fajlova u modulu za praćenje zaliha. Pregled u jednom prolazu koji analizira sve fajlove zajedno proizvodi nedosledne rezultate: detaljan feedback na nekim fajlovima ali površne komentare na drugima, propuštene očigledne bagove i protivrečan feedback (obrazac se označi u jednom fajlu ali se identičan kod odobri u drugom fajlu u istom PR-u). Kako bi trebalo da restrukturirate pregled?
+**Situacija:** Pull request menja 14 fajlova u modulu za praćenje zaliha. Pregled u jednom prolazu, koji analizira sve fajlove zajedno, daje nedosledne rezultate: detaljan feedback za neke fajlove, a površne komentare za druge, propuštene očigledne bagove i protivrečan feedback (obrazac se označi u jednom fajlu, ali se identičan kod odobri u drugom fajlu istog PR-a). Kako bi trebalo da restrukturirate pregled?
 
 **Kako bi trebalo da restrukturirate pregled?**
 
 - A) Pokrenuti tri nezavisna prolaza pregleda celog PR-a i označiti samo probleme koji se pojavljuju u najmanje dva od tri pokretanja.
 - B) Podeliti na fokusirane prolaze: pregledati svaki fajl pojedinačno za lokalne probleme, zatim pokrenuti zaseban prolaz orijentisan na integraciju radi ispitivanja tokova podataka između fajlova. **[CORRECT]**
-- C) Zahtevati od programera da podele velike PR-ove na manje submisije od 3–4 fajla pre pokretanja automatizovanog pregleda.
+- C) Zahtevati od programera da velike PR-ove podele na manje celine od 3–4 fajla pre pokretanja automatizovanog pregleda.
 - D) Preći na veći model sa većim kontekstnim prozorom kako bi mogao da posveti dovoljno pažnje svim 14 fajlova u jednom prolazu.
-**Zašto B:** Fokusirani prolazi po fajlu rešavaju osnovni uzrok—razvodnjavanje pažnje—obezbeđujući doslednu dubinu i pouzdanu detekciju lokalnih problema. Zaseban prolaz orijentisan na integraciju zatim pokriva pitanja između fajlova poput interakcija zavisnosti i toka podataka.
+**Zašto B:** Fokusirani prolazi po fajlu rešavaju osnovni uzrok — razvodnjavanje pažnje — obezbeđujući doslednu dubinu i pouzdanu detekciju lokalnih problema. Zaseban prolaz orijentisan na integraciju zatim pokriva pitanja koja se protežu kroz više fajlova, poput interakcija zavisnosti i toka podataka.
 
 ## Pitanje 28 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš automatizovani pregled koda u proseku ima 15 nalaza po pull request-u, a programeri javljaju stopu lažnih pozitiva od 40%. Usko grlo je vreme istraživanja: programeri moraju da kliknu u svaki nalaz da pročitaju Claude-ovo obrazloženje pre nego što odluče da li da ga isprave ili odbace. Vaš CLAUDE.md već sadrži sveobuhvatna pravila za prihvatljive obrasce, a zainteresovane strane su odbacile svaki pristup koji filtrira nalaze pre nego što ih programeri vide. Koja izmena najbolje rešava vreme istraživanja?
+**Situacija:** Vaš automatizovani pregled koda u proseku daje 15 nalaza po pull request-u, a programeri prijavljuju stopu lažnih pozitiva od 40%. Usko grlo je vreme istraživanja: programeri moraju da kliknu na svaki nalaz i pročitaju Claude-ovo obrazloženje pre nego što odluče da li da ga isprave ili odbace. Vaš CLAUDE.md već sadrži sveobuhvatna pravila za prihvatljive obrasce, a zainteresovane strane su odbacile svaki pristup koji filtrira nalaze pre nego što ih programeri vide. Koja izmena najbolje rešava problem vremena istraživanja?
 
-**Koja izmena najbolje rešava vreme istraživanja?**
+**Koja izmena najbolje rešava problem vremena istraživanja?**
 
 - A) Zahtevati od Claude-a da uključi svoje obrazloženje i procenu pouzdanosti direktno u svaki nalaz. **[CORRECT]**
 - B) Dodati naknadni procesor koji analizira obrasce nalaza i automatski potiskuje one koji odgovaraju istorijskim potpisima lažnih pozitiva.
 - C) Kategorizovati nalaze kao „blocking issues“ naspram „suggestions“, sa različitim zahtevima pregleda po nivou.
 - D) Konfigurisati Claude da prikazuje samo nalaze visoke pouzdanosti, filtrirajući nesigurne oznake pre nego što ih programeri vide.
-**Zašto A:** Uključivanje obrazloženja i pouzdanosti direktno u svaki nalaz smanjuje vreme istraživanja omogućavajući programerima brzu trijažu bez otvaranja svakog nalaza. Zadovoljava ograničenje „bez filtriranja“ jer svi nalazi ostaju vidljivi dok se ubrzava odlučivanje programera.
+**Zašto A:** Uključivanje obrazloženja i pouzdanosti direktno u svaki nalaz smanjuje vreme istraživanja jer omogućava programerima brzu trijažu bez otvaranja svakog nalaza. Zadovoljava ograničenje „bez filtriranja“ jer svi nalazi ostaju vidljivi, a odlučivanje programera se ubrzava.
 
 ## Pitanje 29 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Analiza vašeg automatizovanog pregleda koda pokazuje velike razlike u stopama lažnih pozitiva po kategoriji nalaza: bezbednosni/nalazi ispravnosti imaju 8% lažnih pozitiva, nalazi performansi 18%, nalazi stila/imenovanja 52%, i nalazi dokumentacije 48%. Ankete programera pokazuju rastuće nepoverenje—mnogi počinju da odbacuju nalaze bez čitanja jer su „half are wrong“. Kategorije sa visokom stopom lažnih pozitiva nagrizaju poverenje u tačne kategorije. Koji pristup najbolje vraća poverenje programera uz poboljšanje sistema?
+**Situacija:** Analiza vašeg automatizovanog pregleda koda pokazuje velike razlike u stopama lažnih pozitiva po kategorijama nalaza: nalazi o bezbednosti/ispravnosti imaju 8% lažnih pozitiva, nalazi o performansama 18%, nalazi o stilu/imenovanju 52%, a nalazi o dokumentaciji 48%. Ankete programera pokazuju rastuće nepoverenje — mnogi počinju da odbacuju nalaze i bez čitanja jer je „pola pogrešno“. Kategorije sa visokom stopom lažnih pozitiva nagrizaju poverenje i u tačne kategorije. Koji pristup najbolje vraća poverenje programera uz poboljšanje sistema?
 
 **Koji pristup najbolje vraća poverenje programera?**
 
 - A) Privremeno onemogućiti kategorije sa visokom stopom lažnih pozitiva (stil, imenovanje, dokumentacija) i zadržati samo kategorije visoke preciznosti dok se poboljšavaju promptovi. **[CORRECT]**
-- B) Zadržati sve kategorije omogućene ali prikazivati skorove pouzdanosti uz svaki nalaz kako bi programeri mogli da odluče šta da istraže.
-- C) Zadržati sve kategorije omogućene i dodati few-shot primere za poboljšanje tačnosti svake kategorije tokom narednih nekoliko nedelja.
-- D) Primeniti uniformno smanjenje strogosti kroz sve kategorije kako bi se ukupna stopa lažnih pozitiva snizila.
-**Zašto A:** Privremeno onemogućavanje kategorija sa visokom stopom lažnih pozitiva odmah zaustavlja eroziju poverenja uklanjanjem bučnih nalaza koji navode programere da odbace sve, dok očuvava vrednost kategorija visoke preciznosti poput bezbednosti i ispravnosti. Takođe stvara prostor za poboljšanje promptova za problematične kategorije pre njihovog ponovnog omogućavanja.
+- B) Zadržati sve kategorije uključene, ali uz svaki nalaz prikazivati skor pouzdanosti kako bi programeri mogli da odluče šta da istraže.
+- C) Zadržati sve kategorije uključene i dodati few-shot primere za poboljšanje tačnosti svake kategorije tokom narednih nekoliko nedelja.
+- D) Ujednačeno smanjiti strogost u svim kategorijama kako bi se ukupna stopa lažnih pozitiva snizila.
+**Zašto A:** Privremeno onemogućavanje kategorija sa visokom stopom lažnih pozitiva odmah zaustavlja eroziju poverenja jer uklanja bučne nalaze zbog kojih programeri odbacuju sve, a pritom čuva vrednost kategorija visoke preciznosti poput bezbednosti i ispravnosti. Takođe stvara prostor da se promptovi za problematične kategorije poboljšaju pre nego što se one ponovo uključe.
 
 ## Pitanje 30 (Scenario: Claude Code za kontinuiranu integraciju)
 
-**Situacija:** Vaš tim želi da smanji troškove API-ja za automatizovanu analizu. Trenutno, sinhroni Claude pozivi podržavaju dva radna toka: (1) blokirajuću pre-merge proveru koja se mora završiti pre nego što programeri mogu da urade merge, i (2) izveštaj o tehničkom dugu generisan preko noći za pregled sledećeg jutra. Vaš menadžer predlaže prebacivanje oba na Message Batches API radi uštede od 50%. Kako bi trebalo da procenite ovaj predlog?
+**Situacija:** Vaš tim želi da smanji troškove API-ja za automatizovanu analizu. Sinhroni Claude pozivi trenutno podržavaju dva radna toka: (1) blokirajuću pre-merge proveru koja mora da se završi pre nego što programeri mogu da urade merge, i (2) izveštaj o tehničkom dugu koji se generiše preko noći za pregled sledećeg jutra. Vaš menadžer predlaže prebacivanje oba na Message Batches API radi uštede od 50%. Kako bi trebalo da procenite ovaj predlog?
 
 **Kako bi trebalo da procenite ovaj predlog?**
 
-- A) Prebaciti oba na batch obradu sa rezervnim prelaskom na sinhrone pozive ako batch-evi predugo traju.
-- B) Prebaciti oba radna toka na batch obradu sa anketiranjem statusa radi provere završetka.
+- A) Prebaciti oba na batch obradu, uz fallback na sinhrone pozive ako batch-evi predugo traju.
+- B) Prebaciti oba radna toka na batch obradu uz polling statusa radi provere završetka.
 - C) Koristiti batch obradu samo za izveštaje o tehničkom dugu; zadržati sinhrone pozive za pre-merge provere. **[CORRECT]**
 - D) Zadržati sinhrone pozive za oba radna toka kako bi se izbegli problemi sa redosledom batch rezultata.
-**Zašto C:** Obrada Message Batches API-ja može trajati do 24 sata bez SLA za latenciju, što je prihvatljivo za noćne izveštaje o tehničkom dugu ali neprihvatljivo za blokirajuće pre-merge provere gde programeri čekaju. To upariva svaki radni tok sa pravim API-jem na osnovu zahteva za latencijom.
+**Zašto C:** Obrada preko Message Batches API-ja može da traje do 24 sata bez SLA za latenciju, što je prihvatljivo za noćne izveštaje o tehničkom dugu, ali neprihvatljivo za blokirajuće pre-merge provere gde programeri čekaju. Time se svaki radni tok uparuje sa odgovarajućim API-jem na osnovu zahteva za latencijom.
 
 ## Scenario: Generisanje koda sa Claude Code
 
 ## Pitanje 31 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Zatražili ste od Claude Code da implementira funkciju koja transformiše API odgovore u interni normalizovani format. Posle dve iteracije, struktura izlaza i dalje ne odgovara očekivanjima — neka polja su drugačije ugnežđena, a vremenske oznake su pogrešno formatirane. Zahteve ste opisali proznim tekstom, ali ih Claude svaki put drugačije tumači.
+**Situacija:** Zatražili ste od Claude Code-a da implementira funkciju koja transformiše API odgovore u interni normalizovani format. Posle dve iteracije, struktura izlaza i dalje ne odgovara očekivanjima — neka polja su drugačije ugnežđena, a vremenske oznake su pogrešno formatirane. Zahteve ste opisali proznim tekstom, ali ih Claude svaki put drugačije tumači.
 
 **Koji pristup je najefikasniji za sledeću iteraciju?**
 
-- A) Napišite JSON šemu koja opisuje očekivanu strukturu izlaza i validirajte Claudeov izlaz u odnosu na nju posle svake iteracije.
+- A) Napišite JSON šemu koja opisuje očekivanu strukturu izlaza i validirajte Claude-ov izlaz prema njoj posle svake iteracije.
 - B) Dajte 2–3 konkretna primera ulaz-izlaz koji prikazuju očekivanu transformaciju za reprezentativne API odgovore. **[CORRECT]**
 - C) Prepišite zahteve sa više tehničke preciznosti, navodeći tačna mapiranja polja, pravila ugnežđivanja i formatne stringove vremenskih oznaka.
-- D) Zamolite Claudea da objasni svoje trenutno razumevanje zahteva kako biste utvrdili gde se tumačenja razilaze.
-**Zašto B:** Konkretni primeri ulaz-izlaz uklanjaju dvosmislenost svojstvenu proznim opisima tako što Claudeu prikazuju tačne očekivane rezultate transformacije. Time se direktno rešava koren problema — pogrešno tumačenje tekstualnih zahteva — pružanjem nedvosmislenih obrazaca za ugnežđivanje polja i formatiranje vremenskih oznaka.
+- D) Zamolite Claude-a da objasni svoje trenutno razumevanje zahteva kako biste utvrdili gde se tumačenja razilaze.
+**Zašto B:** Konkretni primeri ulaz-izlaz uklanjaju dvosmislenost svojstvenu proznim opisima tako što Claude-u prikazuju tačne očekivane rezultate transformacije. Time se direktno rešava osnovni uzrok — pogrešno tumačenje tekstualnih zahteva — pružanjem nedvosmislenih obrazaca za ugnežđivanje polja i formatiranje vremenskih oznaka.
 
 ## Pitanje 32 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Potrebno je da dodate Slack kao novi kanal za obaveštenja. Postojeći kod ima jasne, ustanovljene obrasce za email, SMS i push kanale. Međutim, Slack-ov API nudi fundamentalno različite pristupe integraciji — dolazne webhook-ove (jednostavni, jednosmerni), bot tokene (podržavaju potvrdu isporuke i programsku kontrolu) ili Slack Apps (dvosmerni događaji, zahteva odobrenje radnog prostora). Vaš zadatak kaže „dodaj Slack podršku“ bez navođenja metode integracije ili zahtevanja naprednih funkcija poput praćenja isporuke.
+**Situacija:** Potrebno je da dodate Slack kao novi kanal za obaveštenja. Postojeći kod ima jasne, ustanovljene obrasce za email, SMS i push kanale. Međutim, Slack-ov API nudi fundamentalno različite pristupe integraciji — dolazne webhook-ove (jednostavni, jednosmerni), bot tokene (podržavaju potvrdu isporuke i programsku kontrolu) ili Slack Apps (dvosmerni događaji, zahteva odobrenje radnog prostora). Vaš zadatak glasi „dodaj Slack podršku“, bez preciziranja metode integracije i bez zahteva za naprednim funkcijama poput praćenja isporuke.
 
 **Kako treba da pristupite ovom zadatku?**
 
@@ -2426,31 +2426,31 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 34 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Dobili ste zadatak da restrukturirate monolitnu aplikaciju vašeg tima u mikroservise. Ovo utiče na izmene u desetinama fajlova i zahteva odluke o granicama servisa i zavisnostima modula.
+**Situacija:** Dobili ste zadatak da restrukturirate monolitnu aplikaciju vašeg tima u mikroservise. To podrazumeva izmene u desetinama fajlova i zahteva odluke o granicama servisa i zavisnostima modula.
 
 **Koji pristup treba da izaberete?**
 
 - A) Prebacite se u režim planiranja da biste istražili kod, razumeli zavisnosti i osmislili pristup implementaciji pre nego što napravite izmene. **[CORRECT]**
-- B) Počnite u režimu direktnog izvršavanja i pređite na planiranje tek nakon nailaska na neočekivanu složenost tokom implementacije.
+- B) Počnite u režimu direktnog izvršavanja i pređite na planiranje tek kada tokom implementacije naiđete na neočekivanu složenost.
 - C) Počnite u režimu direktnog izvršavanja i pravite inkrementalne izmene, puštajući da implementacija otkrije prirodne granice servisa.
 - D) Koristite direktno izvršavanje sa detaljnim unapred datim uputstvima koja specificiraju strukturu svakog servisa.
-**Zašto A:** Režim planiranja je prava strategija za složeno arhitektonsko restrukturiranje poput razdvajanja monolita: omogućava bezbedno istraživanje i informisane odluke o granicama pre obavezivanja na potencijalno skupe izmene u mnogo fajlova.
+**Zašto A:** Režim planiranja je prava strategija za složeno arhitektonsko restrukturiranje poput razdvajanja monolita: omogućava bezbedno istraživanje i informisane odluke o granicama pre nego što se obavežete na potencijalno skupe izmene u velikom broju fajlova.
 
 ## Pitanje 35 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Vaš tim je kreirao `/analyze-codebase` skill koji obavlja duboku analizu koda — skeniranje zavisnosti, brojanje pokrivenosti testovima i metrike kvaliteta koda. Nakon pokretanja komande, članovi tima prijavljuju da Claude postaje manje responzivan u sesiji i gubi kontekst originalnog zadatka.
+**Situacija:** Vaš tim je kreirao `/analyze-codebase` skill koji obavlja duboku analizu koda — skeniranje zavisnosti, izračunavanje pokrivenosti testovima i metrike kvaliteta koda. Nakon pokretanja komande, članovi tima prijavljuju da Claude postaje manje responzivan u sesiji i gubi kontekst originalnog zadatka.
 
 **Kako ovo najefikasnije rešavate uz zadržavanje punih mogućnosti analize?**
 
-- A) Dodajte `context: fork` u frontmatter skilla da biste pokrenuli analizu u izolovanom kontekstu subagenta. **[CORRECT]**
+- A) Dodajte `context: fork` u frontmatter skilla da biste analizu pokrenuli u izolovanom kontekstu podagenta. **[CORRECT]**
 - B) Dodajte `model: haiku` u frontmatter da biste koristili brži, jeftiniji model za analizu.
 - C) Podelite skill na tri manja skilla, od kojih svaki proizvodi manje izlaza.
 - D) Dodajte u skill uputstva da sažme sve rezultate u kratak rezime pre nego što ih prikaže.
-**Zašto A:** `context: fork` pokreće analizu u izolovanom kontekstu subagenta tako da veliki izlaz ne zagađuje prozor konteksta glavne sesije i Claude ne gubi praćenje originalnog zadatka. Time se čuva puna mogućnost analize uz zadržavanje responzivnosti glavne sesije.
+**Zašto A:** `context: fork` pokreće analizu u izolovanom kontekstu podagenta, tako da veliki izlaz ne zagađuje kontekstni prozor glavne sesije i Claude ne gubi iz vida originalni zadatak. Time se čuva puna sposobnost analize, a glavna sesija ostaje responzivna.
 
 ## Pitanje 36 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Vaš tim koristi `/commit` skill u `.claude/skills/commit/SKILL.md`. Programer želi da ga prilagodi svom ličnom radnom toku (drugačiji format poruke commit-a, dodatne provere) bez uticaja na članove tima.
+**Situacija:** Vaš tim koristi `/commit` skill u `.claude/skills/commit/SKILL.md`. Programer želi da ga prilagodi svom ličnom radnom toku (drugačiji format commit poruka, dodatne provere), a da to ne utiče na kolege iz tima.
 
 **Šta preporučujete?**
 
@@ -2458,16 +2458,16 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Dodajte uslovnu logiku na osnovu korisničkog imena u frontmatter projektnog skilla.
 - C) Kreirajte ličnu verziju na `~/.claude/skills/commit/SKILL.md` sa istim imenom. **[CORRECT]**
 - D) Postavite `override: true` u frontmatter ličnog skilla da biste mu dali prioritet nad projektnom verzijom.
-**Zašto C:** Lični skillovi imaju prednost nad projektnim skillovima sa istim imenom. Lični skill na `~/.claude/skills/commit/SKILL.md` će nadjačati timski projektni skill, omogućavajući programeru da prilagodi svoj radni tok uz zadržavanje poznatog imena komande `/commit` za ličnu upotrebu. Ovaj pristup je bolji od opcije A jer čuva originalno ime komande, poboljšavajući radni tok programera bez uticaja na članove tima.
+**Zašto C:** Lični skillovi imaju prednost nad projektnim skillovima istog imena. Lični skill na `~/.claude/skills/commit/SKILL.md` nadjačaće timski projektni skill, pa programer može da prilagodi svoj radni tok, a da zadrži poznato ime komande `/commit` za ličnu upotrebu. Ovaj pristup je bolji od opcije A jer čuva originalno ime komande — poboljšava programerov radni tok, a ne utiče na kolege iz tima.
 
 ## Pitanje 37 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Vaš tim koristi Claude Code mesecima. Nedavno, tri programera prijavljuju da Claude prati smernicu „uvek uključi sveobuhvatno rukovanje greškama“, ali četvrti programer koji se upravo pridružio kaže da je Claude ne prati. Sva četvorica rade u istom repozitorijumu i imaju ažuran kod.
+**Situacija:** Vaš tim koristi Claude Code mesecima. Tri programera su nedavno prijavila da Claude prati smernicu „uvek uključi sveobuhvatno rukovanje greškama“, ali četvrti programer, koji se tek pridružio, kaže da je Claude ne prati. Sva četvorica rade u istom repozitorijumu i imaju ažuran kod.
 
 **Šta je najverovatniji uzrok i rešenje?**
 
 - A) Smernica se nalazi u korisničkim `~/.claude/CLAUDE.md` fajlovima originalnih programera, a ne u projektnom `.claude/CLAUDE.md`. Premestite uputstvo u fajl na nivou projekta tako da ga svi članovi tima dobiju. **[CORRECT]**
-- B) `~/.claude/CLAUDE.md` novog programera sadrži konfliktna uputstva koja nadjačavaju projektna podešavanja; treba da obrišu konfliktni odeljak.
+- B) `~/.claude/CLAUDE.md` novog programera sadrži konfliktna uputstva koja nadjačavaju projektna podešavanja; on treba da obriše konfliktni odeljak.
 - C) Claude Code vremenom uči preferencije po korisniku; novi programer mora da ponavlja zahtev dok ga Claude ne „zapamti“.
 - D) Claude Code kešira CLAUDE.md posle prvog čitanja; originalni programeri koriste keširane verzije. Svi treba da obrišu Claude Code keš.
 **Zašto A:** Ako je smernica dodata samo u korisničke konfiguracije originalnih programera, a ne u `.claude/CLAUDE.md` na nivou projekta, novi članovi tima je neće dobiti. Premeštanje u konfiguraciju na nivou projekta osigurava da svi trenutni i budući članovi tima automatski dobiju smernicu.
@@ -2479,14 +2479,14 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 **Koji pristup konfiguraciji je najefikasniji?**
 
 - A) Dodajte primere endpointa i dokumentaciju obrazaca u projektni CLAUDE.md tako da su uvek dostupni.
-- B) Ručno referencirajte primere endpointa u svakom zahtevu za generisanje kopiranjem koda u prompt.
+- B) Ručno referencirajte primere endpointa u svakom zahtevu za generisanje tako što ćete kopirati kod u prompt.
 - C) Konfigurišite pravila specifična za putanju u `.claude/rules/api/` koja uključuju primere endpointa i aktiviraju se pri radu u API direktorijumu.
-- D) Kreirajte skill koji referencira primere endpointa i sadrži uputstva za praćenje obrazaca, pozvan po potrebi preko slash komande. **[CORRECT]**
-**Zašto D:** Skill pozvan po potrebi učitava kontekst primera samo pri generisanju novih endpointa, a ne tokom nepovezanih zadataka poput debagovanja ili pregleda. Time se glavni kontekst održava čistim uz zadržavanje visokokvalitetnog generisanja kada je potrebno.
+- D) Kreirajte skill koji referencira primere endpointa i sadrži uputstva za praćenje obrazaca, a poziva se po potrebi preko slash komande. **[CORRECT]**
+**Zašto D:** Skill koji se poziva po potrebi učitava kontekst primera samo pri generisanju novih endpointa, a ne tokom nepovezanih zadataka poput debagovanja ili pregleda. Tako glavni kontekst ostaje čist, a visokokvalitetno generisanje ostaje dostupno kada je potrebno.
 
 ## Pitanje 39 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Vaš tim je kreirao `/migration` skill koji generiše fajlove za migraciju baze podataka. Ime migracije prima preko `$ARGUMENTS`. U produkciji uočavate tri problema: (1) programeri često pokreću skill bez argumenata, što izaziva loše imenovane fajlove, (2) skill ponekad koristi detalje šeme baze podataka iz nepovezanih prethodnih razgovora, i (3) programer je slučajno pokrenuo destruktivno čišćenje testova kada je skill imao širok pristup alatima.
+**Situacija:** Vaš tim je kreirao `/migration` skill koji generiše fajlove za migraciju baze podataka. Ime migracije prima preko `$ARGUMENTS`. U produkciji uočavate tri problema: (1) programeri često pokreću skill bez argumenata, što dovodi do loše imenovanih fajlova, (2) skill ponekad koristi detalje šeme baze podataka iz nepovezanih ranijih razgovora, i (3) jedan programer je slučajno pokrenuo destruktivno čišćenje testova dok je skill imao širok pristup alatima.
 
 **Koji pristup konfiguraciji rešava sva tri problema?**
 
@@ -2494,11 +2494,11 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Dodajte `argument-hint` u frontmatter da biste zatražili obavezne parametre, koristite `context: fork` da biste izolovali izvršavanje, i ograničite `allowed-tools` na operacije upisa u fajlove. **[CORRECT]**
 - C) Podelite na `/migration-create` i `/migration-apply` skillove, dodajte uputstva za validaciju koja traže ime migracije ako nedostaje, i koristite različite opsege `allowed-tools` za svaki.
 - D) Dodajte uputstva za validaciju u SKILL.md skilla da osigurate da je `$ARGUMENTS` validno ime, dodajte promptove da se ignoriše kontekst prethodnog razgovora, i navedite zabranjene operacije koje treba izbegavati.
-**Zašto B:** Ovo koristi tri zasebne konfiguracione funkcije za rešavanje svakog problema: `argument-hint` poboljšava unos argumenata i smanjuje nedostajuće argumente, `context: fork` sprečava curenje konteksta iz prethodnih razgovora, a `allowed-tools` ograničava skill na bezbedne operacije upisa u fajlove, sprečavajući destruktivne radnje.
+**Zašto B:** Ovde tri zasebne konfiguracione mogućnosti rešavaju po jedan problem: `argument-hint` poboljšava unos argumenata i smanjuje slučajeve izostavljenih argumenata, `context: fork` sprečava curenje konteksta iz ranijih razgovora, a `allowed-tools` ograničava skill na bezbedne operacije upisa u fajlove, čime sprečava destruktivne radnje.
 
 ## Pitanje 40 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Vaš kod sadrži oblasti sa različitim konvencijama kodiranja: React komponente koriste funkcionalni stil sa hook-ovima, API handleri koriste async/await sa specifičnim rukovanjem greškama, a modeli baze podataka prate repository obrazac. Test fajlovi su raspoređeni po kodu pored koda koji testiraju (npr. `Button.test.tsx` pored `Button.tsx`), i želite da svi testovi prate iste konvencije bez obzira na lokaciju.
+**Situacija:** Vaš kod sadrži oblasti sa različitim konvencijama kodiranja: React komponente koriste funkcionalni stil sa hook-ovima, API handleri koriste async/await sa specifičnim rukovanjem greškama, a modeli baze podataka prate repository obrazac. Test fajlovi su razmešteni po celom kodu, pored koda koji testiraju (npr. `Button.test.tsx` pored `Button.tsx`), a vi želite da svi testovi prate iste konvencije bez obzira na lokaciju.
 
 **Koji je najpodržaniji način da osigurate da Claude automatski primenjuje ispravne konvencije pri generisanju koda?**
 
@@ -2506,7 +2506,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Kreirajte skillove u `.claude/skills/` za svaki tip koda, ugrađujući konvencije u svaki SKILL.md.
 - C) Postavite zaseban CLAUDE.md fajl u svaki poddirektorijum koji sadrži konvencije za tu oblast.
 - D) Kreirajte fajlove pravila u `.claude/rules/` sa YAML frontmatter-om koji specificira glob obrasce za uslovno primenjivanje konvencija na osnovu putanja fajlova. **[CORRECT]**
-**Zašto D:** Fajlovi u `.claude/rules/` sa YAML frontmatter-om i glob obrascima (npr. `**/*.test.tsx`, `src/api/**/*.ts`) omogućavaju determinističku primenu konvencija zasnovanu na putanji bez obzira na strukturu direktorijuma. Ovo je najpodržaniji pristup za poprečne obrasce poput raspoređenih test fajlova.
+**Zašto D:** Fajlovi u `.claude/rules/` sa YAML frontmatter-om i glob obrascima (npr. `**/*.test.tsx`, `src/api/**/*.ts`) omogućavaju determinističku primenu konvencija na osnovu putanje, bez obzira na strukturu direktorijuma. Ovo je najpodržaniji pristup za obrasce koji se protežu kroz ceo kod, poput test fajlova razmeštenih svuda.
 
 ## Pitanje 41 (Scenario: Generisanje koda sa Claude Code)
 
@@ -2522,7 +2522,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 42 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** CLAUDE.md vašeg tima je narastao preko 500 linija mešajući TypeScript konvencije, smernice za testiranje, API obrasce i procedure za deployment. Programerima je teško da pronađu i ažuriraju prave odeljke.
+**Situacija:** CLAUDE.md vašeg tima narastao je na preko 500 linija u kojima se mešaju TypeScript konvencije, smernice za testiranje, API obrasci i procedure za deployment. Programerima je teško da pronađu i ažuriraju prave odeljke.
 
 **Koji pristup Claude Code podržava za organizovanje uputstava na nivou projekta u fokusirane tematske module?**
 
@@ -2534,7 +2534,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 43 (Scenario: Generisanje koda sa Claude Code)
 
-**Situacija:** Kreirate prilagođeni skill `/explore-alternatives` koji vaš tim koristi za brainstorming i procenu pristupa implementaciji pre izbora jednog. Programeri prijavljuju da su nakon pokretanja skilla naredni Claudeovi odgovori pod uticajem diskusije o alternativama — ponekad referenciraju odbačene pristupe ili zadržavaju kontekst istraživanja koji ometa stvarnu implementaciju.
+**Situacija:** Kreirate prilagođeni skill `/explore-alternatives` koji vaš tim koristi za brainstorming i procenu pristupa implementaciji pre nego što se odluči za jedan. Programeri prijavljuju da su nakon pokretanja skilla naredni Claudeovi odgovori pod uticajem diskusije o alternativama — ponekad referenciraju odbačene pristupe ili zadržavaju kontekst istraživanja koji ometa stvarnu implementaciju.
 
 **Kako treba najefikasnije da konfigurišete ovaj skill?**
 
@@ -2551,9 +2551,9 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 **Koji pristup konfiguraciji je najefikasniji?**
 
 - A) Neka svaki programer doda server u korisničkom opsegu preko `claude mcp add --scope user`.
-- B) Kreirajte MCP server omotač koji čita tokene iz `.env` fajla i proksira GitHub API pozive, a zatim dodajte omotač u projektni `.mcp.json`.
+- B) Kreirajte MCP server-omotač koji čita tokene iz `.env` fajla i proksira GitHub API pozive, a zatim dodajte omotač u projektni `.mcp.json`.
 - C) Dodajte server u projektni `.mcp.json` koristeći zamenu promenljivih okruženja (`${GITHUB_TOKEN}`) za autentifikaciju i dokumentujte potrebnu promenljivu okruženja u projektnom README. **[CORRECT]**
-- D) Konfigurišite server u projektnom opsegu sa rezerviranim tokenom (placeholder), a zatim recite programerima da ga nadjačaju u svojoj lokalnoj konfiguraciji.
+- D) Konfigurišite server u projektnom opsegu sa placeholder tokenom, a zatim recite programerima da ga nadjačaju u svojoj lokalnoj konfiguraciji.
 **Zašto C:** Projektni `.mcp.json` sa zamenom promenljivih okruženja je idiomatski: pruža jedinstven, verzionisani izvor istine za MCP konfiguraciju, dok svakom programeru dozvoljava da dostavi kredencijale preko promenljivih okruženja. Dokumentovanje promenljive olakšava uvođenje (onboarding) bez urezivanja tajni.
 
 ## Pitanje 45 (Scenario: Generisanje koda sa Claude Code)
@@ -2564,95 +2564,95 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - A) Koristite Explore subagenta za Fazu 1 da biste izolovali opširni izlaz otkrivanja i vratili rezime, a zatim nastavite Faze 2–3 u glavnom razgovoru. **[CORRECT]**
 - B) Obavite sve faze u glavnom razgovoru, periodično koristeći `/compact` da biste smanjili upotrebu konteksta dok prolazite kroz fajlove.
-- C) Prebacite se u headless režim sa `--continue`, prosleđujući eksplicitne rezimee konteksta između serijskih poziva da biste održali kontinuitet.
-- D) Definišite obrazac rukovanja greškama u CLAUDE.md, a zatim obrađujte fajlove u serijama kroz više sesija oslanjajući se na deljeni memorijski fajl radi konzistentnosti.
+- C) Prebacite se u headless režim sa `--continue`, prosleđujući eksplicitne rezimee konteksta između batch poziva da biste održali kontinuitet.
+- D) Definišite obrazac rukovanja greškama u CLAUDE.md, a zatim obrađujte fajlove u grupama kroz više sesija, oslanjajući se na deljeni memorijski fajl radi konzistentnosti.
 **Zašto A:** Explore subagent izoluje opširni izlaz otkrivanja u zaseban kontekst i vraća samo sažet rezime u glavni razgovor. Time se čuva prozor glavnog konteksta za faze kolaborativnog osmišljavanja i dosledne implementacije gde je zadržani kontekst najvredniji.
 
 ## Scenario: Customer Support Agent
 
 ## Pitanje 46 (Scenario: Customer Support Agent)
 
-**Situacija:** Tokom testiranja primećuješ da agent često poziva `get_customer` kada korisnici pitaju o statusu porudžbine, iako bi `lookup_order` bio prikladniji. Šta treba prvo da proveriš da bi rešio ovaj problem?
+**Situacija:** Tokom testiranja primećujete da agent često poziva `get_customer` kada korisnici pitaju za status porudžbine, iako bi `lookup_order` bio prikladniji. Šta prvo treba da proverite da biste rešili ovaj problem?
 
-**Šta treba prvo da proveriš?**
+**Šta prvo treba da proverite?**
 
-- A) Implementiraj klasifikator za predobradu koji detektuje zahteve vezane za porudžbine i usmerava ih direktno na `lookup_order`.
-- B) Smanji broj alata dostupnih agentu da bi pojednostavio izbor.
-- C) Dodaj few-shot primere u sistemski prompt koji pokrivaju sve moguće obrasce zahteva za porudžbine da bi poboljšao izbor alata.
-- D) Proveri opise alata da bi se uverio da jasno razlikuju svrhu svakog alata. **[CORRECT]**
+- A) Implementirajte klasifikator za predobradu koji detektuje zahteve vezane za porudžbine i usmerava ih direktno na `lookup_order`.
+- B) Smanjite broj alata dostupnih agentu da biste pojednostavili izbor.
+- C) Dodajte few-shot primere u sistemski prompt koji pokrivaju sve moguće obrasce zahteva za porudžbine da biste poboljšali izbor alata.
+- D) Proverite opise alata da biste se uverili da jasno razdvajaju svrhu svakog alata. **[CORRECT]**
 **Zašto D:** Opisi alata su primarni ulaz koji model koristi da odluči koji alat da pozove. Kada agent dosledno bira pogrešan alat, prvi dijagnostički korak je da se proveri da li opisi alata jasno razdvajaju svrhu i granice upotrebe svakog alata.
 
 ## Pitanje 47 (Scenario: Customer Support Agent)
 
-**Situacija:** Tvoj agent obrađuje zahteve sa jednim problemom sa 94% tačnosti (npr. „I need a refund for order #1234”). Ali kada korisnici uključe više problema u jednu poruku (npr. „I need a refund for order #1234 and also want to update the shipping address for order #5678”), tačnost izbora alata pada na 58%. Agent obično reši samo jedan problem ili meša parametre između zahteva. Koji pristup najefikasnije poboljšava pouzdanost za zahteve sa više problema?
+**Situacija:** Vaš agent obrađuje zahteve sa jednim problemom sa 94% tačnosti (npr. „I need a refund for order #1234”). Ali kada korisnici u jednoj poruci navedu više problema (npr. „I need a refund for order #1234 and also want to update the shipping address for order #5678”), tačnost izbora alata pada na 58%. Agent obično rešava samo jedan problem ili meša parametre između zahteva. Koji pristup najefikasnije poboljšava pouzdanost za zahteve sa više problema?
 
 **Koji pristup je najefikasniji?**
 
-- A) Implementiraj sloj za predobradu koji koristi poseban poziv modela da razloži poruke sa više problema na zasebne zahteve, obradi svaki nezavisno i spoji rezultate.
-- B) Spoji povezane alate u manje univerzalnih alata.
-- C) Dodaj few-shot primere u prompt koji demonstriraju ispravno rezonovanje i redosled pozivanja alata za zahteve sa više problema. **[CORRECT]**
-- D) Implementiraj validaciju odgovora koja detektuje nepotpune odgovore i automatski ponovo prompuje agenta da reši propuštene probleme.
-**Zašto C:** Few-shot primeri koji demonstriraju ispravno rezonovanje i redosled pozivanja alata za zahteve sa više problema su najefikasniji jer agent već dobro radi na pojedinačnim problemima — ono što mu treba je smernica o obrascu za razlaganje i usmeravanje više problema i razdvajanje parametara.
+- A) Implementirajte sloj za predobradu koji koristi poseban poziv modela da razloži poruke sa više problema na zasebne zahteve, obradi svaki nezavisno i spoji rezultate.
+- B) Spojite povezane alate u manji broj univerzalnih alata.
+- C) Dodajte few-shot primere u prompt koji demonstriraju ispravno rezonovanje i redosled pozivanja alata za zahteve sa više problema. **[CORRECT]**
+- D) Implementirajte validaciju odgovora koja detektuje nepotpune odgovore i automatski ponovo prompt-uje agenta da reši propuštene probleme.
+**Zašto C:** Few-shot primeri koji demonstriraju ispravno rezonovanje i redosled pozivanja alata za zahteve sa više problema su najefikasniji jer agent već dobro rešava pojedinačne probleme — ono što mu treba jeste smernica o obrascu za razlaganje i usmeravanje više problema i držanje parametara razdvojenim.
 
 ## Pitanje 48 (Scenario: Customer Support Agent)
 
-**Situacija:** Produkcioni logovi pokazuju da za jednostavne zahteve poput „refund for order #1234” tvoj agent rešava problem u 3–4 poziva alata sa 91% uspeha. Ali za složene zahteve poput „I was billed twice, my discount didn’t apply, and I want to cancel” agent u proseku ima 12+ poziva alata sa samo 54% uspeha — često istražuje probleme sekvencijalno i preuzima redundantne podatke o korisniku za svaki. Koja izmena najefikasnije poboljšava obradu složenih zahteva?
+**Situacija:** Produkcioni logovi pokazuju da za jednostavne zahteve poput „refund for order #1234” vaš agent rešava problem u 3–4 poziva alata sa 91% uspeha. Ali za složene zahteve poput „I was billed twice, my discount didn’t apply, and I want to cancel” agent u proseku napravi 12+ poziva alata sa samo 54% uspeha — često istražuje probleme sekvencijalno i za svaki iznova preuzima redundantne podatke o korisniku. Koja izmena najefikasnije poboljšava obradu složenih zahteva?
 
 **Koja izmena je najefikasnija?**
 
-- A) Dodaj eksplicitne kontrolne tačke verifikacije između faza, zahtevajući da agent zabeleži napredak nakon rešavanja svakog problema pre prelaska na sledeći.
-- B) Smanji broj alata spajanjem `get_customer`, `lookup_order` i alata vezanih za naplatu u jedan `investigate_issue` alat.
-- C) Razloži zahtev na zasebne probleme, zatim istraži svaki paralelno koristeći deljeni kontekst o korisniku pre sintetisanja konačnog rešenja. **[CORRECT]**
-- D) Dodaj few-shot primere u sistemski prompt koji demonstriraju idealne sekvence poziva alata za razne višeslojne scenarije naplate.
+- A) Dodajte eksplicitne kontrolne tačke verifikacije između faza, zahtevajući da agent zabeleži napredak nakon rešavanja svakog problema pre prelaska na sledeći.
+- B) Smanjite broj alata spajanjem `get_customer`, `lookup_order` i alata vezanih za naplatu u jedan `investigate_issue` alat.
+- C) Razložite zahtev na zasebne probleme, zatim istražite svaki paralelno koristeći deljeni kontekst o korisniku pre sintetisanja konačnog rešenja. **[CORRECT]**
+- D) Dodajte few-shot primere u sistemski prompt koji demonstriraju idealne sekvence poziva alata za razne višeslojne scenarije naplate.
 **Zašto C:** Razlaganje na zasebne probleme i paralelno istraživanje sa deljenim kontekstom o korisniku rešava oba ključna problema: eliminiše redundantno preuzimanje podataka ponovnim korišćenjem deljenog konteksta između problema i smanjuje ukupan broj petlji poziva alata paralelizovanjem istraživanja pre sintetisanja jedinstvenog rešenja.
 
 ## Pitanje 49 (Scenario: Customer Support Agent)
 
-**Situacija:** Tvoj agent postiže 55% rešavanja pri prvom kontaktu, znatno ispod cilja od 80%. Logovi pokazuju da eskalira jednostavne slučajeve (standardne zamene oštećene robe sa fotografskim dokazom) dok pokušava da autonomno reši složene situacije koje zahtevaju izuzetke od politike. Koji je najefikasniji način da se poboljša kalibracija eskalacije?
+**Situacija:** Vaš agent postiže 55% rešavanja pri prvom kontaktu, znatno ispod cilja od 80%. Logovi pokazuju da eskalira jednostavne slučajeve (standardne zamene oštećene robe sa fotografskim dokazom), dok pokušava da autonomno rešava složene situacije koje zahtevaju izuzetke od politike. Koji je najefikasniji način da se poboljša kalibracija eskalacije?
 
 **Koji je najefikasniji način da se poboljša kalibracija eskalacije?**
 
-- A) Zahtevaj da agent sam oceni pouzdanost na skali 1–10 pre svakog odgovora i automatski usmeri ka ljudima kada pouzdanost padne ispod praga.
-- B) Postavi poseban klasifikatorski model treniran na istorijskim tiketima da predvidi koji zahtevi zahtevaju eskalaciju pre nego što glavni agent počne obradu.
-- C) Dodaj eksplicitne kriterijume eskalacije u sistemski prompt sa few-shot primerima koji pokazuju kada eskalirati naspram autonomnog rešavanja. **[CORRECT]**
-- D) Implementiraj analizu sentimenta da odrediš nivo frustracije korisnika i automatski eskaliraj nakon praga negativnog sentimenta.
-**Zašto C:** Eksplicitni kriterijumi eskalacije sa few-shot primerima direktno adresiraju koren problema — nejasne granice odlučivanja između jednostavnih i složenih slučajeva. To je najproporcionalnija, najefikasnija prva intervencija koja uči agenta kada da eskalira a kada da reši autonomno bez dodatne infrastrukture.
+- A) Zahtevajte da agent pre svakog odgovora sam oceni pouzdanost na skali 1–10, uz automatsko usmeravanje ka ljudima kada pouzdanost padne ispod praga.
+- B) Postavite poseban klasifikatorski model treniran na istorijskim tiketima da predvidi koje zahteve treba eskalirati pre nego što glavni agent počne obradu.
+- C) Dodajte eksplicitne kriterijume eskalacije u sistemski prompt sa few-shot primerima koji pokazuju kada treba eskalirati, a kada rešavati autonomno. **[CORRECT]**
+- D) Implementirajte analizu sentimenta koja određuje nivo frustracije korisnika i automatski eskalira kada se pređe prag negativnog sentimenta.
+**Zašto C:** Eksplicitni kriterijumi eskalacije sa few-shot primerima direktno rešavaju osnovni uzrok — nejasne granice odlučivanja između jednostavnih i složenih slučajeva. To je najproporcionalnija i najefikasnija prva intervencija, koja agenta uči kada da eskalira, a kada da rešava autonomno, bez dodatne infrastrukture.
 
 ## Pitanje 50 (Scenario: Customer Support Agent)
 
-**Situacija:** Nakon pozivanja `get_customer` i `lookup_order`, agent ima sve dostupne sistemske podatke ali se i dalje suočava sa neizvesnošću. Koja situacija je najopravdaniji okidač za pozivanje `escalate_to_human`?
+**Situacija:** Nakon pozivanja `get_customer` i `lookup_order`, agent ima sve dostupne sistemske podatke, ali se i dalje suočava sa neizvesnošću. Koja situacija je najopravdaniji okidač za pozivanje `escalate_to_human`?
 
 **Koja situacija je najopravdanija za eskalaciju?**
 
-- A) Korisnik želi da otkaže porudžbinu poslatu juče koja stiže sutra. Agent treba da eskalira jer bi korisnik mogao da se predomisli nakon prijema paketa.
-- B) Korisnik tvrdi da nije primio porudžbinu, ali praćenje pokazuje da je isporučena i potpisana na njegovoj adresi pre tri dana. Agent treba da eskalira jer bi prezentovanje protivrečnih dokaza moglo da naškodi odnosu sa korisnikom.
-- C) Korisnik traži izjednačavanje cene sa konkurencijom. Tvoje politike dozvoljavaju prilagođavanje cena za pad cena na sopstvenom sajtu u roku od 14 dana, ali ne govore ništa o cenama konkurencije. Agent treba da eskalira radi tumačenja politike. **[CORRECT]**
+- A) Korisnik želi da otkaže porudžbinu koja je poslata juče i stiže sutra. Agent treba da eskalira jer bi korisnik mogao da se predomisli nakon prijema paketa.
+- B) Korisnik tvrdi da nije primio porudžbinu, ali praćenje pokazuje da je pre tri dana isporučena na njegovu adresu i preuzeta uz potpis. Agent treba da eskalira jer bi iznošenje protivrečnih dokaza moglo da naškodi odnosu sa korisnikom.
+- C) Korisnik traži izjednačavanje cene sa konkurencijom. Vaše politike dozvoljavaju korekciju cene za pad cene na sopstvenom sajtu u roku od 14 dana, ali ne kažu ništa o cenama konkurencije. Agent treba da eskalira radi tumačenja politike. **[CORRECT]**
 - D) Poruka korisnika sadrži i pitanje o naplati i povraćaj proizvoda. Agent treba da eskalira kako bi čovek koordinisao oba problema u jednoj interakciji.
-**Zašto C:** Ovo je istinska praznina u politici: pravila kompanije pokrivaju pad cena na sopstvenom sajtu ali ne adresiraju izjednačavanje cene sa konkurencijom. Agent ne sme da izmišlja politiku i treba da eskalira radi ljudske procene kako tumačiti ili proširiti postojeća pravila.
+**Zašto C:** Ovo je prava praznina u politici: pravila kompanije pokrivaju pad cena na sopstvenom sajtu, ali ne pominju izjednačavanje cene sa konkurencijom. Agent ne sme da izmišlja politiku i treba da eskalira radi ljudske procene o tome kako tumačiti ili proširiti postojeća pravila.
 
 ## Pitanje 51 (Scenario: Customer Support Agent)
 
-**Situacija:** Produkcioni logovi pokazuju da u 12% slučajeva tvoj agent preskače `get_customer` i poziva `lookup_order` direktno koristeći samo ime koje je korisnik dao, što ponekad dovodi do pogrešno identifikovanih naloga i netačnih povraćaja. Koja izmena najefikasnije rešava ovaj problem pouzdanosti?
+**Situacija:** Produkcioni logovi pokazuju da u 12% slučajeva vaš agent preskače `get_customer` i poziva `lookup_order` direktno, koristeći samo ime koje je korisnik naveo, što ponekad dovodi do pogrešno identifikovanih naloga i pogrešnih povraćaja novca. Koja izmena najefikasnije rešava ovaj problem pouzdanosti?
 
 **Koja izmena je najefikasnija?**
 
-- A) Dodaj few-shot primere koji pokazuju da agent uvek prvo poziva `get_customer`, čak i kada korisnici dobrovoljno daju detalje porudžbine.
-- B) Implementiraj klasifikator za usmeravanje koji analizira svaki zahtev i omogućava samo podskup alata prikladnih za taj tip zahteva.
-- C) Dodaj programski preduslov koji blokira `lookup_order` i `process_refund` dok `get_customer` ne vrati verifikovani identifikator korisnika. **[CORRECT]**
-- D) Ojačaj sistemski prompt navodeći da je verifikacija korisnika preko `get_customer` obavezna pre bilo kakvih operacija sa porudžbinama.
-**Zašto C:** Programski preduslov pruža determinističku garanciju da se prati zahtevani redosled. To je najefikasniji pristup jer eliminiše mogućnost preskakanja verifikacije, bez obzira na ponašanje LLM-a.
+- A) Dodajte few-shot primere koji pokazuju da agent uvek prvo poziva `get_customer`, čak i kada korisnici sami navedu detalje porudžbine.
+- B) Implementirajte klasifikator za usmeravanje koji analizira svaki zahtev i omogućava samo podskup alata prikladnih za taj tip zahteva.
+- C) Dodajte programski preduslov koji blokira `lookup_order` i `process_refund` dok `get_customer` ne vrati verifikovani identifikator korisnika. **[CORRECT]**
+- D) Pojačajte sistemski prompt navodeći da je verifikacija korisnika preko `get_customer` obavezna pre bilo kakvih operacija sa porudžbinama.
+**Zašto C:** Programski preduslov daje determinističku garanciju da će zahtevani redosled biti ispoštovan. To je najefikasniji pristup jer eliminiše mogućnost preskakanja verifikacije, bez obzira na ponašanje LLM-a.
 
 ## Pitanje 52 (Scenario: Customer Support Agent)
 
-**Situacija:** Produkcione metrike pokazuju da su pri rešavanju složenih sporova oko naplate ili povraćaja sa više porudžbina ocene zadovoljstva korisnika 15% niže nego za jednostavne slučajeve — čak i kada je rešenje tehnički ispravno. Analiza korena uzroka pokazuje da agent pruža tačna rešenja ali nedosledno objašnjava obrazloženje: ponekad izostavlja relevantne detalje politike, ponekad propušta informacije o vremenskom okviru ili sledeće korake. Specifične praznine u kontekstu variraju od slučaja do slučaja. Želiš da poboljšaš kvalitet rešenja bez dodavanja ljudskog nadzora. Koji pristup je najefikasniji?
+**Situacija:** Produkcione metrike pokazuju da su pri rešavanju složenih sporova oko naplate ili povraćaja sa više porudžbina ocene zadovoljstva korisnika 15% niže nego za jednostavne slučajeve — čak i kada je rešenje tehnički ispravno. Analiza osnovnog uzroka pokazuje da agent pruža tačna rešenja, ali obrazloženje iznosi nedosledno: ponekad izostavi relevantne detalje politike, ponekad propusti informacije o vremenskom okviru ili sledeće korake. Konkretne praznine u kontekstu variraju od slučaja do slučaja. Želiš da poboljšaš kvalitet rešenja bez dodavanja ljudskog nadzora. Koji pristup je najefikasniji?
 
 **Koji pristup je najefikasniji?**
 
-- A) Dodaj fazu samokritike u kojoj agent procenjuje nacrt odgovora po potpunosti — osiguravajući da rešava problem korisnika, uključuje relevantni kontekst i predviđa naknadna pitanja. **[CORRECT]**
+- A) Dodaj fazu samokritike u kojoj agent procenjuje potpunost nacrta odgovora — proveravajući da li rešava problem korisnika, uključuje relevantan kontekst i predviđa naknadna pitanja. **[CORRECT]**
 - B) Dodaj fazu potvrde u kojoj agent pita „Does this fully resolve your issue?” pre zatvaranja, dozvoljavajući korisnicima da zatraže dodatne informacije ako je potrebno.
 - C) Unapredi model sa Haiku na Sonnet za složene slučajeve, usmeravajući na osnovu definisane metrike složenosti.
 - D) Implementiraj few-shot primere u sistemskom promptu koji pokazuju potpuna objašnjenja za pet uobičajenih tipova složenih slučajeva, demonstrirajući kako uključiti kontekst politike, vremenske okvire i sledeće korake.
-**Zašto A:** Faza samokritike (obrazac evaluator-optimizator) direktno adresira nedoslednu potpunost objašnjenja primoravajući agenta da proceni sopstveni nacrt prema konkretnim kriterijumima — poput konteksta politike, vremenskih okvira i sledećih koraka — pre nego što ga prezentuje. Ovo hvata praznine specifične za slučaj bez ljudskog nadzora.
+**Zašto A:** Faza samokritike (obrazac evaluator-optimizator) direktno rešava nedoslednu potpunost objašnjenja tako što primorava agenta da sopstveni nacrt proceni prema konkretnim kriterijumima — poput konteksta politike, vremenskih okvira i sledećih koraka — pre nego što ga prezentuje. Time se hvataju praznine specifične za konkretan slučaj, bez ljudskog nadzora.
 
 ## Pitanje 53 (Scenario: Customer Support Agent)
 
@@ -2668,33 +2668,33 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 54 (Scenario: Customer Support Agent)
 
-**Situacija:** Produkcioni logovi pokazuju obrazac: korisnici se pozivaju na konkretne iznose (npr. „the 15% discount I mentioned”), ali agent odgovara netačnim vrednostima. Istraga pokazuje da su ovi detalji pomenuti pre 20+ poteza i sažeti u nejasne sažetke poput „promotional pricing was discussed”. Koja popravka je najefikasnija?
+**Situacija:** Produkcioni logovi pokazuju obrazac: korisnici se pozivaju na konkretne iznose (npr. „the 15% discount I mentioned”), ali agent odgovara netačnim vrednostima. Analiza pokazuje da su ti detalji pomenuti pre 20+ poteza i svedeni na nejasne sažetke poput „promotional pricing was discussed”. Koja popravka je najefikasnija?
 
 **Koja popravka je najefikasnija?**
 
 - A) Povećaj prag sažimanja sa 70% na 85% tako da razgovori imaju više prostora pre nego što se sažimanje aktivira.
 - B) Skladišti punu istoriju razgovora u eksternom skladištu i implementiraj preuzimanje kada agent detektuje reference poput „as I mentioned”.
-- C) Izvuci transakcione činjenice (iznose, datume, brojeve porudžbina) u trajni blok „case facts” uključen u svaki prompt izvan sažete istorije. **[CORRECT]**
+- C) Ekstrahuj transakcione činjenice (iznose, datume, brojeve porudžbina) u trajni blok „case facts” koji se uključuje u svaki prompt, izvan sažete istorije. **[CORRECT]**
 - D) Revidiraj prompt za sažimanje da eksplicitno doslovno sačuva sve brojeve, procente, datume i očekivanja koja je korisnik naveo.
-**Zašto C:** Sažimanje inherentno gubi precizne detalje. Izvlačenje transakcionih činjenica u strukturisani blok „case facts” izvan sažete istorije čuva kritične informacije tako da su pouzdano dostupne u svakom promptu bez obzira na to koliko je poteza sažeto.
+**Zašto C:** Sažimanje inherentno gubi precizne detalje. Ekstrakcija transakcionih činjenica u strukturisani blok „case facts” izvan sažete istorije čuva kritične informacije, tako da su pouzdano dostupne u svakom promptu bez obzira na to koliko je poteza sažeto.
 
 ## Pitanje 55 (Scenario: Customer Support Agent)
 
-**Situacija:** Tvoj `get_customer` alat vraća sve poklapanja pri pretrazi po imenu. Trenutno, kada postoji više rezultata, Claude bira korisnika sa najnovijom porudžbinom, ali produkcioni podaci pokazuju da ovo bira pogrešan nalog u 15% slučajeva za dvosmislena poklapanja. Kako treba da rešiš ovo?
+**Situacija:** Tvoj alat `get_customer` pri pretrazi po imenu vraća sva poklapanja. Trenutno, kada postoji više rezultata, Claude bira korisnika sa najnovijom porudžbinom, ali produkcioni podaci pokazuju da se kod dvosmislenih poklapanja na taj način u 15% slučajeva bira pogrešan nalog. Kako to treba da rešiš?
 
-**Kako treba da rešiš ovo?**
+**Kako to treba da rešiš?**
 
-- A) Implementiraj sistem ocenjivanja pouzdanosti koji deluje autonomno iznad 85% pouzdanosti a traži pojašnjenje ispod praga.
+- A) Implementiraj sistem ocenjivanja pouzdanosti koji iznad 85% pouzdanosti deluje autonomno, a ispod praga traži pojašnjenje.
 - B) Uputi Claude-a da zatraži dodatni identifikator (imejl, telefon ili broj porudžbine) kada `get_customer` vrati više poklapanja, pre preduzimanja bilo kakve radnje specifične za korisnika. **[CORRECT]**
 - C) Izmeni `get_customer` da vraća samo jedno najverovatnije poklapanje na osnovu algoritma rangiranja, eliminišući dvosmislenost.
 - D) Dodaj few-shot primere u prompt koji demonstriraju ispravno rezonovanje i redosled pozivanja alata za dvosmislena poklapanja.
-**Zašto B:** Traženje dodatnog identifikatora od korisnika je najpouzdaniji način da se razreši dvosmislenost jer korisnik ima definitivno znanje o svom identitetu. Jedan dodatni potez u razgovoru je mala cena za eliminisanje stope greške od 15% prouzrokovane izborom pogrešnog naloga.
+**Zašto B:** Traženje dodatnog identifikatora od korisnika najpouzdaniji je način da se razreši dvosmislenost, jer jedino korisnik sa sigurnošću zna sopstveni identitet. Jedan dodatni potez u razgovoru mala je cena za eliminisanje stope greške od 15% nastale izborom pogrešnog naloga.
 
 ## Pitanje 56 (Scenario: Customer Support Agent)
 
-**Situacija:** Produkcioni logovi pokazuju dosledan obrazac: kada korisnici uključe reč „account” u svoju poruku (npr. „I want to check my account for an order I made yesterday”), agent prvo poziva `get_customer` u 78% slučajeva. Kada korisnici formulišu slične zahteve bez „account” (npr. „I want to check an order I made yesterday”), prvo poziva `lookup_order` u 93% slučajeva. Opisi alata su jasni i nedvosmisleni. Koji je najverovatniji koren uzroka ove neusklađenosti?
+**Situacija:** Produkcioni logovi pokazuju dosledan obrazac: kada korisnici uključe reč „account” u svoju poruku (npr. „I want to check my account for an order I made yesterday”), agent prvo poziva `get_customer` u 78% slučajeva. Kada korisnici formulišu slične zahteve bez „account” (npr. „I want to check an order I made yesterday”), prvo poziva `lookup_order` u 93% slučajeva. Opisi alata su jasni i nedvosmisleni. Koji je najverovatniji osnovni uzrok ove neusklađenosti?
 
-**Koji je najverovatniji koren uzroka?**
+**Koji je najverovatniji osnovni uzrok?**
 
 - A) Sistemski prompt sadrži instrukcije osetljive na ključne reči koje usmeravaju ponašanje na osnovu termina poput „account”, stvarajući nenamerne obrasce izbora alata. **[CORRECT]**
 - B) Bazna obuka modela stvara asocijacije između terminologije „account” i operacija vezanih za korisnike koje nadjačavaju opise alata.
@@ -2712,7 +2712,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Spoji oba alata u jedan `lookup_entity` koji prihvata bilo koji identifikator i interno odlučuje koji bekend da upita.
 - C) Dodaj few-shot primere u sistemski prompt koji demonstriraju ispravne obrasce izbora alata, sa 5–8 primera koji usmeravaju upite vezane za porudžbine na `lookup_order`.
 - D) Proširi opis svakog alata tako da uključuje formate ulaza, primere upita, granične slučajeve i granice koje objašnjavaju kada ga koristiti naspram sličnih alata. **[CORRECT]**
-**Zašto D:** Proširivanje opisa alata formatima ulaza, primerima upita, graničnim slučajevima i jasnim granicama direktno rešava koren uzroka — minimalne opise koji LLM-u ne daju dovoljno informacija da razlikuje slične alate. To je prvi korak sa malim naporom i velikim uticajem koji poboljšava primarni mehanizam koji LLM koristi za izbor alata.
+**Zašto D:** Proširivanje opisa alata formatima ulaza, primerima upita, graničnim slučajevima i jasnim granicama direktno rešava osnovni uzrok — minimalne opise koji LLM-u ne daju dovoljno informacija da razlikuje slične alate. To je prvi korak koji traži malo truda, a ima veliki učinak, jer poboljšava primarni mehanizam kojim se LLM služi pri izboru alata.
 
 ## Pitanje 58 (Scenario: Customer Support Agent)
 
@@ -2746,13 +2746,13 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - A) Dodaj eksplicitne smernice „use when” i „don’t use when” u opis svakog alata koje pokrivaju dvosmislene slučajeve.
 - B) Dodaj primere grupisane po alatu — sve `get_customer` scenarije zajedno, zatim sve `lookup_order` scenarije.
-- C) Dodaj 4–6 primera usmerenih na dvosmislene scenarije, svaki sa obrazloženjem zašto je jedan alat izabran umesto verodostojnih alternativa. **[CORRECT]**
+- C) Dodaj 4–6 primera usmerenih na dvosmislene scenarije, svaki sa obrazloženjem zašto je jedan alat izabran umesto drugih uverljivih alternativa. **[CORRECT]**
 - D) Dodaj 10–15 primera jasnih, nedvosmislenih zahteva koji demonstriraju ispravan izbor alata za tipične scenarije za svaki alat.
-**Zašto C:** Usmeravanje few-shot primera na konkretne dvosmislene scenarije gde se javljaju greške, sa eksplicitnim obrazloženjem zašto je jedan alat bolji od alternativa, uči model komparativni proces odlučivanja potreban za granične slučajeve. Ovo je efikasnije od generičkih primera ili deklarativnih pravila.
+**Zašto C:** Usmeravanje few-shot primera na konkretne dvosmislene scenarije u kojima se greške javljaju, uz eksplicitno obrazloženje zašto je jedan alat bolji od alternativa, uči model komparativnom procesu odlučivanja koji je potreban za granične slučajeve. To je efikasnije od generičkih primera ili deklarativnih pravila.
 
 ## Pitanje 61 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
-**Situacija:** Tvoj alat `remove_team_member` koristi parametar `dry_run: boolean` za pregled posledica pre izvršavanja. Produkcijski monitoring pokazuje da agent zaobilazi korak pregleda tako što poziva direktno sa `dry_run=false`. Moraš da obezbediš da svakom uklanjanju prethodi pregled koji korisnik eksplicitno potvrdi.
+**Situacija:** Tvoj alat `remove_team_member` koristi parametar `dry_run: boolean` za pregled posledica pre izvršavanja. Produkcioni monitoring pokazuje da agent zaobilazi korak pregleda tako što direktno poziva sa `dry_run=false`. Moraš da obezbediš da svakom uklanjanju prethodi pregled koji korisnik eksplicitno potvrdi.
 
 **Koji je najpouzdaniji pristup?**
 
@@ -2764,7 +2764,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 62 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
-**Situacija:** Produkcijski monitoring pokazuje da tvoj alat `search_catalog` ne uspe u 12% slučajeva: 8% su mrežni timeout-ovi koji uspeju kada se ponove, a 4% su sintaksne greške upita koje nikada ne uspeju bez obzira na ponavljanja. Trenutno se oba tipa grešaka vraćaju identično, što izaziva uzaludna ponavljanja.
+**Situacija:** Produkcioni monitoring pokazuje da tvoj alat `search_catalog` ne uspe u 12% slučajeva: 8% su mrežni timeout-ovi koji uspeju kada se ponove, a 4% su sintaksne greške upita koje nikada ne uspeju bez obzira na ponavljanja. Trenutno se oba tipa grešaka vraćaju identično, što izaziva uzaludna ponavljanja.
 
 **Kako bi trebalo da izmeniš obradu grešaka u alatu?**
 
@@ -2784,11 +2784,11 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Pruži zasebne preporuke za oba scenarija.
 - C) Nastavi sa poslednje izrečenom preferencijom.
 - D) Preporuči izbalansiran portfolio bez razrešavanja sukoba.
-**Zašto A:** Kada se korisnikove preferencije direktno protivreče, iznošenje sukoba i traženje pojašnjenja jedini je način da se garantuje da je preporuka usklađena sa korisnikovom stvarnom namerom. Svaki drugi pristup podrazumeva pravljenje pretpostavke koja može biti pogrešna — maksimizacija prinosa i niska tolerancija na rizik jesu suštinski nespojivi ciljevi koji zahtevaju ljudsku odluku.
+**Zašto A:** Kada korisnikove preferencije direktno protivreče jedna drugoj, iznošenje sukoba i traženje pojašnjenja jedini je način da se garantuje da je preporuka usklađena sa korisnikovom stvarnom namerom. Svaki drugi pristup podrazumeva pretpostavku koja može biti pogrešna — maksimizacija prinosa i niska tolerancija na rizik suštinski su nespojivi ciljevi koji zahtevaju ljudsku odluku.
 
 ## Pitanje 64 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
-**Situacija:** Korisnici precizuju svoje preferencije za plejlistu tokom više poteza razgovora. Dve poruke nakon što je korisnik rekao „Obožavam džez”, Claude pita „Koje žanrove voliš?”
+**Situacija:** Korisnici tokom više poteza razgovora preciziraju svoje preferencije za plejlistu. Dve poruke nakon što je korisnik rekao „Obožavam džez”, Claude pita „Koje žanrove voliš?”
 
 **Koji je najverovatniji uzrok?**
 
@@ -2806,13 +2806,13 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 - A) Sažmi celokupnu istoriju razgovora.
 - B) Zadrži samo poslednjih 20.000 tokena.
-- C) Izvuci kritične strukturirane podatke (alergije, količine, preferencije), sažmi opštu diskusiju, a nedavne razmene zadrži doslovno. **[CORRECT]**
+- C) Ekstrahuj kritične strukturirane podatke (alergije, količine, preferencije), sažmi opštu diskusiju, a nedavne razmene zadrži doslovno. **[CORRECT]**
 - D) Skladišti kompletan razgovor eksterno i preuzimaj relevantne delove putem semantičke pretrage.
-**Zašto C:** Hibridni pristup čuva informacije najveće vrednosti uz najniži trošak. Kritične činjenice poput alergija i količina u receptima izvlače se u kompaktan strukturiran blok (čime se sprečava gubitak preciznosti koji nastaje tokom sažimanja), opšta diskusija se sažima, a nedavne razmene zadržavaju se doslovno radi koherentnosti razgovora. Opcije A i B rizikuju gubitak kritičnih informacija o ishrani; D je arhitektonski preteran za jednu sesiju kuvanja.
+**Zašto C:** Hibridni pristup čuva informacije najveće vrednosti uz najniži trošak. Kritične činjenice poput alergija i količina u receptima ekstrahuju se u kompaktan strukturiran blok (čime se sprečava gubitak preciznosti koji nastaje tokom sažimanja), opšta diskusija se sažima, a nedavne razmene zadržavaju se doslovno radi koherentnosti razgovora. Opcije A i B rizikuju gubitak kritičnih informacija o ishrani; D je arhitektonski preteran za jednu sesiju kuvanja.
 
 ## Pitanje 66 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
-**Situacija:** Korisnici prijavljuju da tokom dugih razgovora asistent gubi trag ranijih tema i preferencija. Tvoja trenutna implementacija zadržava samo poslednjih 25 parova poruka.
+**Situacija:** Korisnici prijavljuju da tokom dugih razgovora asistent gubi iz vida ranije teme i preferencije. Tvoja trenutna implementacija zadržava samo poslednjih 25 parova poruka.
 
 **Koje je najefikasnije rešenje?**
 
@@ -2824,7 +2824,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 
 ## Pitanje 67 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
-**Situacija:** Korisnici prijavljuju da latencija raste i da troškovi rastu kada razgovori premaše 50 poteza.
+**Situacija:** Korisnici prijavljuju da latencija i troškovi rastu kada razgovori premaše 50 poteza.
 
 **Koji je primarni uzrok?**
 
@@ -2856,19 +2856,19 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Započni novi razgovor posle 20 poteza.
 - C) Ubacuj poruke u ulozi korisnika koje pojačavaju smernice na prelomnim tačkama razgovora. **[CORRECT]**
 - D) Koristi validaciju nakon odgovora da bi se neusaglašeni odgovori regenerisali.
-**Zašto C:** Periodično ubacivanje podsetnika o ponašanju direktno se bori protiv „odlutavanja” od uputstava (instruction drift) tako što ponovo uspostavlja ograničenja u pravilnim intervalima kako se istorija razgovora akumulira. Premeštanje smernica u prvu korisničku poruku (A) smanjuje njihov autoritet. Započinjanje novog razgovora (B) uništava kontekst. Validacija nakon odgovora (D) je korektivna, a ne preventivna i dodaje značajnu latenciju.
+**Zašto C:** Periodično ubacivanje podsetnika o ponašanju direktno suzbija drift uputstava (instruction drift) tako što ponovo uspostavlja ograničenja u redovnim intervalima kako se istorija razgovora akumulira. Premeštanje smernica u prvu korisničku poruku (A) smanjuje njihov autoritet. Započinjanje novog razgovora (B) uništava kontekst. Validacija nakon odgovora (D) je korektivna, a ne preventivna, i dodaje značajnu latenciju.
 
 ## Pitanje 70 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
-**Situacija:** Tvoj AI tutor ima sistemski prompt od 2.800 tokena koji definiše metodologiju podučavanja i pravila prilagođavanja. Posle 12 poteza, asistent počinje da ignoriše nivoe veštine.
+**Situacija:** Tvoj AI tutor ima sistemski prompt od 2.800 tokena koji definiše metodologiju podučavanja i pravila prilagođavanja. Posle 12 poteza, asistent počinje da ignoriše nivoe znanja.
 
 **Koja je najefikasnija ispravka?**
 
 - A) Ubacuj podsetnike svakih 4–5 poteza.
-- B) Zameni opširna pravila few-shot primerima koji demonstriraju prilagođavanje nivou veštine. **[CORRECT]**
+- B) Zameni opširna pravila few-shot primerima koji demonstriraju prilagođavanje nivou znanja. **[CORRECT]**
 - C) Postavi kritična pravila na kraj sistemskog prompta.
 - D) Evaluiraj odgovore i regeneriši ih ako se nivo težine ne poklapa.
-**Zašto B:** Sistemski prompt od 2.800 tokena sa deklarativnim pravilima ranjiv je na odlutavanje jer apstraktna pravila zahtevaju da model rezonuje o njima u svakom potezu. Zamena opširnih pravila konkretnim few-shot primerima koji demonstriraju ispravno prilagođavanje nivou veštine daje modelu jasne obrasce ponašanja koje treba da prati — to se kroz mnogo poteza pouzdanije sledi nego apstraktna uputstva. Ubacivanje podsetnika (A) pomaže, ali tretira simptome; postavljanje na kraj (C) pomaže u početku, ali ne kod odlutavanja na nivou poteza; regeneracija (D) je skupa i korektivna.
+**Zašto B:** Sistemski prompt od 2.800 tokena sa deklarativnim pravilima ranjiv je na drift jer apstraktna pravila zahtevaju da model o njima rezonuje u svakom potezu. Zamena opširnih pravila konkretnim few-shot primerima koji demonstriraju ispravno prilagođavanje nivou znanja daje modelu jasne obrasce ponašanja koje treba da prati — model ih kroz mnogo poteza sledi pouzdanije nego apstraktna uputstva. Ubacivanje podsetnika (A) pomaže, ali tretira simptome; postavljanje na kraj (C) pomaže u početku, ali ne i kod drifta na nivou poteza; regeneracija (D) je skupa i korektivna.
 
 ## Pitanje 71 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
@@ -2916,7 +2916,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Postavi sva pitanja za pojašnjenje u jednoj objedinjenoj poruci.
 - C) Eksplicitno navedi pretpostavke i nastavi, uz poziv na ispravke. **[CORRECT]**
 - D) Koristi strukturirani obrazac za prijem (intake form).
-**Zašto C:** Eksplicitno navođenje pretpostavki i nastavak daju korisniku trenutan, koristan odgovor uz očuvanje njegove mogućnosti da ispravi pogrešne pretpostavke. Skrivene podrazumevane vrednosti (A) ostavljaju korisnika nesvesnog šta je pretpostavljeno. Objedinjena lista pitanja (B) i dalje zahteva unapred uloženi trud od korisnika. Strukturirani obrazac (D) dodaje više trenja, a ne manje — što je u suprotnosti sa ciljem smanjenja odustajanja.
+**Zašto C:** Eksplicitno navođenje pretpostavki i nastavak rada daju korisniku odmah koristan odgovor, a pritom mu ostavljaju mogućnost da ispravi pogrešne pretpostavke. Skrivene podrazumevane vrednosti (A) ostavljaju korisnika u neznanju o tome šta je pretpostavljeno. Objedinjena lista pitanja (B) i dalje od korisnika zahteva trud unapred. Strukturirani obrazac (D) dodaje više trenja, a ne manje — što je u suprotnosti sa ciljem smanjenja odustajanja.
 
 ## Pitanje 75 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
@@ -2928,7 +2928,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Pažnja modela slabi kako se potezi akumuliraju.
 - C) Akumulirani odgovori asistenta razblažuju uticaj sistemskog prompta. **[CORRECT]**
 - D) Sistemski prompt se šalje samo jednom.
-**Zašto C:** Kako se odgovori asistenta akumuliraju u istoriji razgovora, udeo teksta koji odražava ograničenja ponašanja iz sistemskog prompta opada u odnosu na rastuću masu sadržaja koji je generisao asistent. Model sve više usklađuje obrasce prema sopstvenim ranijim izlazima umesto prema sistemskom promptu, pojačavajući odlutavanje čak i pri kratkim dužinama u tokenima. Sistemski prompt se uključuje u svaki API poziv (D je netačno kao samostalno objašnjenje), a degradacija pažnje modela (B) ne deluje na 2.500 tokena.
+**Zašto C:** Kako se odgovori asistenta akumuliraju u istoriji razgovora, udeo teksta koji odražava ograničenja ponašanja iz sistemskog prompta opada u odnosu na rastuću masu sadržaja koji je asistent generisao. Model se sve više povodi za obrascima iz sopstvenih ranijih izlaza umesto za sistemskim promptom, što pojačava drift čak i pri malom broju tokena. Sistemski prompt se uključuje u svaki API poziv (D je netačno kao samostalno objašnjenje), a degradacija pažnje modela (B) ne deluje na 2.500 tokena.
 
 ## Pitanje 76 (Scenario: Obrasci arhitekture konverzacijske veštačke inteligencije)
 
@@ -2940,7 +2940,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 - B) Klasifikuj dvosmislenost manjim modelom pre odgovaranja.
 - C) Koristi unapred definisana tumačenja bez navođenja pretpostavki.
 - D) Ograniči asistenta na jedno pitanje za pojašnjenje po potezu.
-**Zašto A:** Nastavak sa razumnim, navedenim pretpostavkama u potpunosti eliminiše dopisivanje napred-nazad, a korisnika drži obaveštenim i u kontroli. Unapred definisana tiha tumačenja (C) ostavljaju korisnike zbunjenim kada odgovor ne odgovara njihovoj nameri. Ograničenje na jedno pitanje (D) i dalje zahteva poteze dopisivanja napred-nazad. Manji klasifikacioni model (B) dodaje latenciju i složenost infrastrukture bez rešavanja suštinskog UX problema.
+**Zašto A:** Nastavak sa razumnim, eksplicitno navedenim pretpostavkama u potpunosti eliminiše razmenu pitanja napred-nazad, a korisnik ostaje informisan i zadržava kontrolu. Unapred definisana tiha tumačenja (C) zbunjuju korisnike kada odgovor ne odgovara njihovoj nameri. Ograničenje na jedno pitanje (D) i dalje zahteva više poteza razmene. Manji klasifikacioni model (B) dodaje latenciju i složenost infrastrukture, a ne rešava suštinski UX problem.
 
 # Praktične vežbe
 
@@ -2970,7 +2970,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 5. Testiraj režim planiranja naspram direktnog izvršavanja na zadacima različite složenosti
 **Domeni:** 3 (Konfigurisanje Claude Code-a), 2 (Alati i MCP)
 
-## Vežba 3: Cevovod za strukturiranu ekstrakciju podataka
+## Vežba 3: Pipeline za strukturiranu ekstrakciju podataka
 
 **Cilj:** JSON šeme, `tool_use` za strukturirani izlaz, petlje validacije/ponovnog pokušaja, paketna obrada.
 
@@ -2983,7 +2983,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 5. Preusmeri na ljude: skorovi pouzdanosti na nivou polja, analiza tipa dokumenta
 **Domeni:** 4 (Inženjering promptova), 5 (Kontekst i pouzdanost)
 
-## Vežba 4: Projektovanje i otklanjanje grešaka u višeagentskom istraživačkom cevovodu
+## Vežba 4: Projektovanje i otklanjanje grešaka u višeagentskom istraživačkom pipeline-u
 
 **Cilj:** Orkestracija podagenata, prosleđivanje konteksta, propagacija grešaka, sinteza sa praćenjem izvora.
 
@@ -3006,7 +3006,7 @@ Kada Edit ne uspe zbog nejedinstvenog poklapanja teksta:
 | **Claude Code CLI** | `-p` / `--print` za neinteraktivni režim, `--output-format json`, `--json-schema` |
 | **Claude API** | `tool_use` sa JSON šemama, `tool_choice` ("auto"/"any"/forsirano), `stop_reason`, `max_tokens`, sistemski promptovi |
 | **Message Batches API** | 50% uštede, prozor do 24 sata, `custom_id`, bez višekoračnog pozivanja alata |
-| **JSON Schema** | Obavezna naspram opcionih, polja koja mogu biti null, enum tipovi, "other" + detalj, strogi režim |
+| **JSON Schema** | Obavezna naspram opcionih polja, polja koja mogu biti null, enum tipovi, "other" + detalj, strogi režim |
 | **Pydantic** | Validacija šeme, semantičke greške, petlje validacije/ponovnog pokušaja |
 | **Ugrađeni alati** | Read, Write, Edit, Bash, Grep, Glob — svrha i kriterijumi za izbor |
 | **Few-shot prompting** | Ciljani primeri za dvosmislene situacije, uopštavanje na nove obrasce |
@@ -3040,8 +3040,8 @@ Sledeće srodne teme **NEĆE** biti na ispitu:
 1. **Izgradi agenta pomoću Claude Agent SDK-a** — implementiraj kompletnu agentsku petlju sa pozivanjem alata, rukovanjem greškama i upravljanjem sesijama. Vežbaj podagente i eksplicitno prosleđivanje konteksta.
 2. **Konfiguriši Claude Code za stvarni projekat** — koristi hijerarhiju CLAUDE.md, pravila specifična za putanje u `.claude/rules/`, veštine (skills) sa `context: fork` i `allowed-tools`, i integraciju MCP servera.
 3. **Projektuj i testiraj MCP alate** — piši opise koji razlikuju slične alate, vraćaj strukturirane greške sa kategorijama i zastavicama za ponovni pokušaj, i testiraj na dvosmislenim korisničkim zahtevima.
-4. **Izgradi cevovod za ekstrakciju podataka** — koristi `tool_use` sa JSON šemama, petlje validacije/ponovnog pokušaja, opciona polja i polja koja mogu biti null, i paketnu obradu preko Message Batches API-ja.
+4. **Izgradi pipeline za ekstrakciju podataka** — koristi `tool_use` sa JSON šemama, petlje validacije/ponovnog pokušaja, opciona polja i polja koja mogu biti null, i paketnu obradu preko Message Batches API-ja.
 5. **Vežbaj inženjering promptova** — dodaj few-shot primere za dvosmislene scenarije, eksplicitne kriterijume za pregled i višeprolazne arhitekture za velike preglede koda.
 6. **Prouči obrasce upravljanja kontekstom** — izvuci činjenice iz opširnih izlaza, koristi scratchpad fajlove i delegiraj otkrivanje podagentima kako bi se savladala ograničenja konteksta.
 7. **Razumi eskalaciju i human-in-the-loop** — kada eskalirati (praznine u politici, eksplicitan zahtev korisnika, nemogućnost napretka) i tokove rada za usmeravanje na osnovu pouzdanosti.
-8. **Polaži probni ispit** pre pravog. On koristi iste scenarije i format.
+8. **Uradi probni ispit** pre pravog. On koristi iste scenarije i format.
