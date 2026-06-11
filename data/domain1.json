@@ -404,7 +404,8 @@
     "glossary_refs": [
       "hub-and-spoke",
       "separation of concerns",
-      "subagent"
+      "subagent",
+      "error propagation"
     ],
     "tags": [
       "multi-agent",
@@ -443,7 +444,8 @@
     "glossary_refs": [
       "handoff pattern",
       "human-in-the-loop",
-      "structured output"
+      "structured output",
+      "escalation trigger"
     ],
     "tags": [
       "handoff",
@@ -948,7 +950,8 @@
       "AgentDefinition",
       "coordinator",
       "subagent",
-      "fork-based session"
+      "fork-based session",
+      "system prompt"
     ],
     "tags": [
       "subagent-invocation",
@@ -1259,7 +1262,8 @@
       "subagent",
       "synthesizer agent",
       "hub-and-spoke",
-      "human-in-the-loop"
+      "human-in-the-loop",
+      "iterative refinement loop"
     ],
     "tags": [
       "multi-agent",
@@ -1297,7 +1301,8 @@
     "glossary_refs": [
       "strict tool use",
       "structured output",
-      "tool_choice"
+      "tool_choice",
+      "JSON Schema"
     ],
     "tags": [
       "tool-design",

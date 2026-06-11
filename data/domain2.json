@@ -188,7 +188,8 @@
       "unintended tool associations",
       "negative constraint",
       "tool description",
-      "temperature"
+      "temperature",
+      "system prompt"
     ],
     "pattern_refs": [
       "prompt-wording-primes-tool-selection",
@@ -639,7 +640,8 @@
       "errorCategory",
       "isRetryable",
       "transient error",
-      "structured error response"
+      "structured error response",
+      "error category taxonomy"
     ],
     "pattern_refs": [
       "error-type-must-be-accurate-not-just-present",
@@ -814,7 +816,8 @@
     "glossary_refs": [
       "Grep",
       "Glob",
-      "built-in tools"
+      "built-in tools",
+      "SDK"
     ],
     "pattern_refs": [
       "grep-to-entry-point-read-sequentially-not-bulk"
@@ -894,7 +897,8 @@
     "glossary_refs": [
       "keyword-sensitive instructions",
       "instruction hierarchy",
-      "tool description"
+      "tool description",
+      "system prompt"
     ],
     "pattern_refs": [
       "prompt-wording-primes-tool-selection",
@@ -934,7 +938,8 @@
       "isError",
       "structured error response",
       "errorCategory",
-      "empty result"
+      "empty result",
+      "silent suppression"
     ],
     "pattern_refs": [
       "mcp-error-needs-iserror-not-empty-success",
@@ -974,7 +979,8 @@
       "single-purpose tool",
       "input schema",
       "strict tool use",
-      "hallucination"
+      "hallucination",
+      "JSON Schema"
     ],
     "pattern_refs": [
       "constrain-tool-interface-to-prevent-bad-input",
