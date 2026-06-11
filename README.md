@@ -16,6 +16,9 @@ Pa otvori `http://localhost:8000` u browseru.
 ## Struktura
 - `data/domain1.json … domain5.json` — pitanja po domenima
 - `data/glossary.json` — index pojmova (povezan sa pitanjima dvosmerno)
+- `data/patterns.json` — obrasci/pouke koje pokrivaju više pitanja
+- `data/larionov.json` — community vodič (Larionov), dvojezični blokovi za „Larionov" tab
+- `docs/guide_en.md`, `docs/guide_sr.md` — community vodič: EN original + SR prevod (generisani)
 - `index.html`, `style.css`, `app.js` — sajt (bez build koraka)
 - `CLAUDE.md` — instrukcije za Claude Code (kako dodaje pitanja)
 - `.claude/commands/add-question.md` — slash komanda `/add-question`
@@ -24,6 +27,9 @@ Pa otvori `http://localhost:8000` u browseru.
 - **Pregled** — sva pitanja, pretraga, filter po domenu i statusu (tačno/netačno/neobrađeno)
 - **Quiz** — vežbaj sva pitanja, samo netačna, samo neobrađena, ili po domenu
 - **Pojmovi** — index sa EN+SR definicijama; klik na pojam vodi do pitanja gde se javlja
+- **Obrasci** — mentalni modeli/pouke koje pokrivaju više pitanja
+- **Vodič** — zvanični exam guide, dvojezično (Oba/EN/SR)
+- **Larionov** — community vodič (Paul Larionov); EN podrazumevano, klik EN/SR menja jezik, hover nad pasusom pokazuje drugi jezik
 
 ## Deploy na Netlify
 Pošto je sve statičko, ima dva načina:

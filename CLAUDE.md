@@ -15,7 +15,7 @@ treba. Korisnik često kuca latinično bez kvačica ("kljuc", "vraca", "determin
 to NE znači da i baza sme biti bez njih. Pri svakom upisu/izmeni Claude restaurira
 dijakritike u srpskim poljima: `claude_notes`, `disputed` SR podpolja
 (`reason`/`verdict_rationale`/`official_answers_seen`), `glossary.sr`,
-`patterns.title`/`lesson_sr`, `guide.*.sr`.
+`patterns.title`/`lesson_sr`, `guide.*.sr`, `larionov.blocks[].sr` (uklj. `table` ćelije `.sr`).
 NE diraj engleski/zvanični tekst (`explanations`, `*.en`, `question`/`options`) ni tehničke
 tokene/kod (`stop_reason`, `PreToolCall`, `allowedTools`, imena alata, navodnici sa kodom).
 
@@ -25,6 +25,8 @@ data/
   domain1.json ... domain5.json   # pitanja, po jedan niz po domenu
   glossary.json                   # index pojmova, dvosmerno povezan sa pitanjima
   patterns.json                   # obrasci/pouke po pod-domenu, povezani sa pitanjima
+  larionov.json                   # community vodič (Larionov), dvojezični blokovi za "Larionov" tab
+docs/guide_en.md / guide_sr.md    # community vodič: EN original + SR prevod (generisani)
 index.html / style.css / app.js   # staticki sajt (cita data/ direktno)
 CLAUDE.md                         # ovaj fajl
 .claude/commands/add-question.md  # slash komanda za unos pitanja

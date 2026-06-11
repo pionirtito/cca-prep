@@ -7,6 +7,7 @@ let LARIONOV = null;
 let view = "overview";
 let quiz = null;
 let guideLang = "both"; // "both" | "en" | "sr"
+let lrLang = "en"; // "en" | "sr" — Larionov tab default view
 
 const app = document.getElementById("app");
 const statsEl = document.getElementById("stats");
@@ -430,27 +431,36 @@ function enAttr(s) {
   return esc(plain);
 }
 
+function setLrLang(lang) { lrLang = lang; renderLarionov(); }
+
+// pick which language is the displayed text and which goes in the hover tooltip
+function lrPick(node) {
+  return lrLang === "en" ? { main: node.en, hover: node.sr } : { main: node.sr, hover: node.en };
+}
+
 function lrBlock(b) {
+  const t = lrPick(b);
   switch (b.type) {
     case "h1":
-      return `<h2 class="lr-h1" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h2>`;
+      return `<h2 class="lr-h1" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h2>`;
     case "h2":
-      return `<h2 class="lr-h2" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h2>`;
+      return `<h2 class="lr-h2" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h2>`;
     case "h3":
-      return `<h3 class="guide-h3" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h3>`;
+      return `<h3 class="guide-h3" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h3>`;
     case "h4":
-      return `<h4 class="lr-h4" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</h4>`;
+      return `<h4 class="lr-h4" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h4>`;
     case "p":
-      return `<p class="guide-p" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</p>`;
+      return `<p class="guide-p" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</p>`;
     case "quote":
-      return `<blockquote class="lr-quote" data-en="${enAttr(b.en)}">${inlineMd(b.sr)}</blockquote>`;
+      return `<blockquote class="lr-quote" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</blockquote>`;
     case "code":
       return `<pre class="lr-code"${b.lang ? ` data-lang="${esc(b.lang)}"` : ""}><code>${esc(b.text || "")}</code></pre>`;
     case "table": {
       const rows = b.cells || [];
       if (!rows.length) return "";
-      const head = `<tr>${rows[0].map((c) => `<th data-en="${enAttr(c.en)}">${inlineMd(c.sr)}</th>`).join("")}</tr>`;
-      const body = rows.slice(1).map((r) => `<tr>${r.map((c) => `<td data-en="${enAttr(c.en)}">${inlineMd(c.sr)}</td>`).join("")}</tr>`).join("");
+      const cell = (tag, c) => { const p = lrPick(c); return `<${tag} data-alt="${enAttr(p.hover)}">${inlineMd(p.main)}</${tag}>`; };
+      const head = `<tr>${rows[0].map((c) => cell("th", c)).join("")}</tr>`;
+      const body = rows.slice(1).map((r) => `<tr>${r.map((c) => cell("td", c)).join("")}</tr>`).join("");
       return `<div class="lr-table-wrap"><table class="lr-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
     }
     default:
@@ -474,7 +484,8 @@ function renderLarionov() {
       const cls = b.type === "li" ? "guide-list" : "guide-olist";
       const items = [];
       while (i < blocks.length && blocks[i].type === b.type) {
-        items.push(`<li data-en="${enAttr(blocks[i].en)}">${inlineMd(blocks[i].sr)}</li>`);
+        const t = lrPick(blocks[i]);
+        items.push(`<li data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</li>`);
         i++;
       }
       out.push(`<${tag} class="${cls}">${items.join("")}</${tag}>`);
@@ -484,15 +495,27 @@ function renderLarionov() {
     i++;
   }
 
+  const title = m.title || {};
+  const mainTitle = lrLang === "en" ? title.en : title.sr;
+  const subTitle = lrLang === "en" ? title.sr : title.en;
+  const note = lrLang === "en"
+    ? `${esc(m.license_note || "")} Text is in English (the original guide) — <b>hover any paragraph</b> to see the Serbian translation.`
+    : `${esc(m.license_note || "")} Tekst je na srpskom — <b>pređi mišem preko pasusa</b> da vidiš engleski original.`;
+  const langBtn = (val, label) => `<button class="${lrLang === val ? "active" : ""}" onclick="setLrLang('${val}')">${label}</button>`;
+
   app.innerHTML = `
+    <div class="guide-lang">
+      <span class="refs-label">jezik:</span>
+      ${langBtn("en", "EN")}${langBtn("sr", "SR")}
+    </div>
     <div class="guide-meta">
-      <div class="guide-title">${esc((m.title && m.title.sr) || "Larionov vodič")}</div>
-      <div class="guide-sub">${esc((m.title && m.title.en) || "")}</div>
+      <div class="guide-title">${esc(mainTitle || "Larionov vodič")}</div>
+      <div class="guide-sub">${esc(subTitle || "")}</div>
       <div class="guide-badges">
         ${m.author ? `<span class="pill">${esc(m.author)}</span>` : ""}
         ${m.source ? `<a class="pill link" href="${esc(m.source)}" target="_blank" rel="noopener">izvor na GitHub-u ↗</a>` : ""}
       </div>
-      <div class="guide-note">${esc(m.license_note || "")} Tekst je na srpskom — <b>pređi mišem preko pasusa</b> da vidiš engleski original.</div>
+      <div class="guide-note">${note}</div>
     </div>
     <div class="lr-body">${out.join("")}</div>`;
 }
