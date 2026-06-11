@@ -29,7 +29,7 @@ Pa otvori `http://localhost:8000` u browseru.
 - **Pojmovi** — index sa EN+SR definicijama; klik na pojam vodi do pitanja gde se javlja
 - **Obrasci** — mentalni modeli/pouke koje pokrivaju više pitanja
 - **Vodič** — zvanični exam guide, dvojezično (Oba/EN/SR)
-- **Larionov** — community vodič (Paul Larionov); EN podrazumevano, klik EN/SR menja jezik, hover nad pasusom pokazuje drugi jezik
+- **Larionov** — community vodič (Paul Larionov); EN podrazumevano, klik EN/SR menja jezik, hover nad pasusom pokazuje drugi jezik. Pojmovi iz glosara su automatski podvučeni u tekstu — hover otvara kutiju sa EN+SR definicijom, klik vodi na tab „Pojmovi"
 
 ## Deploy na Netlify
 Pošto je sve statičko, ima dva načina:

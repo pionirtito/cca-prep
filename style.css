@@ -296,3 +296,19 @@ footer { border-top: 1px solid var(--line); padding: 16px 28px; font-size: 11px;
   white-space: normal; text-transform: none; letter-spacing: normal; pointer-events: none;
 }
 .lr-table [data-alt]:hover::after { font-size: 12px; max-width: min(420px, 80vw); }
+
+/* glossary auto-links inside the Larionov text + hover container */
+.gloss-link { border-bottom: 1px dashed var(--accent-soft); cursor: pointer; }
+.gloss-link:hover { background: rgba(217, 119, 87, 0.14); }
+/* while the glossary container is open, suppress the block-level translation tooltip */
+.lr-body.gloss-open [data-alt]:hover::after { display: none; }
+#gloss-tip {
+  position: fixed; left: 0; top: 0; z-index: 40; display: none;
+  max-width: min(420px, 92vw); pointer-events: none;
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 8px;
+  padding: 10px 13px; box-shadow: 0 8px 28px rgba(0,0,0,.45);
+}
+#gloss-tip.show { display: block; }
+#gloss-tip .gt-term { font-family: var(--mono); color: var(--accent); font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+#gloss-tip .gt-en { color: var(--ink); font-size: 13px; line-height: 1.5; }
+#gloss-tip .gt-sr { color: var(--ink-dim); font-size: 12px; line-height: 1.5; border-left: 2px solid var(--line); padding-left: 9px; margin-top: 6px; }

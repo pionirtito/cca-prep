@@ -128,6 +128,18 @@ pojam u `glossary.json` — čak i ako nije u `glossary_refs` nijednog pitanja.
   Code okruženje) se objašnjavaju u razgovoru ali NE ulaze u bazu.
 - Validiraj JSON posle unosa.
 
+## Larionov tab: automatsko podvlačenje pojmova (sajt)
+Larionov tab automatski podvlači u tekstu SVAKO pojavljivanje bilo kog `term` iz `glossary.json`
+(tačan kanonski string, case-insensitive, najduže-prvo). Hover otvara kutiju sa nazivom pojma +
+EN i SR definicijom; klik skače na tab „Pojmovi" i podsvetli pojam. Implementacija je u `app.js`
+(`glossIndex`/`linkGloss`/`wireGloss`) i `style.css` (`.gloss-link`, `#gloss-tip`).
+**Posledica za unos pojmova:** polje `term` je sada i ključ za poklapanje na sajtu, ne samo labela.
+- Kanonski `term` neka bude oblik koji se stvarno javlja u tekstu (npr. `stop_reason`, `system prompt`),
+  da bi se poklopio. Pojmovi čiji kanonski oblik sadrži markdown/zagrade (`headless mode (-p)`) NEĆE
+  se poklopiti sa golim tekstom — to je očekivano, ne ispravljaj nasilno.
+- Poklapanje radi nad tekstom, NE unutar tagova/atributa; `code` blokovi se preskaču.
+- Ne treba ručno održavati nikakav indeks — feature čita `glossary.json` direktno pri renderu.
+
 ## Obrasci (patterns.json)
 Pored pojmova, vodimo i sloj POUKA/OBRAZACA u `data/patterns.json` — mentalni modeli koji
 pokrivaju vise pitanja (npr. „deterministicko = hook, ne prompt"). Svaki obrazac ima `id`,

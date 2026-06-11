@@ -63,14 +63,6 @@ function render() {
 
 // ---- overview + search ----
 function renderOverview(filter = "", domain = "all", status = "all") {
-  const filtered = QUESTIONS.filter((q) => {
-    const text = (q.question + JSON.stringify(q.options) + (q.tags || []).join(" ")).toLowerCase();
-    const okText = text.includes(filter.toLowerCase());
-    const okDom = domain === "all" || String(q.domain) === domain;
-    const okStat = status === "all" || q.status === status;
-    return okText && okDom && okStat;
-  });
-
   app.innerHTML = `
     <div class="toolbar">
       <input id="search" placeholder="Pretrazi pitanja, opcije, tagove..." value="${filter}" />
@@ -87,15 +79,25 @@ function renderOverview(filter = "", domain = "all", status = "all") {
     </div>
     <div id="list"></div>`;
 
-  const list = document.getElementById("list");
-  list.innerHTML = filtered.length ? filtered.map(cardHTML).join("") : `<p class="empty">Nema pitanja za ovaj filter.</p>`;
+  // osvezava samo listu (ne ceo app) -> #search element ostaje, fokus se ne gubi pri kucanju
+  function renderList() {
+    const f = document.getElementById("search").value.toLowerCase();
+    const dom = document.getElementById("fdom").value;
+    const stat = document.getElementById("fstat").value;
+    const filtered = QUESTIONS.filter((q) => {
+      const text = (q.question + JSON.stringify(q.options) + (q.tags || []).join(" ")).toLowerCase();
+      const okDom = dom === "all" || String(q.domain) === dom;
+      const okStat = stat === "all" || q.status === stat;
+      return text.includes(f) && okDom && okStat;
+    });
+    document.getElementById("list").innerHTML =
+      filtered.length ? filtered.map(cardHTML).join("") : `<p class="empty">Nema pitanja za ovaj filter.</p>`;
+  }
 
-  document.getElementById("search").oninput = (e) =>
-    renderOverview(e.target.value, document.getElementById("fdom").value, document.getElementById("fstat").value);
-  document.getElementById("fdom").onchange = (e) =>
-    renderOverview(document.getElementById("search").value, e.target.value, document.getElementById("fstat").value);
-  document.getElementById("fstat").onchange = (e) =>
-    renderOverview(document.getElementById("search").value, document.getElementById("fdom").value, e.target.value);
+  renderList();
+  document.getElementById("search").oninput = renderList;
+  document.getElementById("fdom").onchange = renderList;
+  document.getElementById("fstat").onchange = renderList;
 }
 
 function explanationsHTML(q) {
@@ -215,12 +217,19 @@ function nextQuiz() {
 
 // ---- glossary ----
 function renderGlossary(filter = "") {
-  const filtered = GLOSSARY.filter((g) => (g.term + g.en + g.sr).toLowerCase().includes(filter.toLowerCase()))
-    .sort((a, b) => a.term.localeCompare(b.term));
   app.innerHTML = `
     <div class="toolbar"><input id="gsearch" placeholder="Pretrazi pojmove..." value="${filter}" /></div>
-    <div id="glist">${filtered.length ? filtered.map(glossHTML).join("") : `<p class="empty">Nema pojmova za ovaj filter.</p>`}</div>`;
-  document.getElementById("gsearch").oninput = (e) => renderGlossary(e.target.value);
+    <div id="glist"></div>`;
+  // osvezava samo #glist -> input ostaje, fokus se ne gubi pri kucanju
+  function renderGList() {
+    const f = document.getElementById("gsearch").value.toLowerCase();
+    const filtered = GLOSSARY.filter((g) => (g.term + g.en + g.sr).toLowerCase().includes(f))
+      .sort((a, b) => a.term.localeCompare(b.term));
+    document.getElementById("glist").innerHTML =
+      filtered.length ? filtered.map(glossHTML).join("") : `<p class="empty">Nema pojmova za ovaj filter.</p>`;
+  }
+  renderGList();
+  document.getElementById("gsearch").oninput = renderGList;
 }
 
 function glossHTML(g) {
@@ -236,12 +245,19 @@ function glossHTML(g) {
 
 // ---- patterns ----
 function renderPatterns(filter = "") {
-  const filtered = PATTERNS.filter((p) => (p.title + p.lesson_sr + p.lesson_en).toLowerCase().includes(filter.toLowerCase()))
-    .sort((a, b) => (a.domain - b.domain) || a.title.localeCompare(b.title));
   app.innerHTML = `
     <div class="toolbar"><input id="psearch" placeholder="Pretrazi obrasce..." value="${filter}" /></div>
-    <div id="plist">${filtered.length ? filtered.map(patternHTML).join("") : `<p class="empty">Jos nema obrazaca.</p>`}</div>`;
-  document.getElementById("psearch").oninput = (e) => renderPatterns(e.target.value);
+    <div id="plist"></div>`;
+  // osvezava samo #plist -> input ostaje, fokus se ne gubi pri kucanju
+  function renderPList() {
+    const f = document.getElementById("psearch").value.toLowerCase();
+    const filtered = PATTERNS.filter((p) => (p.title + p.lesson_sr + p.lesson_en).toLowerCase().includes(f))
+      .sort((a, b) => (a.domain - b.domain) || a.title.localeCompare(b.title));
+    document.getElementById("plist").innerHTML =
+      filtered.length ? filtered.map(patternHTML).join("") : `<p class="empty">Jos nema obrazaca.</p>`;
+  }
+  renderPList();
+  document.getElementById("psearch").oninput = renderPList;
 }
 
 function patternHTML(p) {
@@ -431,6 +447,42 @@ function enAttr(s) {
   return esc(plain);
 }
 
+// ---- glossary auto-linking in Larionov text ----
+let _glossIdx = null;
+function escapeRegExp(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function glossIndex() {
+  if (_glossIdx) return _glossIdx;
+  const byTerm = new Map();
+  const terms = [];
+  for (const g of GLOSSARY) {
+    if (!g || !g.term) continue;
+    byTerm.set(g.term.toLowerCase(), g);
+    terms.push(g.term);
+  }
+  terms.sort((a, b) => b.length - a.length); // longest-first so multi-word terms win
+  let re = null;
+  if (terms.length) {
+    const alt = terms.map(escapeRegExp).join("|");
+    re = new RegExp(`(?<![\\w-])(?:${alt})(?![\\w-])`, "gi");
+  }
+  _glossIdx = { byTerm, re };
+  return _glossIdx;
+}
+// wrap glossary-term occurrences in spans, only inside text (never inside tags/attrs)
+function linkGloss(html) {
+  const { byTerm, re } = glossIndex();
+  if (!re) return html;
+  return html.split(/(<[^>]+>)/).map((seg) => {
+    if (!seg || seg[0] === "<") return seg;
+    re.lastIndex = 0;
+    return seg.replace(re, (m) => {
+      const g = byTerm.get(m.toLowerCase());
+      if (!g) return m;
+      return `<span class="gloss-link" data-term="${esc(g.term)}">${m}</span>`;
+    });
+  }).join("");
+}
+
 function setLrLang(lang) { lrLang = lang; renderLarionov(); }
 
 // pick which language is the displayed text and which goes in the hover tooltip
@@ -442,23 +494,23 @@ function lrBlock(b) {
   const t = lrPick(b);
   switch (b.type) {
     case "h1":
-      return `<h2 class="lr-h1" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h2>`;
+      return `<h2 class="lr-h1" data-alt="${enAttr(t.hover)}">${linkGloss(inlineMd(t.main))}</h2>`;
     case "h2":
-      return `<h2 class="lr-h2" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h2>`;
+      return `<h2 class="lr-h2" data-alt="${enAttr(t.hover)}">${linkGloss(inlineMd(t.main))}</h2>`;
     case "h3":
-      return `<h3 class="guide-h3" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h3>`;
+      return `<h3 class="guide-h3" data-alt="${enAttr(t.hover)}">${linkGloss(inlineMd(t.main))}</h3>`;
     case "h4":
-      return `<h4 class="lr-h4" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</h4>`;
+      return `<h4 class="lr-h4" data-alt="${enAttr(t.hover)}">${linkGloss(inlineMd(t.main))}</h4>`;
     case "p":
-      return `<p class="guide-p" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</p>`;
+      return `<p class="guide-p" data-alt="${enAttr(t.hover)}">${linkGloss(inlineMd(t.main))}</p>`;
     case "quote":
-      return `<blockquote class="lr-quote" data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</blockquote>`;
+      return `<blockquote class="lr-quote" data-alt="${enAttr(t.hover)}">${linkGloss(inlineMd(t.main))}</blockquote>`;
     case "code":
       return `<pre class="lr-code"${b.lang ? ` data-lang="${esc(b.lang)}"` : ""}><code>${esc(b.text || "")}</code></pre>`;
     case "table": {
       const rows = b.cells || [];
       if (!rows.length) return "";
-      const cell = (tag, c) => { const p = lrPick(c); return `<${tag} data-alt="${enAttr(p.hover)}">${inlineMd(p.main)}</${tag}>`; };
+      const cell = (tag, c) => { const p = lrPick(c); return `<${tag} data-alt="${enAttr(p.hover)}">${linkGloss(inlineMd(p.main))}</${tag}>`; };
       const head = `<tr>${rows[0].map((c) => cell("th", c)).join("")}</tr>`;
       const body = rows.slice(1).map((r) => `<tr>${r.map((c) => cell("td", c)).join("")}</tr>`).join("");
       return `<div class="lr-table-wrap"><table class="lr-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
@@ -485,7 +537,7 @@ function renderLarionov() {
       const items = [];
       while (i < blocks.length && blocks[i].type === b.type) {
         const t = lrPick(blocks[i]);
-        items.push(`<li data-alt="${enAttr(t.hover)}">${inlineMd(t.main)}</li>`);
+        items.push(`<li data-alt="${enAttr(t.hover)}">${linkGloss(inlineMd(t.main))}</li>`);
         i++;
       }
       out.push(`<${tag} class="${cls}">${items.join("")}</${tag}>`);
@@ -518,6 +570,62 @@ function renderLarionov() {
       <div class="guide-note">${note}</div>
     </div>
     <div class="lr-body">${out.join("")}</div>`;
+  wireGloss();
+}
+
+// ---- glossary hover container (singleton) on the Larionov tab ----
+function ensureGlossTip() {
+  let tip = document.getElementById("gloss-tip");
+  if (!tip) {
+    tip = document.createElement("div");
+    tip.id = "gloss-tip";
+    tip.innerHTML = `<div class="gt-term"></div><div class="gt-en"></div><div class="gt-sr"></div>`;
+    document.body.appendChild(tip);
+  }
+  return tip;
+}
+function positionGlossTip(tip, link) {
+  const r = link.getBoundingClientRect();
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = Math.min(r.left, vw - tw - 8);
+  if (left < 8) left = 8;
+  let top = r.bottom + 6;
+  if (top + th > vh - 8) top = r.top - th - 6; // flip above if no room below
+  if (top < 8) top = 8;
+  tip.style.left = left + "px";
+  tip.style.top = top + "px";
+}
+function wireGloss() {
+  const body = app.querySelector(".lr-body");
+  if (!body) return; // listeners bind to the fresh .lr-body each render — old node is discarded
+  const tip = ensureGlossTip();
+  const { byTerm } = glossIndex();
+  const hide = () => { tip.classList.remove("show"); body.classList.remove("gloss-open"); };
+  body.addEventListener("mouseover", (e) => {
+    const link = e.target.closest(".gloss-link");
+    if (!link) return;
+    const g = byTerm.get((link.dataset.term || "").toLowerCase());
+    if (!g) return;
+    tip.querySelector(".gt-term").textContent = g.term;
+    tip.querySelector(".gt-en").textContent = g.en || "";
+    tip.querySelector(".gt-sr").textContent = g.sr || "";
+    tip.classList.add("show");
+    positionGlossTip(tip, link);
+    body.classList.add("gloss-open");
+  });
+  body.addEventListener("mouseout", (e) => {
+    const link = e.target.closest(".gloss-link");
+    if (!link) return;
+    if (e.relatedTarget && link.contains(e.relatedTarget)) return;
+    hide();
+  });
+  body.addEventListener("click", (e) => {
+    const link = e.target.closest(".gloss-link");
+    if (!link) return;
+    hide();
+    jumpToTerm(link.dataset.term);
+  });
 }
 
 // ---- cross-navigation ----
