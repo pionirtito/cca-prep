@@ -1777,5 +1777,26 @@
     "sr": "Arhitektonski stil koji deli aplikaciju na male, nezavisno isporučive servise sa jasnim granicama (nasuprot monolitu). Na ispitu se javlja kao marker scenarija: restrukturiranje monolita u mikroservise znači desetine fajlova i odluke o granicama servisa — zadatak sa arhitektonskim posledicama, pa se pre izmena koristi plan mode.",
     "domain": 3,
     "seen_in": []
+  },
+  {
+    "term": "TTL",
+    "en": "Time To Live — a cache-invalidation strategy where each cached entry is given a fixed lifespan and expires automatically when it elapses. Simple and predictable; the trade-off is that data can be stale within the window and is re-fetched even when nothing changed. Contrasted with event-based invalidation.",
+    "sr": "Time To Live — strategija invalidacije keša gde svaki upis dobija fiksni vek i automatski ističe kad to vreme prođe. Jednostavna i predvidljiva; cena je da podaci mogu biti zastareli unutar prozora i da se osvežavaju i kad se ništa nije promenilo. Suprotnost event-based invalidaciji.",
+    "domain": 5,
+    "seen_in": []
+  },
+  {
+    "term": "event-based",
+    "en": "Event-based (cache) invalidation — a strategy where cached entries are invalidated in response to a triggering event (e.g. the underlying data changes), rather than after a fixed time. Keeps data fresh and avoids needless re-fetching, at the cost of wiring up reliable change events. Contrasted with TTL.",
+    "sr": "Event-based (invalidacija keša) — strategija gde se keš poništava kao reakcija na okidački događaj (npr. promenu izvornih podataka), umesto posle fiksnog vremena. Drži podatke svežim i izbegava nepotrebno osvežavanje, po ceni pouzdanog ožičavanja događaja o promeni. Suprotnost TTL-u.",
+    "domain": 5,
+    "seen_in": []
+  },
+  {
+    "term": "SLA",
+    "en": "Service Level Agreement — a commitment to a measurable level of service, most often a latency/turnaround guarantee. Exam-relevant via the Message Batches API, which is ~50% cheaper but offers NO latency SLA (processing up to 24h); SLA planning means sizing submission cadence around the guarantee you owe (e.g. 4-hour submission windows to meet a 30-hour SLA given 24-hour batch processing).",
+    "sr": "Service Level Agreement (sporazum o nivou usluge) — obaveza na merljiv nivo usluge, najčešće garancija latencije/vremena obrade. Ispitno bitan preko Message Batches API-ja, koji je ~50% jeftiniji ali NEMA garanciju latencije (SLA) (obrada do 24h); planiranje SLA znači podešavanje ritma slanja prema garanciji koju duguješ (npr. prozori slanja od 4h da se ispoštuje SLA od 30h uz 24h batch obrade).",
+    "domain": 4,
+    "seen_in": []
   }
 ]
