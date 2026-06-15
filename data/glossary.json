@@ -1744,9 +1744,9 @@
     "seen_in": []
   },
   {
-    "term": "stratified random sampling",
-    "en": "Regularly auditing a sample even of high-confidence extractions, broken down by document type and field — because an aggregate metric (e.g. 97% accuracy) can hide 40% error rates for a particular document type or field.",
-    "sr": "Redovna revizija uzorka čak i kod ekstrakcija visoke pouzdanosti, razloženo po TIPU dokumenta i po polju. Razlog: agregatna metrika (npr. 97% tačnosti) može da krije 40% grešaka za jedan određeni tip dokumenta. Analiziraj tačnost po segmentima, ne samo ukupno — inače „prosek“ lažno smiruje.",
+    "term": "stratified sampling",
+    "en": "Stratified (random) sampling — regularly auditing a sample even of high-confidence extractions, broken down by document type and field — because an aggregate metric (e.g. 97% accuracy) can hide 40% error rates for a particular document type or field.",
+    "sr": "Stratifikovano (slojevito) uzorkovanje — redovna revizija uzorka čak i kod ekstrakcija visoke pouzdanosti, razloženo po TIPU dokumenta i po polju. Razlog: agregatna metrika (npr. 97% tačnosti) može da krije 40% grešaka za jedan određeni tip dokumenta. Analiziraj tačnost po segmentima, ne samo ukupno — inače „prosek“ lažno smiruje.",
     "domain": 5,
     "seen_in": []
   },
