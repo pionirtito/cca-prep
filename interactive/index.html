@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interaktivno · CCA-F Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* page-local: standalone interactive gallery */
+    a.ix-card { text-decoration: none; color: inherit; }
+    .ix-back { margin-left: auto; color: var(--ink-dim); font-size: 13px; text-decoration: none; }
+    .ix-back:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">◆</span>
+      <h1>CCA-F&nbsp;<span class="sub">Prep</span></h1>
+    </div>
+    <a class="ix-back" href="../">← nazad na Prep</a>
+  </header>
+
+  <main id="app">
+    <p class="loading">Učitavam…</p>
+  </main>
+
+  <footer>
+    <span>Anthropic Claude Certified Architect — Foundations · interaktivni alati</span>
+  </footer>
+
+  <script>
+    const IX_GROUPS = {
+      0: "Osnove",
+      1: "Domen 1 · Agentic Architecture",
+      2: "Domen 2 · Tool Design & MCP",
+      3: "Domen 3 · Claude Code",
+      4: "Domen 4 · Prompt Engineering",
+      5: "Domen 5 · Context & Reliability",
+    };
+    function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+    async function load() {
+      const app = document.getElementById("app");
+      let items;
+      try {
+        items = await fetch("../data/interactive.json").then((r) => r.json());
+      } catch (e) {
+        app.innerHTML = `<p class="empty">Ne mogu da učitam podatke. Pokreni sajt preko lokalnog servera (vidi README), ne otvaranjem fajla direktno.</p>`;
+        return;
+      }
+      if (!items.length) { app.innerHTML = `<p class="empty">Nema interaktivnih alata.</p>`; return; }
+
+      const groups = [...new Set(items.map((x) => x.group))].sort((a, b) => a - b);
+      const sections = groups.map((g) => {
+        const cards = items.filter((x) => x.group === g).map((x) => {
+          const href = x.file.replace(/^interactive\//, "");
+          return `
+            <a class="ix-card" href="${esc(href)}">
+              <div class="ix-card-top"><span class="pill">${esc(x.type)}</span><span class="ix-card-ext">↗</span></div>
+              <h3 class="ix-card-title">${esc(x.title_sr)}</h3>
+              <div class="ix-card-en">${esc(x.title)}</div>
+              <p class="ix-card-desc">${esc(x.desc)}</p>
+            </a>`;
+        }).join("");
+        return `<h2 class="ix-group-h">${esc(IX_GROUPS[g] || ("Grupa " + g))}</h2><div class="ix-grid">${cards}</div>`;
+      }).join("");
+
+      app.innerHTML = `
+        <div class="ix-intro">
+          <p>Interaktivni alati i objašnjenja — samostalne stranice koje rade uživo. Klikni karticu da otvoriš alat kao zasebnu stranu.</p>
+        </div>
+        ${sections}`;
+    }
+
+    load();
+  </script>
+</body>
+</html>

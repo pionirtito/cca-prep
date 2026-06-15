@@ -684,7 +684,7 @@ function renderInteractive() {
 
   app.innerHTML = `
     <div class="ix-intro">
-      <p>Interaktivni alati i objašnjenja — samostalne stranice koje rade uživo. Klikni karticu da je otvoriš ovde, ili „↗“ za novi tab.</p>
+      <p>Interaktivni alati i objašnjenja — samostalne stranice koje rade uživo. Klikni karticu da je otvoriš ovde, ili „↗“ za novi tab. <a class="ix-open" href="interactive/" target="_blank" rel="noopener">otvori kao zasebnu stranu ↗</a></p>
     </div>
     ${sections}`;
 }
