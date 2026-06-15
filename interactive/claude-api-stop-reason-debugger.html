@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude API · stop_reason debugger</title>
+<style>
+:root{
+  --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+  --text:#1f1e1c; --text2:#5f5e5a; --text3:#9b9a93;
+  --border:#dedcd3; --border2:#c8c6bc;
+  --accent:#185fa5;
+  --radius:12px; --radius-sm:8px;
+  --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1a18; --surface:#242320; --surface2:#2e2d29;
+    --text:#e8e6df; --text2:#aaa89f; --text3:#75746c;
+    --border:#3a3934; --border2:#4c4b44;
+    --accent:#85b7eb;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;padding:32px 16px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:21px;font-weight:600;margin:0 0 4px}
+.sub{font-size:13px;color:var(--text2);margin:0 0 20px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.pill{font-size:12px;padding:5px 11px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit}
+.pill[aria-pressed="true"]{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:600}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr);align-items:stretch}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;transition:border-color .3s;min-height:200px}
+.panel.live{border-color:var(--accent)}
+.ph{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:13px;font-weight:600}
+.ph .glyph{color:var(--text2);font-size:14px}
+.mlabel{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px}
+.chip{font-size:11px;font-family:var(--mono);padding:4px 8px;border-radius:6px;margin:3px 0;display:block}
+.cstat,.sstat{font-size:12px;color:var(--text2)}
+.cstat{margin-top:10px}
+.wire{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 6px}
+.wl{font-size:11px;color:var(--text2);text-align:center;margin-bottom:6px;min-height:28px}
+.line{position:relative;width:100%;height:8px}
+.line::before{content:"";position:absolute;top:3.5px;left:0;right:0;height:1px;background:var(--border2)}
+.dot{position:absolute;top:0;width:8px;height:8px;border-radius:50%;background:var(--accent);display:none}
+@media (prefers-reduced-motion: no-preference){
+  @keyframes goR{from{left:0}to{left:calc(100% - 8px)}}
+  @keyframes goL{from{left:calc(100% - 8px)}to{left:0}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .dotR{animation:goR 1.1s ease-in-out infinite}
+  .dotL{animation:goL 1.1s ease-in-out infinite}
+  .busy{animation:pulse 1.2s ease-in-out infinite}
+}
+.explain{font-size:14px;line-height:1.6;margin:14px 0 10px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm)}
+.payload{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface)}
+.phead{font-size:11px;font-family:var(--mono);padding:6px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+pre{margin:0;padding:12px;font-size:11.5px;font-family:var(--mono);line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+.ctrl{display:flex;align-items:center;gap:10px;margin-top:12px}
+button{font:13px/1 inherit;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer}
+button:hover:not(:disabled){background:var(--surface2)}
+button:disabled{opacity:.4;cursor:default}
+.stepn{font-size:12px;color:var(--text2)}
+.foot{font-size:12px;color:var(--text3);margin-top:24px;line-height:1.7}
+.foot a{color:var(--accent)}
+@media (max-width:640px){.stage{grid-template-columns:1fr}.wire{flex-direction:row;gap:10px;padding:10px 0}.line{width:120px}.wl{margin:0;min-height:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Claude API · stop_reason debugger</h1>
+<p class="sub">Step through client ↔ server communication, tool calls, and every stop_reason. Built for CCA-F prep, grounded in the official Messages API docs.</p>
+
+<div class="pills" id="pills"></div>
+
+<div class="stage">
+  <div class="panel" id="cpanel">
+    <div class="ph"><span class="glyph">⌘</span>Client — your machine</div>
+    <div class="mlabel">messages[]</div>
+    <div id="cmsgs"></div>
+    <div class="cstat" id="cstat"></div>
+  </div>
+  <div class="wire">
+    <div class="wl" id="wlabel"></div>
+    <div class="line"><div class="dot" id="dot"></div></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:6px">HTTPS</div>
+  </div>
+  <div class="panel" id="spanel">
+    <div class="ph"><span class="glyph">▣</span>api.anthropic.com</div>
+    <div class="sstat" id="sstat"></div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3)">stop_reason</div>
+    <div id="srb" style="margin-top:4px"></div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3);line-height:1.5">Stateless — nothing persists between requests</div>
+  </div>
+</div>
+
+<div class="explain" id="explain"></div>
+
+<div class="payload">
+  <div class="phead" id="phead">on the wire</div>
+  <pre id="pcode"></pre>
+</div>
+
+<div class="ctrl">
+  <button id="prev" onclick="mv(-1)">← Back</button>
+  <button id="next" onclick="mv(1)" style="font-weight:600">Step →</button>
+  <span class="stepn" id="stepn"></span>
+</div>
+
+<p class="foot">Sources: <a href="https://platform.claude.com/docs/en/build-with-claude/handling-stop-reasons">Stop reasons and fallback</a> · <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works">How tool use works</a> · <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/implement-tool-use">Handle tool calls</a>. Stop reasons not in the basic guide table: pause_turn, refusal, model_context_window_exceeded.</p>
+</div>
+
+<script>
+const C={u:["#E1F5EE","#085041","user"],a:["#EEEDFE","#3C3489","assistant"],t:["#FAEEDA","#633806","user"],x:["#EEEDFE","#3C3489","assistant"]};
+const SR={end_turn:["#EAF3DE","#27500A"],tool_use:["#EEEDFE","#3C3489"],max_tokens:["#FAEEDA","#633806"],pause_turn:["#E6F1FB","#0C447C"],refusal:["#FCEBEB","#791F1F"],stop_sequence:["#F1EFE8","#444441"],model_context_window_exceeded:["#FAEEDA","#633806"]};
+const U1='{ "role": "user", "content": "Weather in Belgrade?" }';
+const S=[
+{n:"1 · Basic request",steps:[
+{d:"send",w:"POST /v1/messages →",e:"The client sends the model name, a max_tokens budget, and the messages array. Auth travels in the x-api-key header. This single JSON body is everything the server will know.",p:'POST /v1/messages\nx-api-key: sk-ant-...\n{\n  "model": "claude-sonnet-4-6",\n  "max_tokens": 1024,\n  "messages": [\n    { "role": "user", "content": "Hi Claude" }\n  ]\n}',m:[["u",'"Hi Claude"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"server",w:"",e:"The model samples tokens one by one until it decides its turn is complete. There is no session, no memory — the request body is the entire universe for this call.",p:"(model generating…)",m:[["u",'"Hi Claude"']],cs:"awaiting response…",ss:"Sampling tokens…",sr:null},
+{d:"recv",w:"← 200 OK",e:"Every successful response carries stop_reason. Here it is end_turn — the model finished naturally. stop_reason is not an error: errors are HTTP 4xx/5xx, stop reasons ride inside a 200.",p:'200 OK\n{\n  "id": "msg_01XFDU...",\n  "role": "assistant",\n  "content": [\n    { "type": "text", "text": "Hello! How can I help?" }\n  ],\n  "stop_reason": "end_turn",\n  "usage": { "input_tokens": 10, "output_tokens": 12 }\n}',m:[["u",'"Hi Claude"']],cs:"reading response",ss:"Done — state discarded",sr:"end_turn"},
+{d:"client",w:"",e:"The client appends the assistant message to its local array and renders the text. That local array is the only memory anywhere in this system.",p:'if (resp.stop_reason === "end_turn") {\n  messages.push({ role: "assistant", content: resp.content });\n  render(resp.content);\n}',m:[["u",'"Hi Claude"'],["a",'text: "Hello! How can…"']],cs:"idle",ss:"Idle",sr:"end_turn"}]},
+
+{n:"2 · Tool use loop",steps:[
+{d:"send",w:"POST /v1/messages →",e:"Tools are defined as JSON schemas in the request. The description field is how the model picks between tools — it is the primary selection mechanism, not the name. tool_choice auto lets the model decide.",p:'POST /v1/messages\n{\n  "model": "claude-sonnet-4-6",\n  "max_tokens": 1024,\n  "tools": [{\n    "name": "get_weather",\n    "description": "Get current weather for a city...",\n    "input_schema": { "type": "object",\n      "properties": { "city": { "type": "string" } },\n      "required": ["city"] }\n  }],\n  "tool_choice": { "type": "auto" },\n  "messages": [ '+U1+' ]\n}',m:[["u",'"Weather in Belgrade?"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"server",w:"",e:"The model never executes anything. It reads the schemas, decides a tool is needed, and emits a structured tool_use content block — a request for YOU to run something.",p:"(model decides: I need get_weather)",m:[["u",'"Weather in Belgrade?"']],cs:"awaiting response…",ss:"Sampling — emits tool_use block",sr:null},
+{d:"recv",w:"← 200 OK",e:"stop_reason tool_use is the loop-control signal: the model is paused, waiting for a result. Note the id — you will need it to match the result back.",p:'200 OK\n{\n  "content": [\n    { "type": "tool_use",\n      "id": "toolu_01A09q90",\n      "name": "get_weather",\n      "input": { "city": "Belgrade" } }\n  ],\n  "stop_reason": "tool_use"\n}',m:[["u",'"Weather in Belgrade?"']],cs:"reading response",ss:"Paused — waiting for result",sr:"tool_use"},
+{d:"client",w:"",e:"Step one on the client: append the assistant message to history exactly as received. Step two: actually run the function — on your machine, with your code, your credentials, your network.",p:'messages.push({ role: "assistant", content: resp.content });\nconst result = get_weather("Belgrade");\n// → "22°C, clear skies"',m:[["u",'"Weather in Belgrade?"'],["x","tool_use: get_weather"]],cs:"executing get_weather()…",ss:"Idle (stateless)",sr:"tool_use"},
+{d:"send",w:"POST /v1/messages →",e:"The result goes back as a tool_result block inside a NEW user message, matched by tool_use_id — and the FULL history rides along. Critical: nothing after the tool_result block. Adding trailing text teaches the model to end its turn early (the empty end_turn bug).",p:'POST /v1/messages\n{\n  "tools": [ ...same tools... ],\n  "messages": [\n    '+U1+',\n    { "role": "assistant", "content": [\n      { "type": "tool_use", "id": "toolu_01A09q90", ... } ] },\n    { "role": "user", "content": [\n      { "type": "tool_result",\n        "tool_use_id": "toolu_01A09q90",\n        "content": "22°C, clear skies" } ] }\n  ]\n}',m:[["u",'"Weather in Belgrade?"'],["x","tool_use: get_weather"],["t","tool_result: 22°C, clear"]],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"recv",w:"← 200 OK",e:"The model reads the result and composes the final answer. end_turn exits the loop. The whole pattern: while stop_reason == tool_use → execute, append, resend. Never use text parsing or iteration caps as the primary completion signal.",p:'200 OK\n{\n  "content": [\n    { "type": "text",\n      "text": "It is 22°C and clear in Belgrade." }\n  ],\n  "stop_reason": "end_turn"\n}',m:[["u",'"Weather in Belgrade?"'],["x","tool_use: get_weather"],["t","tool_result: 22°C, clear"],["a","text: final answer"]],cs:"loop exits — render",ss:"Done",sr:"end_turn"}]},
+
+{n:"3 · Stateless server",steps:[
+{d:"send",w:"POST /v1/messages →",e:"Turn one. A single user message goes up.",p:'{\n  "messages": [\n    { "role": "user", "content": "Capital of Serbia?" }\n  ]\n}',m:[["u",'"Capital of Serbia?"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"recv",w:"← 200 OK",e:"The model answers and immediately forgets everything. There is no session object, no conversation id that stores content — the response id is just a label.",p:'{\n  "content": [{ "type": "text", "text": "Belgrade." }],\n  "stop_reason": "end_turn"\n}',m:[["u",'"Capital of Serbia?"'],["a",'text: "Belgrade."']],cs:"rendered",ss:"State discarded",sr:"end_turn"},
+{d:"client",w:"",e:"The user asks a follow-up with a pronoun: 'How many people live there?' — 'there' only makes sense with context. The server has none.",p:'messages.push({ role: "user",\n  content: "How many people live there?" });',m:[["u",'"Capital of Serbia?"'],["a",'text: "Belgrade."'],["u",'"How many people live there?"']],cs:"building request",ss:"Idle",sr:null},
+{d:"send",w:"POST /v1/messages →",e:"The client replays the ENTIRE history every call. Context exists only because you resend it. Side effect: input tokens grow every turn — this is why prompt caching matters in long conversations.",p:'{\n  "messages": [\n    { "role": "user", "content": "Capital of Serbia?" },\n    { "role": "assistant", "content": "Belgrade." },\n    { "role": "user", "content": "How many people live there?" }\n  ]\n}',m:[["u",'"Capital of Serbia?"'],["a",'text: "Belgrade."'],["u",'"How many people live there?"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"recv",w:"← 200 OK",e:"The model resolves 'there' → Belgrade only because the history was replayed. Drop a message from the array and that knowledge is gone forever.",p:'{\n  "content": [{ "type": "text",\n    "text": "Around 1.7 million in the metro area." }],\n  "stop_reason": "end_turn"\n}',m:[["u",'"Capital of Serbia?"'],["a",'text: "Belgrade."'],["u",'"How many people live there?"'],["a","text: population answer"]],cs:"rendered",ss:"State discarded",sr:"end_turn"}]},
+
+{n:"4 · Parallel tools",steps:[
+{d:"send",w:"POST /v1/messages →",e:"One question that needs two lookups.",p:'{\n  "tools": [ get_weather ],\n  "messages": [{ "role": "user",\n    "content": "Weather in Belgrade and Novi Sad?" }]\n}',m:[["u",'"Belgrade and Novi Sad?"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"recv",w:"← 200 OK",e:"One assistant message can carry MULTIPLE tool_use blocks — that is parallel tool use. Still a single stop_reason: tool_use.",p:'{\n  "content": [\n    { "type": "tool_use", "id": "toolu_01",\n      "name": "get_weather", "input": { "city": "Belgrade" } },\n    { "type": "tool_use", "id": "toolu_02",\n      "name": "get_weather", "input": { "city": "Novi Sad" } }\n  ],\n  "stop_reason": "tool_use"\n}',m:[["u",'"Belgrade and Novi Sad?"']],cs:"reading response",ss:"Paused — 2 calls pending",sr:"tool_use"},
+{d:"client",w:"",e:"The client can run both concurrently — asyncio.gather, Promise.all, whatever. The model does not care how, only that every id gets a result.",p:'messages.push({ role: "assistant", content: resp.content });\nconst [r1, r2] = await Promise.all([\n  get_weather("Belgrade"),\n  get_weather("Novi Sad")\n]);',m:[["u",'"Belgrade and Novi Sad?"'],["x","tool_use ×2"]],cs:"executing both in parallel…",ss:"Idle",sr:"tool_use"},
+{d:"send",w:"POST /v1/messages →",e:"All results go back in ONE user message, one tool_result block per tool_use_id. Splitting them across multiple user messages is the classic mistake — the API expects every pending id answered in the next turn.",p:'{\n  "messages": [ ...history...,\n    { "role": "user", "content": [\n      { "type": "tool_result", "tool_use_id": "toolu_01",\n        "content": "22°C" },\n      { "type": "tool_result", "tool_use_id": "toolu_02",\n        "content": "21°C" }\n    ] }\n  ]\n}',m:[["u",'"Belgrade and Novi Sad?"'],["x","tool_use ×2"],["t","tool_result ×2"]],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"recv",w:"← 200 OK",e:"Final synthesis, loop exits on end_turn.",p:'{\n  "content": [{ "type": "text",\n    "text": "Belgrade is 22°C, Novi Sad 21°C." }],\n  "stop_reason": "end_turn"\n}',m:[["u",'"Belgrade and Novi Sad?"'],["x","tool_use ×2"],["t","tool_result ×2"],["a","text: final answer"]],cs:"rendered",ss:"Done",sr:"end_turn"}]},
+
+{n:"5 · max_tokens",steps:[
+{d:"send",w:"POST /v1/messages →",e:"The budget is set far too low for a tool call.",p:'{\n  "max_tokens": 50,\n  "tools": [ get_weather ],\n  "messages": [ '+U1+' ]\n}',m:[["u",'"Weather in Belgrade?"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"recv",w:"← 200 OK",e:"Generation was cut mid-stream: stop_reason max_tokens. The last content block is an INCOMPLETE tool_use — truncated JSON input you cannot execute.",p:'{\n  "content": [\n    { "type": "tool_use", "id": "toolu_01",\n      "name": "get_weather",\n      "input": { "ci...   ← truncated\n  ],\n  "stop_reason": "max_tokens"\n}',m:[["u",'"Weather in Belgrade?"']],cs:"reading response",ss:"Hit max_tokens cap",sr:"max_tokens"},
+{d:"client",w:"",e:"Wrong fix: append the broken block and send a tool_result anyway. Right fix: retry the SAME request with a higher max_tokens — there is nothing to continue from, the call must be regenerated whole.",p:'if (resp.stop_reason === "max_tokens" &&\n    resp.content.at(-1).type === "tool_use") {\n  // retry, do not append the broken block\n  retry({ ...req, max_tokens: 4096 });\n}',m:[["u",'"Weather in Belgrade?"']],cs:"retrying with max_tokens: 4096",ss:"Idle",sr:"max_tokens"},
+{d:"recv",w:"← 200 OK",e:"Sibling stop reason to know: model_context_window_exceeded — generation stopped because input + output hit the MODEL'S window, not your max_tokens. Lets you ask for max possible tokens without computing input size first. Both mean 'truncated, response still valid'.",p:'{\n  "content": [\n    { "type": "tool_use", "id": "toolu_02",\n      "name": "get_weather",\n      "input": { "city": "Belgrade" } }\n  ],\n  "stop_reason": "tool_use"   ← complete this time\n}',m:[["u",'"Weather in Belgrade?"'],["x","tool_use: complete"]],cs:"normal loop resumes",ss:"Done",sr:"tool_use"}]},
+
+{n:"6 · pause_turn",steps:[
+{d:"send",w:"POST /v1/messages →",e:"Server tools (web_search, web_fetch, code execution) are different: Anthropic executes them. You enable the tool; you never build a tool_result for it.",p:'{\n  "tools": [{ "type": "web_search_20250305",\n              "name": "web_search" }],\n  "messages": [{ "role": "user",\n    "content": "Research the latest MCP spec changes" }]\n}',m:[["u",'"Research latest MCP…"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"server",w:"",e:"The server runs its OWN internal loop: search → read → search again → … all inside one request, without your participation. That loop has an iteration limit — default 10 per request.",p:"server loop:\n  search #1 → read → search #2 → read\n  → search #3 → ... iteration cap approaching",m:[["u",'"Research latest MCP…"']],cs:"awaiting response…",ss:"Internal sampling loop running…",sr:null},
+{d:"recv",w:"← 200 OK",e:"Cap hit mid-task → stop_reason pause_turn. Tell-tale sign: a server_tool_use block with no matching server_tool_result after it. The turn is paused, not finished.",p:'{\n  "content": [\n    { "type": "server_tool_use", ... },\n    { "type": "web_search_tool_result", ... },\n    { "type": "server_tool_use", ... }  ← no result yet\n  ],\n  "stop_reason": "pause_turn"\n}',m:[["u",'"Research latest MCP…"']],cs:"reading response",ss:"Paused at iteration cap",sr:"pause_turn"},
+{d:"send",w:"POST /v1/messages →",e:"Recovery is simple: append the assistant content AS-IS, keep the same tools, resend. No tool_result from you — the server executed everything. Production code wraps this in a max_continuations guard.",p:'{\n  "tools": [ same web_search tool ],\n  "messages": [\n    { "role": "user", "content": "Research..." },\n    { "role": "assistant",\n      "content": resp.content }   ← passed back as-is\n  ]\n}',m:[["u",'"Research latest MCP…"'],["x","paused turn content"]],cs:"continuing the turn…",ss:"Resuming internal loop",sr:null},
+{d:"recv",w:"← 200 OK",e:"The model picks up where it left off and finishes. Any agent loop that enables server tools must handle pause_turn — it WILL eventually appear.",p:'{\n  "content": [{ "type": "text",\n    "text": "Here is what changed in the spec..." }],\n  "stop_reason": "end_turn"\n}',m:[["u",'"Research latest MCP…"'],["x","paused turn content"],["a","text: final report"]],cs:"rendered",ss:"Done",sr:"end_turn"}]},
+
+{n:"7 · refusal",steps:[
+{d:"send",w:"POST /v1/messages →",e:"A request the safety classifiers flag goes up like any other.",p:'{\n  "messages": [{ "role": "user",\n    "content": "[request flagged by classifiers]" }]\n}',m:[["u","[flagged request]"]],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"recv",w:"← 200 OK",e:"Key exam fact: a refusal is HTTP 200, NOT an error. stop_reason refusal, and stop_details names the policy category (it is null for every other stop reason). Usage metrics still come back; if the refusal landed before any output was generated, you are not billed.",p:'200 OK   ← not 4xx!\n{\n  "content": [],\n  "stop_reason": "refusal",\n  "stop_details": { "category": "..." },\n  "usage": { "input_tokens": 92, "output_tokens": 0 }\n}',m:[["u","[flagged request]"]],cs:"reading response",ss:"Declined to generate",sr:"refusal"},
+{d:"client",w:"",e:"Wrong fix: resend the same history — it will keep refusing forever. Right fix: reset context. Remove or rephrase the triggering turn, or clear history entirely, then continue. No refusal text is included — your app supplies the user-facing message.",p:'if (resp.stop_reason === "refusal") {\n  // do NOT retry as-is\n  messages = removeOrRephraseTriggeringTurn(messages);\n  notifyUser("That request could not be processed.");\n}',m:[["u","(history reset)"]],cs:"context reset",ss:"Idle",sr:"refusal"}]},
+
+{n:"8 · stop_sequence",steps:[
+{d:"send",w:"POST /v1/messages →",e:"Custom stop sequences let your app cut generation on a marker you define — handy for delimiting sections or forcing early exits.",p:'{\n  "stop_sequences": ["END", "STOP"],\n  "messages": [{ "role": "user",\n    "content": "List three cities then say END" }]\n}',m:[["u",'"List three cities…"']],cs:"awaiting response…",ss:"Request received",sr:null},
+{d:"server",w:"",e:"The model generates normally; the moment its output matches one of your sequences, generation halts on the spot.",p:'generated so far:\n"1. Belgrade\\n2. Novi Sad\\n3. Niš\\nEND" ← match!',m:[["u",'"List three cities…"']],cs:"awaiting response…",ss:"Matched a stop sequence",sr:null},
+{d:"recv",w:"← 200 OK",e:"stop_reason is stop_sequence, and the separate stop_sequence field tells you WHICH one matched. The sequence itself is not included in the content. Exam trap: a normal tool-use turn that finishes ends with end_turn — stop_sequence only ever appears if YOU configured sequences.",p:'{\n  "content": [{ "type": "text",\n    "text": "1. Belgrade\\n2. Novi Sad\\n3. Niš\\n" }],\n  "stop_reason": "stop_sequence",\n  "stop_sequence": "END"\n}',m:[["u",'"List three cities…"'],["a","text (no END inside)"]],cs:"rendered",ss:"Done",sr:"stop_sequence"}]}
+];
+let si=0,ti=0;
+const $=id=>document.getElementById(id);
+function pills(){$("pills").innerHTML=S.map((s,i)=>'<button class="pill" aria-pressed="'+(i===si)+'" onclick="go('+i+')">'+s.n+'</button>').join('')}
+function chip(c){const[bg,tx,role]=C[c[0]];return '<span class="chip" style="background:'+bg+';color:'+tx+'">'+role+' · '+c[1]+'</span>'}
+function draw(){
+const st=S[si].steps[ti];
+$("cmsgs").innerHTML=st.m.map(chip).join('')||'<span style="font-size:11px;color:var(--text3)">(empty)</span>';
+$("cstat").textContent="› "+st.cs;
+$("sstat").textContent=st.ss;
+$("sstat").className="sstat"+(st.d==='server'?' busy':'');
+if(st.sr){const[bg,tx]=SR[st.sr];$("srb").innerHTML='<span style="font-size:12px;font-family:var(--mono);font-weight:600;padding:4px 10px;border-radius:6px;background:'+bg+';color:'+tx+'">"'+st.sr+'"</span>'}
+else $("srb").innerHTML='<span style="font-size:12px;color:var(--text3)">—</span>';
+$("wlabel").textContent=st.w;
+const dot=$("dot");
+dot.className="dot "+(st.d==='send'?'dotR':st.d==='recv'?'dotL':'');
+dot.style.display=(st.d==='send'||st.d==='recv')?'block':'none';
+$("cpanel").className='panel'+((st.d==='client'||st.d==='send')?' live':'');
+$("spanel").className='panel'+((st.d==='server'||st.d==='recv')?' live':'');
+$("explain").innerHTML='<strong>'+(ti+1)+'. </strong>'+st.e;
+$("phead").textContent=st.d==='send'?'client → server':st.d==='recv'?'server → client':st.d==='server'?'inside the server':'client-side code';
+$("pcode").textContent=st.p;
+$("stepn").textContent='step '+(ti+1)+' of '+S[si].steps.length;
+$("prev").disabled=ti===0;
+$("next").disabled=ti===S[si].steps.length-1;
+pills();
+}
+function go(i){si=i;ti=0;draw()}
+function mv(d){ti=Math.max(0,Math.min(S[si].steps.length-1,ti+d));draw()}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude API · prompt engineering & structured output workbench</title>
+<style>
+:root{
+  --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+  --text:#1f1e1c; --text2:#5f5e5a; --text3:#9b9a93;
+  --border:#dedcd3; --border2:#c8c6bc;
+  --accent:#185fa5; --good:#3E7842; --bad:#C2410C; --badr:#A33E3E;
+  --radius:12px; --radius-sm:8px;
+  --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1a18; --surface:#242320; --surface2:#2e2d29;
+    --text:#e8e6df; --text2:#aaa89f; --text3:#75746c;
+    --border:#3a3934; --border2:#4c4b44;
+    --accent:#85b7eb; --good:#7CB87F; --bad:#E8A87C; --badr:#D98B8B;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;padding:32px 16px}
+.wrap{max-width:840px;margin:0 auto}
+h1{font-size:21px;font-weight:600;margin:0 0 4px}
+.sub{font-size:13px;color:var(--text2);margin:0 0 20px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.pill{font-size:12px;padding:5px 11px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit}
+.pill[aria-pressed="true"]{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:600}
+.stage{min-height:220px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px}
+.col.bad{border-color:var(--badr)}
+.col.good{border-color:var(--good)}
+.colh{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;margin-bottom:8px;letter-spacing:.3px}
+.col.bad .colh{color:var(--badr)}
+.col.good .colh{color:var(--good)}
+.colb{font-size:11.5px;font-family:var(--mono);line-height:1.65;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+.colb .dim{color:var(--text3)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.cardh{font-size:13px;font-weight:600;margin-bottom:10px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 16px;font-size:12px}
+.kv .k{font-family:var(--mono);color:var(--text2);white-space:nowrap}
+.kv .v{color:var(--text)}
+.lines{font-size:11.5px;font-family:var(--mono);line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.pipe{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px}
+.prow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;row-gap:14px}
+.pnode{border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:8px 11px;font-size:11.5px;min-width:0;max-width:200px}
+.pnode .pn{font-weight:600;font-family:var(--mono);font-size:11px}
+.pnode .ps{font-size:10.5px;color:var(--text2);margin-top:3px;line-height:1.45}
+.pnode.ok{border-color:var(--good)}
+.pnode.run{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%, transparent)}
+.pnode.fail{border-color:var(--badr);background:color-mix(in srgb,var(--badr) 8%, transparent)}
+.parr{display:flex;align-items:center;padding:0 7px;color:var(--text3);font-size:14px}
+.ploop{margin-top:12px;padding-top:10px;border-top:1.5px dashed var(--accent);font-size:11px;font-family:var(--mono);color:var(--accent)}
+.ptitle{font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text2)}
+.tag{font-size:9.5px;font-family:var(--mono);font-weight:700;padding:1.5px 6px;border-radius:4px;white-space:nowrap;vertical-align:1px}
+.explain{font-size:14px;line-height:1.6;margin:14px 0 10px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm)}
+.payload{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface)}
+.phead{font-size:11px;font-family:var(--mono);padding:6px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+pre{margin:0;padding:12px;font-size:11.5px;font-family:var(--mono);line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+.ctrl{display:flex;align-items:center;gap:10px;margin-top:12px}
+button{font:13px/1 inherit;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer}
+button:hover:not(:disabled){background:var(--surface2)}
+button:disabled{opacity:.4;cursor:default}
+.stepn{font-size:12px;color:var(--text2)}
+.foot{font-size:12px;color:var(--text3);margin-top:24px;line-height:1.7}
+.foot a{color:var(--accent)}
+@media (max-width:640px){.cmp{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Prompt engineering & structured output — workbench</h1>
+<p class="sub">CCA-F Domain 4 (20%): guaranteed JSON, schema design, few-shot, explicit criteria, chaining, the interview pattern, validate-retry loops, batch strategies, multi-pass review — and the syntax-vs-semantic line that runs through all of it.</p>
+
+<div class="pills" id="pills"></div>
+
+<div class="stage" id="stage"></div>
+
+<div class="explain" id="explain"></div>
+
+<div class="payload">
+  <div class="phead" id="phead">reference</div>
+  <pre id="pcode"></pre>
+</div>
+
+<div class="ctrl">
+  <button id="prev" onclick="mv(-1)">← Back</button>
+  <button id="next" onclick="mv(1)" style="font-weight:600">Step →</button>
+  <span class="stepn" id="stepn"></span>
+</div>
+
+<p class="foot">Grounded in: <a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">Structured outputs</a> · <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use">Strict tool use</a> · <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">Batch processing</a> · <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview">Prompt engineering</a> · CCA-F guide ch. 2.4–2.5, 6, 7, 8. Exam anchors: tool_use + forced tool_choice is the guide's "most reliable" structured-output answer; schema compliance eliminates SYNTAX errors only — semantic errors need validation + retry-with-feedback; retries cannot recover information absent from the source; Batch = 50% off, ≤100k requests / 256 MB, 24h window, custom_id correlation, no agentic loop inside; independent review instances beat self-review because the generator won't challenge its own reasoning.</p>
+</div>
+
+<script>
+const T={ok:["#EAF3DE","#27500A"],warn:["#FAEEDA","#633806"],bad:["#FCEBEB","#791F1F"],info:["#E6F1FB","#0C447C"],pur:["#EEEDFE","#3C3489"]};
+function tag(t,k){const[bg,tx]=T[k];return '<span class="tag" style="background:'+bg+';color:'+tx+'">'+t+'</span>'}
+const S=[
+{n:"1 · Three roads to JSON",steps:[
+{ty:"cmp",e:"Road 1, the one that breaks: just asking. \"Respond only in JSON\" works often — and 'often' is exactly the problem. The model may wrap output in markdown fences, add a friendly preamble, drop a required field, or leave a trailing comma. One malformed response in fifty is enough to crash a pipeline processing thousands of documents.",
+st:{l:{h:"✘ PROMPT-ONLY",c:'prompt: "Extract the invoice data.\n         Respond ONLY in valid JSON."\n\nresponse.content[0].text:\n  Here is the extracted data:\n  ```json\n  { "vendor": "Acme",\n    "total": 145.00, }   ← trailing comma\n  ```\n\nJSON.parse() → SyntaxError 💥'},r:{h:"WHAT YOU ACTUALLY NEED",c:'a mechanism, not a request:\n\n1. structure enforced by the API,\n   not by the model\'s goodwill\n2. required fields guaranteed present\n3. types guaranteed correct\n4. zero parse errors, zero\n   "please ignore the preamble" hacks'}},
+p:'failure modes of prompt-only JSON:\n  · markdown code fences around the object\n  · conversational preamble / postamble\n  · missing required fields\n  · wrong types ("145.00" as string)\n  · trailing commas, unescaped quotes\n→ fine for prototypes, unacceptable in pipelines'},
+{ty:"card",e:"Road 2 — THE EXAM ANSWER. Define a 'tool' whose input_schema IS your desired output shape, then force it with tool_choice. The tool never executes; it's a schema funnel. The model must emit a tool_use block whose input conforms to the schema — syntactically valid JSON, required fields present, enums respected. You read the result from content[].input, not from text. Know all four tool_choice values cold; the exam tests them directly.",
+st:{h:"tool_choice — the four values",kv:[["auto","model decides — may call a tool OR answer in plain text (no structure guarantee)"],["any","model MUST call some tool — guarantees structured output when several schemas could apply"],["tool","model MUST call THIS named tool — the forcing move for extraction"],["none","model must NOT call tools — plain text only"]]},
+p:'{\n  "tools": [{\n    "name": "extract_invoice",\n    "description": "Extract structured invoice data",\n    "input_schema": {\n      "type": "object",\n      "properties": {\n        "vendor":  { "type": "string" },\n        "total":   { "type": "number" },\n        "currency":{ "type": "string", "enum": ["USD","EUR","RSD"] }\n      },\n      "required": ["vendor", "total", "currency"]\n    }\n  }],\n  "tool_choice": { "type": "tool", "name": "extract_invoice" }\n}\n\n← { "content": [{ "type": "tool_use",\n      "name": "extract_invoice",\n      "input": { "vendor": "Acme", "total": 145.0,\n                 "currency": "USD" } }],     ← parse THIS\n    "stop_reason": "tool_use" }'},
+{ty:"card",e:"Road 3 — what production uses today (GA, post-dates most study guides): native structured outputs. output_config.format with a json_schema constrains DECODING itself — the model literally cannot emit tokens that violate the grammar. Valid JSON lands in content[0].text. The sibling feature, strict: true on a tool, applies the same grammar constraint to tool INPUTS. They solve different halves: JSON outputs shape what Claude says; strict tool use shapes how Claude calls your functions — and they combine in one request.",
+st:{h:"Native structured outputs — operational facts",kv:[["mechanism","constrained decoding via compiled grammar — schema violations impossible"],["grammar cache","compiled once, cached 24h from last use; first request pays compile latency"],["token cost","an explaining system prompt is auto-injected — you pay for it; changing output_config invalidates your PROMPT cache"],["complexity caps","20 strict tools · 24 optional params · 16 union-typed params per request · 180s compile timeout"],["escape hatches","stop_reason refusal or max_tokens can still yield schema-breaking output — handle both"],["incompatible","citations · message prefilling"]]},
+p:'output_config={ "format": {\n  "type": "json_schema",\n  "schema": {\n    "type": "object",\n    "properties": { "vendor": {"type":"string"},\n                    "total":  {"type":"number"} },\n    "required": ["vendor","total"],\n    "additionalProperties": false } } }\n\n# and/or, per tool:\ntools=[{ "name": "search_flights",\n         "strict": true,            ← grammar on INPUTS\n         "input_schema": { ... } }]\n\n# SDK sugar: Pydantic → client.messages.parse(),\n# Zod → zodOutputFormat() — schema + validation\n# from one model definition'},
+{ty:"cmp",e:"Which road, when. For the EXAM, the guide's doctrine is road 2: \"tool_use with JSON schemas is the most reliable way\" — answer accordingly, and know the tool_choice table. For production at TR3I today, road 3 is stronger where supported. The crucial thing both roads share: the guarantee is SYNTACTIC only. A perfectly schema-valid object can still contain a total that doesn't match the line items. That ceiling is the next scenario.",
+st:{l:{h:"EXAM ANSWER (guide doctrine)",c:'tool_use + JSON schema\n+ tool_choice {"type":"tool",\n               "name":"extract_x"}\n\n"the most reliable way to obtain\n structured output"\n— works on every model & platform'},r:{h:"PRODUCTION TODAY (official docs)",c:'output_config.format (responses)\nstrict: true        (tool inputs)\n\nconstrained decoding — violations\nimpossible, not just unlikely\n— mind the complexity caps and\n  the two escape hatches'}},
+p:'shared ceiling — BOTH roads:\n  guarantee   = syntax (valid JSON, right shape)\n  no guarantee = semantics (right VALUES)\n\n"schema validates" ≠ "data is correct"\n→ scenario 2 (schema defense) + scenario 5\n  (validate-retry) close the gap'}]},
+
+{n:"2 · Schema design",steps:[
+{ty:"cmp",e:"Schemas don't just shape output — they shape the model's honesty. A naive schema where every field is required FORCES fabrication: if the invoice has no due date, the model must invent one to satisfy the schema. The defensive schema gives every uncertain situation a legal exit: null for absent data, 'other' for categories you didn't predict, 'unclear' for low confidence.",
+st:{l:{h:"✘ NAIVE — forces fabrication",c:'{ "properties": {\n    "due_date": {"type":"string"},\n    "category": {"type":"string",\n      "enum":["bug","feature","docs"]}\n  },\n  "required":["due_date","category"]\n}\n\nno due date in source?\n→ model INVENTS "2026-07-01"\nticket fits no category?\n→ model FORCES it into "bug"'},r:{h:"✓ DEFENSIVE — honest exits",c:'{ "properties": {\n    "due_date": {"type":["string","null"],\n      "description":"null if absent"},\n    "category": {"type":"string",\n      "enum":["bug","feature","docs",\n              "unclear","other"]},\n    "category_detail":\n      {"type":["string","null"]},\n    "confidence": {"type":"number",\n      "minimum":0,"maximum":1}\n  },\n  "required":["category"]\n}'}},
+p:'four schema-design rules (exam-tested):\n1. required ONLY for always-present info —\n   required + absent data = fabricated values\n2. nullable ["string","null"] lets the model\n   return null instead of hallucinating\n3. enum + "other" + detail field — data outside\n   your categories is captured, not destroyed\n4. enum "unclear" — an honest "unclear" beats\n   a confidently wrong category'},
+{ty:"card",e:"The distinction the whole domain hangs on. Schema enforcement — by either road from scenario 1 — eliminates one entire error class and leaves the other completely untouched. An exam question that says \"the JSON validates but the totals don't reconcile\" is asking about SEMANTIC error handling: validation code, retry with feedback, self-correction. Answering \"add a stricter schema\" is the planted wrong option.",
+st:{h:"Syntax vs semantic errors",kv:[["SYNTAX error","invalid JSON, missing brace, wrong type, absent required field — ELIMINATED by tool_use schemas / constrained decoding"],["SEMANTIC error","totals don't add up, value in the wrong field, plausible hallucination, date misread — schema sees NOTHING wrong"],["syntax fix","mechanism (scenario 1) — solved at the API layer"],["semantic fix","validation checks + retry-with-feedback + self-correction (scenario 5) — solved at YOUR layer"]]},
+p:'schema-VALID and WRONG, simultaneously:\n{\n  "vendor": "Acme Corp",        ✓ string\n  "total": 150.00,              ✓ number — but the\n                                  line items sum to 145\n  "due_date": "2026-01-07",     ✓ string — but source\n                                  said July 1 (D/M swap)\n  "currency": "USD"             ✓ enum — but invoice\n                                  is in EUR\n}\nthe schema is satisfied. the data is garbage.'}]},
+
+{n:"3 · Criteria & few-shot",steps:[
+{ty:"cmp",e:"Adjectives are not instructions. \"Be conservative\" has a hundred interpretations; a categorical rule has one. The exam's canonical example is comment review — and note the second-order insight it tests: a high false-positive rate in ONE category erodes the developer's trust in ALL categories, so the fix for a noisy category is to define it out or temporarily disable it, not to add more adjectives.",
+st:{l:{h:"✘ VAGUE",c:'"Check code comments for accuracy.\n Be conservative — report only\n high-confidence findings."\n\n→ what is \'accurate\'? what is\n  \'conservative\'? the model guesses,\n  differently every run'},r:{h:"✓ EXPLICIT CRITERIA",c:'Flag a comment ONLY if:\n1. it CONTRADICTS actual code behavior\n2. it references a non-existent\n   function or variable\n3. TODO/FIXME refers to an\n   already-fixed bug\n\nDo NOT flag:\n· stylistically outdated comments\n· minor wording inaccuracies\n· missing comments (separate category)'}},
+p:'severity ladder — define each level WITH an example:\nCRITICAL  runtime failure for users\n          e.g. NPE while processing a payment\nHIGH      security vulnerability\n          e.g. SQL injection, missing authz\nMEDIUM    logic bug, no immediate impact\n          e.g. wrong sort, off-by-one\nLOW       code quality\n          e.g. duplication, suboptimal algorithm\n\nfalse-positive economics: one noisy category\npoisons trust in the accurate ones → disable or\ntighten it; never compensate with adjectives'},
+{ty:"cmp",e:"Few-shot is the same principle, executed as demonstration: 2–4 input/output examples with RATIONALE. An example doesn't just show format — it shows decision logic, and the model generalizes the pattern to new cases rather than parroting the examples. The guide's pair below is the exam's favorite ambiguity demo: superficially similar requests demanding opposite actions.",
+st:{l:{h:"INSTRUCTION ONLY",c:'"Handle customer requests\n appropriately. Escalate when\n necessary."\n\n→ when is it necessary?\n  the word does no work'},r:{h:"✓ FEW-SHOT WITH RATIONALE",c:'Request: "My order is broken"\nAction: get_customer → lookup_order\nWhy: "broken" may mean a damaged\n     item — need order details first\n\nRequest: "Get me a manager"\nAction: escalate_to_human, immediately\nWhy: explicit human request — do NOT\n     attempt autonomous resolution'}},
+p:'where few-shot earns its tokens (guide taxonomy):\n· ambiguous scenarios   — tool selection w/ rationale\n· output formatting     — one complete finding object\n· accept vs flag        — paired code: OK vs problem\n· multi-format extraction — inline citation vs [1] ref\n· informal measurements — "two handfuls" → ~100g,\n  precision: "approximate"\n\n2–4 targeted examples > 20 generic ones'},
+{ty:"card",e:"The companion to few-shot when output is structured: normalization rules. Without them you get JSON that validates while the VALUES drift — three date formats across one batch, currency sometimes a string. Pin the canonical form for every ambiguous type, and pair each rule with a micro-example. This directly prevents a slice of the semantic errors scenario 5 would otherwise have to catch.",
+st:{h:"Normalization rules — pin the canonical form",kv:[["dates","always ISO 8601 (YYYY-MM-DD); relative terms like \"yesterday\" → computed absolute date"],["currency","numeric amount + ISO code: \"five bucks\" → { amount: 5, currency: \"USD\" }"],["percentages","decimal fraction: \"half\" → 0.5, \"42%\" → 0.42"],["informal units","estimate + keep the original: { amount: \"~1g\", original_text: \"a pinch\", precision: \"approximate\" }"]]},
+p:'prompt block to ship alongside any strict schema:\n\nNormalization:\n- Dates: ISO 8601 (YYYY-MM-DD);\n  "yesterday" → compute absolute date\n- Currency: {amount: number, currency: ISO-4217}\n- Percentages: decimal fraction; "half" → 0.5\n- Keep original_text for any approximated value'}]},
+
+{n:"4 · Chaining & interview",steps:[
+{ty:"pipe",e:"Why one giant prompt fails: ATTENTION DILUTION. Feed 14 files into one review request and the model goes deep on a few, shallow on the rest, and inconsistently flags the same pattern across files. Prompt chaining splits the work into focused steps with one concern each — and adds a final integration pass for what per-file analysis structurally cannot see: cross-file issues.",
+st:{t:"single-pass vs chained review",rows:[[{n:"14 files, one prompt",s:"fail",sub:"deep on 3 files, shallow on 11 · inconsistent flags · missed bugs"}],[{n:"auth.ts",s:"ok",sub:"local issues only"},{n:"database.ts",s:"ok",sub:"local issues only"},{n:"routes.ts",s:"ok",sub:"local issues only"},{n:"integration pass",s:"run",sub:"cross-file: type drift, circular deps"}]]},
+p:'chaining contract: each step gets ONE concern\nand produces output the next step consumes\n\nStep 1..N: per-file analysis → issue lists\nStep N+1:  integration pass  → boundary issues\n\nbenefits: consistent depth per file ·\nno dilution · cross-file analysis isolated'},
+{ty:"cmp",e:"Chaining has a sibling, and the exam tests the boundary between them. A FIXED pipeline pre-defines every step — right when the task shape is predictable and you need reproducibility. DYNAMIC decomposition generates the next subtask from intermediate results — right for open-ended investigations where the scope only emerges as you work. Picking fixed for an open-ended task (or vice versa) is a planted wrong answer.",
+st:{l:{h:"FIXED PIPELINE (chaining)",c:'doc → metadata → data extraction\n    → validation → enrichment → out\n\nwhen:\n· structure predictable & repeatable\n· all steps known up front\n· reproducibility required\n\ne.g. invoice processing, file\nmigrations, templated reviews'},r:{h:"DYNAMIC DECOMPOSITION",c:'"add tests to legacy codebase"\n→ map structure (Glob, Grep)\n→ found 3 untested modules\n→ prioritize payments (high risk)\n→ discovered external API dep\n→ ADAPT: mock it first, then test\n\nwhen:\n· scope unknown up front\n· each step depends on the last'}},
+p:'decision rule:\n  predictable + repeatable  → fixed pipeline\n  investigative + emergent  → dynamic decomposition\n\n(dynamic decomposition is what the multi-agent\ncoordinator from debugger #2 does when it chooses\nwhich subagents to spawn based on findings)'},
+{ty:"card",e:"The interview pattern: spend one turn asking before spending fifty turns building wrong. Claude surfaces the decisions the request left open — and the answers become explicit constraints in the implementation prompt. The exam knows its three trigger conditions; requests that are already fully specified should NOT trigger an interview (asking anyway is its own anti-pattern).",
+st:{h:"Interview pattern — when it fires",kv:[["trigger 1","unfamiliar domain — fintech, healthcare, legal: wrong assumptions are expensive"],["trigger 2","non-obvious implications — cache strategies, failure modes, data retention"],["trigger 3","multiple viable approaches — the best choice depends on context only the human has"],["non-trigger","fully specified requests — interviewing anyway wastes a turn and patience"]]},
+p:'Claude: "Before implementing caching for the API:\n1. Invalidation — TTL or event-based?\n2. Is stale data acceptable when the\n   cache is unavailable?\n3. Per-user or global cache?\n4. Expected data volume?"\n\n→ answers become explicit constraints in the\n  build prompt — criteria, not assumptions'}]},
+
+{n:"5 · Validate → retry loop",steps:[
+{ty:"pipe",e:"The semantic-error machine. Extraction output passes through validation in YOUR code — structural checks (types, enums, requiredness) plus business rules (sum of items equals total, start_date precedes end_date). On failure, the retry carries three things: the original document, the previous WRONG extraction, and the SPECIFIC error. A bare \"try again\" re-rolls the dice; the specific error aims the correction.",
+st:{t:"validate-retry-feedback loop",rows:[[{n:"extract",s:"ok",sub:"tool_use → JSON"},{n:"validate",s:"run",sub:"Pydantic: types + business rules"},{n:"check",s:"fail",sub:"total=150, sum(items)=145"},{n:"retry w/ feedback",s:"run",sub:"doc + wrong output + exact error"},{n:"re-validate",s:"ok",sub:"passes → accept"}]],loop:"↻ retry prompt = original document + previous (incorrect) extraction + \"Field 'total' = 150, but sum(line_items) = 145. Re-check values.\""},
+p:'Pydantic — the exam\'s four bullet points:\n· structural validation: types, required, enums —\n  checked in code AFTER receiving the JSON\n· semantic validation: custom validators encode\n  business logic (totals reconcile, date order)\n· validate-retry: on failure, build an error\n  message and re-prompt WITH the error context\n· single source of truth: the Pydantic model\n  GENERATES the JSON Schema for tool_use'},
+{ty:"cmp",e:"The boundary the exam loves: when retry is structurally useless. Retry fixes errors the model can correct by re-reading — formats, misplaced fields, arithmetic. Retry cannot conjure information that is NOT IN THE SOURCE: no number of attempts extracts a PO number from a document that doesn't contain one. The defensive schema's null (scenario 2) is the honest output there; anything else is a fabrication loop. Recognizing the second column means routing to escalation, not iteration.",
+st:{l:{h:"✓ RETRY WORKS",c:'· date in the wrong format\n  → re-read, normalize\n· field placed in wrong location\n  → restructure\n· arithmetic inconsistency\n  → model re-checks and corrects\n\ncommon trait: the truth IS in\nthe document'},r:{h:"✘ RETRY CANNOT HELP",c:'· info absent from the source\n  ("extract the PO number" —\n   there is no PO number)\n· required context is in ANOTHER\n  document not provided\n\ncommon trait: no amount of\nre-reading creates missing data\n→ null + flag, or escalate'}},
+p:'feedback-loop instrumentation:\n  include "detected_pattern" in every finding —\n  which rule/pattern triggered it. False-positive\n  analysis then groups by pattern and you disable\n  or tighten the noisy ones (closes the loop with\n  scenario 3\'s trust economics)'},
+{ty:"card",e:"Self-correction, built into the schema: make the model extract the claim AND recompute it in one pass. stated_total comes from the document text; calculated_total from summing the items it just extracted; conflict_detected compares them. Disagreement is flagged inside the output itself — cheap, single-pass, and it catches both document errors and extraction errors before your validator even runs.",
+st:{h:"Self-correction schema — extract + verify in one shape",kv:[["stated_total","what the document claims: \"$150.00\""],["calculated_total","what the extracted line items sum to: \"$145.00\""],["conflict_detected","true — the discrepancy is now DATA, routed to review instead of silently shipped"],["line_items","the evidence both numbers derive from"]]},
+p:'{\n  "stated_total": "$150.00",\n  "calculated_total": "$145.00",\n  "conflict_detected": true,\n  "line_items": [\n    { "name": "Widget A", "price": 75.00 },\n    { "name": "Widget B", "price": 70.00 }\n  ]\n}\n# the model caught the inconsistency itself —\n# your pipeline decides: re-extract, flag, or\n# escalate to a human'}]},
+
+{n:"6 · Batch processing",steps:[
+{ty:"card",e:"The Message Batches API in one card — every number verified against the official page. The mental model: you trade latency for a 50% discount on EVERYTHING in the batch. One constraint matters more than the rest for architecture: a batch item is ONE request producing ONE response. If it returns tool_use, there is no way to execute the tool and continue inside the batch — the agentic loop does not fit in a batch.",
+st:{h:"Batch API — operational facts",kv:[["discount","50% off standard prices — input, output, unconditional, no volume threshold"],["size cap","100,000 requests OR 256 MB per batch, whichever hits first"],["timing","most batches finish within 1 hour; hard window is 24h — unfinished requests EXPIRE (and aren't billed)"],["results","downloadable for 29 days from created_at; order NOT guaranteed → custom_id is the only correlation"],["scope","workspace-scoped, like prompt caches; separate rate limits from the sync API"],["the big NO","no multi-turn tool calling inside a batch — one request, one response"]]},
+p:'{ "custom_id": "doc-invoice-2024-001",   ← your key\n  "params": {\n    "model": "claude-sonnet-4-6",\n    "max_tokens": 1024,\n    "tool_choice": {"type":"tool","name":"extract_invoice"},\n    "tools": [ ...extraction schema... ],\n    "messages": [{ "role":"user",\n                   "content":"Extract from: ..." }] } }\n\n# scenario-1 forcing + batch = the standard\n# bulk-extraction architecture'},
+{ty:"cmp",e:"The sync-vs-batch decision is one question: IS A HUMAN WAITING? Developer blocked on a pre-merge check — 24 hours is absurd, use synchronous. Overnight tech-debt report — nobody is watching, take the 50%. The exam phrases this as scenario questions; the trap options put blocking tasks on batch to \"save money.\"",
+st:{l:{h:"SYNCHRONOUS — human waiting",c:'· pre-merge PR check\n  (developer is blocked)\n· interactive code review\n· chatbot / support agent\n· anything with a person\n  staring at a spinner'},r:{h:"✓ BATCH — nobody waiting",c:'· overnight tech-debt report\n· weekly security audit\n· 10,000-document extraction\n· eval runs over a test corpus\n· anything due "by morning"'}},
+p:'SLA arithmetic (exam-style):\n  result needed in 30h, batch window = 24h\n  → submission deadline = 30 − 24 = 6h from now\n  → for recurring loads, submit in fixed windows\n    (e.g. every 4h) so no batch can miss its SLA'},
+{ty:"pipe",e:"Failure handling is surgical thanks to custom_id. One request failing does NOT affect the others — so never resubmit the whole batch. Collect the failures, fix the STRATEGY that broke them (context-limit failures usually mean: chunk the long documents), resubmit only those. And before any large run: iterate the prompt on a small sample first — a bad prompt at 10,000 documents is an expensive way to learn.",
+st:{t:"partial-failure recovery",rows:[[{n:"submit 100 docs",s:"ok",sub:"one JSONL batch"},{n:"95 succeed",s:"ok",sub:"results via custom_id"},{n:"5 fail",s:"fail",sub:"context limit exceeded"},{n:"fix strategy",s:"run",sub:"chunk the 5 long docs"},{n:"resubmit 5 only",s:"ok",sub:"never the whole 100"}]]},
+p:'cost stacking (ties to debugger #4):\n  batch 50% × cache reads 0.1× on the shared\n  prefix (system + extraction schema, byte-\n  identical across items) ≈ ~95% off the\n  input bill for large extraction runs\n\npre-flight checklist:\n  · dry-run one request shape on the sync API\n  · iterate the prompt on a 20-doc sample\n  · unique custom_id per request\n  · persist results before day 29'}]},
+
+{n:"7 · Multi-pass review",steps:[
+{ty:"card",e:"Why the author is the worst reviewer: the generating instance still holds its own reasoning in context and is structurally unlikely to challenge its own decisions — it already 'knows' why every choice was right. An INDEPENDENT instance, given only the diff and the criteria WITHOUT the generation context, evaluates the artifact instead of the justification. The exam states this as: independent review instances are better at finding subtle issues.",
+st:{h:"Self-review vs independent review",kv:[["self-review","same conversation reviews its own output — reasoning context biases it toward approving its own decisions"],["independent instance","fresh context: gets the code + review criteria, NOT the generation history — judges the artifact, not the intent"],["what to pass","the diff/artifact, explicit criteria (scenario 3), severity ladder, few-shot finding examples"],["what to withhold","the generation conversation — its absence IS the mechanism"]]},
+p:'instance A (generator): writes the migration\ninstance B (reviewer):  fresh context\n  input:  diff + criteria + severity ladder\n  output: findings JSON (scenario-1 forcing)\n\n# context isolation as a QUALITY tool — the same\n# property the multi-agent debugger used for\n# context ECONOMY now removes reviewer bias'},
+{ty:"pipe",e:"Combine independence with scenario 4's chaining and you get the full architecture: pass 1 reviews each file in isolation (parallel-friendly — these can be concurrent subagents), pass 2 takes the per-file findings plus the cross-file surface and hunts what no single-file view can see: inconsistent types across modules, circular dependencies, contract drift between caller and callee.",
+st:{t:"multi-pass review architecture",rows:[[{n:"pass 1 · auth.ts",s:"ok",sub:"local findings"},{n:"pass 1 · database.ts",s:"ok",sub:"local findings"},{n:"pass 1 · routes.ts",s:"ok",sub:"local findings"},{n:"pass 2 · integration",s:"run",sub:"cross-file types, circular deps, dataflow"}]],loop:"pass-1 jobs are independent → run them as parallel subagents or batch items; pass 2 consumes their structured findings"},
+p:'why one pass over 14 files loses (exam phrasing):\n· attention dilution — depth varies per file\n· inconsistency — a pattern flagged in file 3,\n  silently approved in file 9\n· missed bugs — cognitive overload skips the obvious\n\nmulti-pass = consistent depth + a dedicated\nlane for cross-file analysis'},
+{ty:"card",e:"The last piece routes reviews by confidence instead of treating every finding equally. Each finding self-rates; the pipeline branches on it: high-confidence findings flow through automation, low-confidence ones earn a verification pass or a human. This is calibration as a routing primitive — and it's the bridge into Domain 5's escalation and human-oversight material, the next file.",
+st:{h:"Confidence-calibrated routing",kv:[["finding + confidence 0.95","auto-file the issue — high agreement expected"],["finding + confidence 0.55","verification pass: a second instance re-checks just this finding"],["finding + confidence 0.30","route to human review — or drop if the category is noisy (scenario 3)"],["calibration check","periodically sample: do 0.9-confidence findings actually hold ~90% of the time?"]]},
+p:'finding schema with routing fields:\n{\n  "location": "src/auth/login.ts:42",\n  "issue": "SQL injection in username param",\n  "severity": "critical",\n  "suggested_fix": "parameterized query",\n  "detected_pattern": "string-concat-sql",\n  "confidence": 0.92        ← the router reads this\n}\n# detected_pattern → false-positive analytics\n# confidence       → auto / verify / human lane'}]}
+];
+let si=0,ti=0;
+const $=id=>document.getElementById(id);
+function pills(){$("pills").innerHTML=S.map((s,i)=>'<button class="pill" aria-pressed="'+(i===si)+'" onclick="go('+i+')">'+s.n+'</button>').join('')}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function render(st){
+if(st.ty==="cmp"){
+return '<div class="cmp"><div class="col bad"><div class="colh">'+esc(st.st.l.h)+'</div><div class="colb">'+esc(st.st.l.c)+'</div></div><div class="col good"><div class="colh">'+esc(st.st.r.h)+'</div><div class="colb">'+esc(st.st.r.c)+'</div></div></div>';
+}
+if(st.ty==="card"){
+let h='<div class="card"><div class="cardh">'+esc(st.st.h)+'</div>';
+if(st.st.kv){h+='<div class="kv">'+st.st.kv.map(p=>'<div class="k">'+esc(p[0])+'</div><div class="v">'+esc(p[1])+'</div>').join('')+'</div>';}
+if(st.st.lines){h+='<div class="lines">'+esc(st.st.lines)+'</div>';}
+return h+'</div>';
+}
+if(st.ty==="pipe"){
+let h='<div class="pipe"><div class="ptitle">'+esc(st.st.t)+'</div>';
+st.st.rows.forEach((row,ri)=>{
+h+='<div class="prow"'+(ri>0?' style="margin-top:14px"':'')+'>';
+row.forEach((nd,i)=>{
+if(i>0)h+='<div class="parr">→</div>';
+h+='<div class="pnode '+nd.s+'"><div class="pn">'+esc(nd.n)+'</div>'+(nd.sub?'<div class="ps">'+esc(nd.sub)+'</div>':'')+'</div>';
+});
+h+='</div>';
+});
+if(st.st.loop)h+='<div class="ploop">'+esc(st.st.loop)+'</div>';
+return h+'</div>';
+}
+return '';
+}
+function draw(){
+const st=S[si].steps[ti];
+$("stage").innerHTML=render(st);
+$("explain").innerHTML='<strong>'+(ti+1)+'. </strong>'+st.e;
+$("phead").textContent="reference · "+S[si].n.split("· ")[1];
+$("pcode").textContent=st.p;
+$("stepn").textContent='step '+(ti+1)+' of '+S[si].steps.length;
+$("prev").disabled=ti===0;
+$("next").disabled=ti===S[si].steps.length-1;
+pills();
+}
+function go(i){si=i;ti=0;draw()}
+function mv(d){ti=Math.max(0,Math.min(S[si].steps.length-1,ti+d));draw()}
+draw();
+</script>
+</body>
+</html>

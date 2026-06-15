@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How an LLM works — end to end</title>
+<style>
+:root{
+  --bg:#FBFAF7; --surface:#FFFFFF; --ink:#1C1B22; --muted:#6B6A75;
+  --line:rgba(28,27,34,.12); --line2:rgba(28,27,34,.22);
+  --signal:#C9701E; --signal-soft:#F5E4D1;
+  --flow:#4F56BE; --flow-soft:#E4E5F7;
+  --teal:#167E63; --teal-soft:#DCF0E8;
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#141319; --surface:#1E1D25; --ink:#ECEAE3; --muted:#9B99A4;
+    --line:rgba(236,234,227,.14); --line2:rgba(236,234,227,.26);
+    --signal:#E8954A; --signal-soft:#382A1B;
+    --flow:#8A90F0; --flow-soft:#25263A;
+    --teal:#4FC09A; --teal-soft:#15302A;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:22px 20px 40px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--signal)}
+h1{font:600 25px/1.15 var(--font);margin:8px 0 0;letter-spacing:-.01em}
+.lede{color:var(--muted);font-size:14.5px;margin:6px 0 0;max-width:64ch}
+
+.tabbar{display:flex;gap:4px;margin:18px 0 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabbar button{all:unset;cursor:pointer;white-space:nowrap;padding:11px 15px;font:500 14px var(--font);color:var(--muted);border-bottom:2px solid transparent;transition:.15s}
+.tabbar button:hover{color:var(--ink)}
+.tabbar button.on{color:var(--ink);border-bottom-color:var(--signal)}
+.tabbar button:focus-visible{outline:2px solid var(--flow);outline-offset:-2px;border-radius:6px}
+
+.tab{display:none;padding-top:18px}
+.tab.show{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+.spine{display:flex;align-items:center;margin:0 0 4px;overflow-x:auto;padding:6px 2px}
+.snode{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.dot{width:30px;height:30px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font:500 13px/1 var(--mono);color:var(--muted);background:var(--surface);transition:.3s}
+.slabel{font:500 12px/1 var(--font);color:var(--muted);white-space:nowrap;transition:.3s}
+.sbar{width:24px;height:1px;background:var(--line2);margin:0 8px}
+.snode.on .dot{background:var(--signal);border-color:var(--signal);color:#fff}
+.snode.on .slabel{color:var(--ink)}
+@media (prefers-color-scheme:dark){.snode.on .dot{color:#141319}}
+
+.cols{display:grid;grid-template-columns:172px 1fr;gap:26px;margin-top:16px}
+nav.rail{display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--line);padding-right:14px}
+.rail button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:baseline;padding:7px 9px;border-radius:8px;color:var(--muted);font:400 13.5px/1.3 var(--font);transition:.15s}
+.rail button .n{font:500 11px/1 var(--mono);color:var(--line2);min-width:16px}
+.rail button:hover{background:var(--flow-soft);color:var(--ink)}
+.rail button.cur{background:var(--signal-soft);color:var(--ink)}
+.rail button.cur .n{color:var(--signal)}
+.rail button:focus-visible{outline:2px solid var(--flow);outline-offset:1px}
+
+.stage{position:relative;min-height:380px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .35s ease}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--flow)}
+.panel h2,.tab h2{font:600 20px/1.2 var(--font);margin:8px 0 10px;letter-spacing:-.01em}
+.tab>p,.panel p{margin:0 0 12px;max-width:64ch}
+.panel p.sub,.tab p.sub{color:var(--muted);font-size:14.5px}
+.viz{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+.note{font-size:13px;color:var(--muted);border-left:2px solid var(--signal);padding:2px 0 2px 12px;margin:12px 0 0}
+code{font:500 13px var(--mono);background:var(--flow-soft);color:var(--ink);padding:1px 6px;border-radius:5px}
+
+.nav2{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font:500 14px/1 var(--font);padding:11px 18px;border-radius:10px;border:1px solid var(--line2);color:var(--ink);transition:.15s}
+.btn:hover{background:var(--flow-soft)}
+.btn:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.btn.primary{background:var(--signal);border-color:var(--signal);color:#fff}
+@media (prefers-color-scheme:dark){.btn.primary{color:#141319}}
+.dots{display:flex;gap:7px}
+.pd{width:8px;height:8px;border-radius:50%;background:var(--line2);cursor:pointer;transition:.2s}
+.pd.on{background:var(--signal);transform:scale(1.25)}
+
+.pill{display:inline-block;padding:6px 11px;margin:3px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);font:500 14px var(--mono);cursor:pointer;transition:.15s}
+.pill:hover{background:var(--flow-soft)}
+.pill.sel{border-color:var(--signal);background:var(--signal-soft)}
+.kv{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end}
+.kv .lab{font:400 11.5px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.kv .val{font:500 18px var(--mono)}
+.vbars{display:flex;gap:3px;align-items:flex-end;height:46px;margin-top:5px}
+.vbars i{flex:1;min-width:3px;background:var(--flow);border-radius:1px;display:block}
+.row{display:flex;align-items:center;gap:10px;margin:5px 0}
+.row .tk{width:96px;text-align:right;font:500 14px var(--mono);flex:0 0 auto}
+.track{flex:1;height:22px;background:var(--bg);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.fill{height:100%;background:var(--flow);transition:width .25s}
+.row.hit .fill{background:var(--signal)}
+.pct{width:46px;text-align:right;font:400 13px var(--mono);color:var(--muted);flex:0 0 auto}
+.ctlbar{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+input[type=range]{accent-color:var(--signal);flex:1;min-width:140px}
+.mini{all:unset;cursor:pointer;font:500 13px var(--font);padding:8px 14px;border:1px solid var(--line2);border-radius:8px;transition:.15s}
+.mini:hover{background:var(--flow-soft)}
+.mini.on{background:var(--signal-soft);border-color:var(--signal)}
+.mini:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--mono);fill:var(--ink)}
+.legend{display:flex;gap:18px;font-size:12.5px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block;vertical-align:-1px;margin-right:5px}
+
+/* agent transcript */
+.flowhead{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px}
+.fnode{flex:1;text-align:center;padding:10px;border:1px solid var(--line2);border-radius:10px;font:500 13px var(--font);transition:.25s;background:var(--surface)}
+.fnode small{display:block;font:400 11px var(--mono);color:var(--muted);margin-top:3px}
+.fnode.act-model{border-color:var(--signal);background:var(--signal-soft)}
+.fnode.act-harness{border-color:var(--flow);background:var(--flow-soft)}
+.farrow{font:500 18px var(--mono);color:var(--muted);min-width:30px;text-align:center}
+.transcript{margin-top:6px}
+.msg{border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:8px 0;background:var(--surface);animation:fade .3s ease}
+.msg .top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.chip{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:6px}
+.chip.model{background:var(--signal-soft);color:var(--signal)}
+.chip.harness{background:var(--flow-soft);color:var(--flow)}
+.chip.stopu{background:var(--signal-soft);color:var(--signal)}
+.chip.stope{background:var(--teal-soft);color:var(--teal)}
+.dir{font:400 11.5px var(--mono);color:var(--muted)}
+.msg .title{font:500 14px var(--font)}
+.msg pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin:7px 0 0;overflow-x:auto;font:500 12.5px var(--mono);white-space:pre-wrap}
+.ctxbar{font:500 12.5px var(--mono);color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0 2px}
+.ctxbar b{color:var(--ink)}
+
+/* thinking */
+.thinkbox{background:var(--bg);border:1px dashed var(--line2);border-radius:10px;padding:12px 14px;margin-top:10px;font:400 14px var(--font);color:var(--muted)}
+.thinkbox .tl{margin:3px 0;animation:fade .3s ease}
+.answer{background:var(--signal-soft);border-radius:10px;padding:12px 14px;margin-top:10px;font:500 15px var(--font);color:var(--ink);animation:fade .3s ease}
+
+/* compare grid */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cmp{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface)}
+.cmp h3{margin:0 0 4px;font:600 15px var(--font)}
+.cmp .tag{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:6px}
+.cmp.a .tag{background:var(--signal-soft);color:var(--signal)}
+.cmp.b .tag{background:var(--teal-soft);color:var(--teal)}
+.cmp ul{margin:10px 0 0;padding-left:18px;font-size:14px}
+.cmp li{margin:5px 0}
+.verdict{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14.5px}
+
+.sources{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.sources a{color:var(--flow);text-decoration:none}
+.sources a:hover{text-decoration:underline}
+
+@media (max-width:720px){
+  .cols{grid-template-columns:1fr}
+  nav.rail{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);padding:0 0 10px;gap:4px}
+  .rail button{flex:0 0 auto}
+  .rail button .label{display:none}
+  .compare{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">an interactive walkthrough</div>
+  <h1>How a large language model works</h1>
+  <p class="lede">From a single token up to a real agent loop driving Claude Code. Pick a scenario; most steps are live, not just pictures.</p>
+
+  <div class="tabbar" id="tabbar" role="tablist">
+    <button data-tab="fundamentals" class="on">Fundamentals</button>
+    <button data-tab="agent">The agent loop</button>
+    <button data-tab="thinking">Thinking mode</button>
+    <button data-tab="context">Long context</button>
+    <button data-tab="embed2">Embeddings vs network</button>
+  </div>
+
+  <!-- ============ TAB: FUNDAMENTALS ============ -->
+  <section class="tab show" id="tab-fundamentals">
+    <div class="spine" id="spine" aria-hidden="true">
+      <div class="snode" data-stage="tok"><span class="dot">T</span><span class="slabel">tokens</span></div>
+      <div class="sbar"></div>
+      <div class="snode" data-stage="vec"><span class="dot">V</span><span class="slabel">vectors</span></div>
+      <div class="sbar"></div>
+      <div class="snode" data-stage="lay"><span class="dot">L</span><span class="slabel">layers</span></div>
+      <div class="sbar"></div>
+      <div class="snode" data-stage="prob"><span class="dot">P</span><span class="slabel">probabilities</span></div>
+      <div class="sbar"></div>
+      <div class="snode" data-stage="loop"><span class="dot">&#8635;</span><span class="slabel">loop</span></div>
+    </div>
+    <div class="cols">
+      <nav class="rail" id="rail" aria-label="Steps"></nav>
+      <div class="stage" id="stage"></div>
+    </div>
+    <div class="nav2">
+      <button class="btn" id="f-back">&larr; Back</button>
+      <div class="dots" id="dots"></div>
+      <button class="btn primary" id="f-next">Next &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ============ TAB: AGENT LOOP ============ -->
+  <section class="tab" id="tab-agent">
+    <div class="kicker">real scenario &middot; claude code fixing a bug</div>
+    <h2>The agent loop: model and harness, back and forth</h2>
+    <p>The model itself can't read files or run code. A <b>harness</b> (Claude Code, the Agent SDK, your own script) does that. The model only ever emits text and structured <b>tool calls</b>; the harness executes them and feeds results back. Step through one real task.</p>
+    <div class="viz">
+      <div class="flowhead">
+        <div class="fnode" id="ag-fmodel">Model<small>frozen weights</small></div>
+        <div class="farrow" id="ag-arrow">&#8644;</div>
+        <div class="fnode" id="ag-fharness">Harness<small>Claude Code</small></div>
+      </div>
+      <div class="ctxbar" id="ag-ctx"></div>
+      <div class="transcript" id="ag-transcript"></div>
+    </div>
+    <div class="nav2">
+      <button class="btn" id="ag-back">&larr; Back</button>
+      <div class="dots" id="ag-dots"></div>
+      <button class="btn primary" id="ag-next">Next &rarr;</button>
+    </div>
+    <div class="note" id="ag-note">Each model turn is a fresh forward pass over the <i>entire</i> conversation. The weights never change between turns — only the context grows.</div>
+  </section>
+
+  <!-- ============ TAB: THINKING ============ -->
+  <section class="tab" id="tab-thinking">
+    <div class="kicker">reasoning</div>
+    <h2>Thinking mode: a scratchpad before the answer</h2>
+    <p>"Thinking" is not a different model or a special architecture. It is the same next-token generation, but the model first writes out reasoning tokens — a scratchpad — and then writes the answer, which is conditioned on that scratchpad. More deliberation, same machine.</p>
+    <p class="sub">With newer Claude models this is <b>adaptive</b>: the model decides how much to think based on difficulty and an effort setting. Try it on a small multi-step problem.</p>
+    <div class="viz">
+      <div style="font:500 14px var(--mono);color:var(--muted)">prompt</div>
+      <div style="font:500 15px var(--font);margin:4px 0 12px">A train leaves at 14:20 and arrives at 17:05. A faster train covers the same route 35 minutes quicker, leaving at the same time. When does it arrive?</div>
+      <div class="ctlbar">
+        <button class="mini on" id="th-toggle">Thinking: on</button>
+        <button class="mini" id="th-run">Run</button>
+        <span id="th-hint" style="font-size:13px;color:var(--muted)"></span>
+      </div>
+      <div id="th-out"></div>
+    </div>
+    <div class="note">Thinking tokens are generated and billed like any output, and they stay in the context to condition what comes next. On hard tasks they raise accuracy; on trivial ones they just add latency, which is why adaptive thinking exists.</div>
+  </section>
+
+  <!-- ============ TAB: LONG CONTEXT ============ -->
+  <section class="tab" id="tab-context">
+    <div class="kicker">attention at scale</div>
+    <h2>Long context: tokenization, attention, and the KV cache</h2>
+    <p>Everything the model can "see" lives in one <b>context window</b> — system prompt, tools, full history, files, its own thinking. There is no other memory. Every token in it is reprocessed on each turn and billed as input.</p>
+    <p class="sub">Drag the context size. Watch the cost and the attention work grow — attention compares every token with every other token, so its cost scales roughly with the <i>square</i> of length.</p>
+    <div class="viz">
+      <div class="ctlbar">
+        <span style="font-size:13px;color:var(--muted);min-width:96px">context size</span>
+        <input type="range" id="cx-size" min="2000" max="1000000" step="2000" value="16000">
+        <span id="cx-tok" style="font:500 14px var(--mono);min-width:96px;text-align:right"></span>
+      </div>
+      <div class="kv" style="margin-top:14px">
+        <div><div class="lab">tokens</div><div class="val" id="cx-v-tok"></div></div>
+        <div><div class="lab">~words</div><div class="val" id="cx-v-word"></div></div>
+        <div><div class="lab">input cost (Sonnet)</div><div class="val" id="cx-v-cost"></div></div>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:5px">relative attention work (~ length&sup2;)</div>
+        <div class="track" style="height:14px"><div class="fill" id="cx-att" style="background:var(--signal)"></div></div>
+      </div>
+      <svg id="cx-cache" viewBox="0 0 620 92" role="img" aria-label="The cached prefix versus new tokens each turn" style="margin-top:18px"></svg>
+    </div>
+    <div class="note" id="cx-note"></div>
+  </section>
+
+  <!-- ============ TAB: EMBEDDINGS VS NETWORK ============ -->
+  <section class="tab" id="tab-embed2">
+    <div class="kicker">your question, answered</div>
+    <h2>Are embeddings and the neural network the same thing?</h2>
+    <p>It depends which embeddings — and conflating the two is the single most common source of confusion. There are two completely different objects that both turn text into vectors.</p>
+    <div class="compare">
+      <div class="cmp a">
+        <span class="tag">inside the model</span>
+        <h3>Token embeddings</h3>
+        <ul>
+          <li>The model's <b>first layer</b>: a learned lookup table (vocabulary &times; ~5000 dims).</li>
+          <li>These vectors <b>are weights</b> — trained jointly with every other layer, end to end.</li>
+          <li>They live in the same vector space the layers operate in (the residual stream).</li>
+          <li>The output "unembedding" that produces logits is often the same matrix, reused.</li>
+        </ul>
+      </div>
+      <div class="cmp b">
+        <span class="tag">a separate model</span>
+        <h3>RAG embeddings</h3>
+        <ul>
+          <li>Produced by a <b>different, dedicated model</b> (Anthropic has none of its own; it recommends Voyage).</li>
+          <li>Used to index documents and run similarity search in a vector DB.</li>
+          <li>Completely <b>independent</b> of the LLM's weights — swappable, retrainable on its own.</li>
+          <li>Their output never enters the network as weights — only as retrieved <i>text</i> in the prompt.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><b>The verdict:</b> token embeddings and the network are <b>the same object</b> — embeddings are literally the network's input layer, learned together. "RAG embeddings" come from a <b>separate, independent</b> model and only ever feed the LLM as text inside the context window.</div>
+    <div class="viz">
+      <svg viewBox="0 0 620 220" role="img" aria-label="Token embeddings are inside the model; RAG embeddings come from a separate model">
+        <rect x="20" y="30" width="280" height="170" rx="16" style="fill:var(--signal-soft);stroke:var(--signal)"/>
+        <text x="160" y="54" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:14px">the LLM (one network)</text>
+        <rect x="44" y="70" width="232" height="34" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="160" y="91" text-anchor="middle" style="font-size:12px">token embeddings = layer 0</text>
+        <rect x="44" y="112" width="232" height="34" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="160" y="133" text-anchor="middle" style="font-size:12px">transformer layers 1..N</text>
+        <rect x="44" y="154" width="232" height="34" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="160" y="175" text-anchor="middle" style="font-size:12px">unembedding -> logits</text>
+        <rect x="340" y="30" width="260" height="170" rx="16" style="fill:var(--teal-soft);stroke:var(--teal)"/>
+        <text x="470" y="54" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:14px">separate embedding model</text>
+        <rect x="364" y="78" width="212" height="40" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="470" y="102" text-anchor="middle" style="font-size:12px">your docs -> vectors</text>
+        <rect x="364" y="132" width="212" height="40" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="470" y="156" text-anchor="middle" style="font-size:12px">vector DB + search</text>
+      </svg>
+    </div>
+  </section>
+
+  <div class="sources">
+    Built from Anthropic's official documentation:
+    <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works">how tool use works</a> &middot;
+    <a href="https://platform.claude.com/docs/en/agent-sdk/agent-loop">agent loop</a> &middot;
+    <a href="https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking">adaptive thinking</a> &middot;
+    <a href="https://platform.claude.com/docs/en/build-with-claude/context-windows">context windows</a> &middot;
+    <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">prompt caching</a> &middot;
+    <a href="https://docs.claude.com/en/docs/build-with-claude/embeddings">embeddings</a> &middot;
+    <a href="https://www.anthropic.com/research/tracing-thoughts-language-model">tracing thoughts</a>
+  </div>
+</div>
+
+<script>
+/* ================= FUNDAMENTALS (tab 1) ================= */
+const BODIES = {
+overview:`
+<p>An LLM is not a database of answers. It is a single mathematical function &mdash; a tall stack of identical layers &mdash; that you run <b>over and over</b> in a loop.</p>
+<div class="viz">
+<svg viewBox="0 0 620 360" role="img" aria-label="Tokens flow up through layers to a predicted word, which loops back as input">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" style="fill:none;stroke:var(--muted);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"/></marker></defs>
+<text x="120" y="40" style="fill:var(--muted);font-size:12px">&#8635; output fed back as input</text>
+<path d="M250 56 L120 56 L120 320 L185 320" style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar)"/>
+<rect x="250" y="34" width="130" height="46" rx="9" style="fill:var(--signal-soft);stroke:var(--signal)"/>
+<text x="315" y="54" text-anchor="middle" style="font-weight:500;font-size:14px">mat</text>
+<text x="315" y="70" text-anchor="middle" style="fill:var(--muted);font-size:11px">predicted word</text>
+<line x1="315" y1="112" x2="315" y2="86" style="stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar)"/>
+<rect x="205" y="112" width="220" height="30" rx="7" style="fill:var(--flow-soft);stroke:var(--flow)"/><text x="315" y="131" text-anchor="middle" style="font-size:12px">layer N</text>
+<rect x="205" y="150" width="220" height="30" rx="7" style="fill:var(--flow-soft);stroke:var(--flow)"/><text x="315" y="169" text-anchor="middle" style="font-size:12px">&#8942;  (attn + FFN) &times; N</text>
+<rect x="205" y="188" width="220" height="30" rx="7" style="fill:var(--flow-soft);stroke:var(--flow)"/><text x="315" y="207" text-anchor="middle" style="font-size:12px">layer 1</text>
+<line x1="315" y1="262" x2="315" y2="222" style="stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar)"/>
+<rect x="240" y="262" width="150" height="30" rx="7" style="fill:var(--teal-soft);stroke:var(--teal)"/><text x="315" y="281" text-anchor="middle" style="font-size:12px">embeddings (vectors)</text>
+<line x1="315" y1="320" x2="315" y2="296" style="stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar)"/>
+<rect x="185" y="312" width="76" height="38" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="223" y="336" text-anchor="middle" style="font-size:13px">the</text>
+<rect x="277" y="312" width="76" height="38" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="315" y="336" text-anchor="middle" style="font-size:13px">cat</text>
+<rect x="369" y="312" width="76" height="38" rx="8" style="fill:var(--surface);stroke:var(--line2)"/><text x="407" y="336" text-anchor="middle" style="font-size:13px">sat</text>
+</svg></div>
+<p class="sub">The next steps unpack each stage in order. Use <b>Next &rarr;</b> or the arrow keys.</p>`,
+tokenize:`
+<p>The model never sees letters or words directly. Text is split into <b>tokens</b> &mdash; usually subword chunks &mdash; and each token is just an integer ID in a fixed vocabulary.</p>
+<p class="sub">This is why "unbelievable" can become three pieces, and why token count drives cost and context limits. Pick a phrase, then click a token.</p>
+<div class="viz">
+<div style="font:400 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">phrase</div>
+<div id="e-ex"></div>
+<div style="font:400 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 4px">subword tokens &mdash; click one</div>
+<div id="e-pills" style="min-height:40px"></div>
+<div id="e-det" class="kv" style="display:none;margin-top:14px">
+  <div><div class="lab">token</div><div class="val" id="e-tok"></div></div>
+  <div><div class="lab">id</div><div class="val" id="e-id"></div></div>
+  <div style="flex:1;min-width:170px"><div class="lab">embedding vector &mdash; 18 of ~5000 dims</div><div class="vbars" id="e-vec"></div></div>
+</div></div>
+<div class="note">A token ID is meaningless on its own. Its meaning comes from the vector it maps to next.</div>`,
+embed:`
+<p>Each token ID is replaced by a learned <b>embedding</b>: a list of a few thousand numbers. That list <i>is</i> the vector. The model learns to place related meanings near each other in this space.</p>
+<p class="sub">This is the real home of the word "vector" in an LLM &mdash; a coordinate in meaning space, not a database row.</p>
+<div class="viz">
+<svg id="e-map" viewBox="0 0 620 240" role="img" aria-label="A map where similar words cluster together"></svg>
+<div class="legend"><span><i style="background:var(--flow)"></i>animals</span><span><i style="background:var(--teal)"></i>vehicles</span><span><i style="background:var(--signal)"></i>emotions</span></div>
+</div>
+<div class="note">Real embeddings have thousands of dimensions; this is a 2-D shadow. Direction and distance encode meaning.</div>`,
+attention:`
+<p>Inside every layer sits <b>attention</b>. Each token looks at the others and pulls in the ones relevant to it, weighted by how much they matter &mdash; turning a generic "sat" into "sat, by the cat, here".</p>
+<p class="sub">A token can only attend to itself and earlier tokens, never the future. Click any token to make it the query.</p>
+<div class="viz">
+<svg id="a-svg" viewBox="0 0 620 260" role="img" aria-label="Attention weights fanning from the query token to earlier tokens"></svg>
+<div id="a-cap" style="font-size:13.5px;color:var(--muted);text-align:center;margin-top:4px"></div>
+</div>`,
+layers:`
+<p>One layer isn't enough. The model stacks dozens of identical attention-plus-feed-forward blocks. Each reads a shared <b>residual stream</b>, adds what it computed, and hands it up.</p>
+<p class="sub">Roughly, early layers handle structure and late layers handle meaning. Drag to add depth.</p>
+<div class="viz">
+<svg id="l-svg" viewBox="0 0 620 290" role="img" aria-label="A stack of transformer layers along a shared residual stream"></svg>
+<div class="ctlbar"><span style="font-size:13px;color:var(--muted)">depth</span><input type="range" id="l-depth" min="1" max="6" step="1" value="6"></div>
+<div id="l-cap" style="font-size:13.5px;color:var(--muted);margin-top:10px"></div>
+</div>`,
+predict:`
+<p>At the top, the final vector is scored against the whole vocabulary &mdash; a raw <b>logit</b> for every possible next token. <code>softmax</code> turns those into probabilities, and one token is <b>sampled</b>.</p>
+<p class="sub">Temperature reshapes the distribution: low = focused, high = random. Drag it, then draw samples.</p>
+<div class="viz">
+<div style="font:500 14px var(--mono);color:var(--muted);margin-bottom:10px">context: <span style="color:var(--ink)">the cat sat on the ___</span></div>
+<div id="p-bars"></div>
+<div class="ctlbar"><span style="font-size:13px;color:var(--muted)">temperature</span><input type="range" id="p-temp" min="0.1" max="2" step="0.1" value="0.8"><span id="p-tv" style="font:500 14px var(--mono);min-width:30px;text-align:right">0.8</span></div>
+<div class="ctlbar"><button class="mini" id="p-sample">Draw a sample</button><span id="p-out" style="font-size:14px;color:var(--muted)"></span></div>
+</div>`,
+loop:`
+<p>That's one token. To write anything, the model <b>appends</b> the chosen token to the input and runs the entire stack again. This is <b>autoregression</b>.</p>
+<p class="sub">Every word it writes becomes context for the next. Step through it, or auto-run.</p>
+<div class="viz">
+<div id="g-row" style="font:500 17px var(--mono);min-height:30px"></div>
+<div class="ctlbar" style="margin-top:18px">
+<button class="mini" id="g-step">Predict next token</button>
+<button class="mini" id="g-auto">Auto-run</button>
+<button class="mini" id="g-reset">Reset</button>
+<span id="g-status" style="font-size:13px;color:var(--muted)">press a button to generate</span>
+</div></div>
+<div class="note">Because each token depends on all the ones before it, generation cost grows with context length &mdash; the practical reason long prompts are slower and pricier. See the Long context tab.</div>`,
+train:`
+<p>None of this is hand-coded. <b>Pretraining</b> is the same next-token game over trillions of tokens: read text, predict the next token, measure the error, nudge billions of weights, repeat.</p>
+<div class="viz">
+<svg viewBox="0 0 620 170" role="img" aria-label="The pretraining loop">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" style="fill:none;stroke:var(--muted);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"/></marker></defs>
+<rect x="40" y="40" width="120" height="44" rx="9" style="fill:var(--teal-soft);stroke:var(--teal)"/><text x="100" y="66" text-anchor="middle" style="font-size:13px">read text</text>
+<line x1="162" y1="62" x2="186" y2="62" style="stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar2)"/>
+<rect x="190" y="40" width="120" height="44" rx="9" style="fill:var(--teal-soft);stroke:var(--teal)"/><text x="250" y="66" text-anchor="middle" style="font-size:13px">predict next</text>
+<line x1="312" y1="62" x2="336" y2="62" style="stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar2)"/>
+<rect x="340" y="40" width="120" height="44" rx="9" style="fill:var(--teal-soft);stroke:var(--teal)"/><text x="400" y="66" text-anchor="middle" style="font-size:13px">compute loss</text>
+<line x1="462" y1="62" x2="486" y2="62" style="stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar2)"/>
+<rect x="490" y="40" width="120" height="44" rx="9" style="fill:var(--signal-soft);stroke:var(--signal)"/><text x="550" y="66" text-anchor="middle" style="font-size:13px">update weights</text>
+<path d="M550 84 L550 124 L100 124 L100 86" style="fill:none;stroke:var(--muted);stroke-width:1.5" marker-end="url(#ar2)"/>
+<text x="325" y="148" text-anchor="middle" style="fill:var(--muted);font-size:12.5px">repeat over trillions of tokens</text>
+</svg></div>
+<p>A smaller <b>post-training</b> phase (supervised fine-tuning, then preference methods like RLHF, plus Constitutional AI for Claude) reshapes those weights into a helpful assistant. It tunes what's there; it doesn't add a knowledge store.</p>`,
+memory:`
+<p>So where does knowledge live? In the <b>weights</b> &mdash; distributed as <b>features</b> (concepts across many neurons) wired into <b>circuits</b> (reasoning pathways). Not as words or rows.</p>
+<p class="sub">A vector database is a separate, optional lookup. It feeds retrieved text into the context window and never touches the weights. (Full breakdown in the Embeddings tab.)</p>
+<div class="viz">
+<svg viewBox="0 0 620 280" role="img" aria-label="Model weights versus an external vector database">
+<text x="160" y="26" text-anchor="middle" style="fill:var(--muted);font-size:12px">learned in training &middot; frozen</text>
+<text x="460" y="26" text-anchor="middle" style="fill:var(--muted);font-size:12px">added by you &middot; swappable</text>
+<rect x="30" y="40" width="260" height="210" rx="18" style="fill:var(--flow-soft);stroke:var(--flow)"/>
+<text x="160" y="66" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:15px">model weights</text>
+<rect x="52" y="100" width="216" height="56" rx="10" style="fill:var(--surface);stroke:var(--line2)"/><text x="160" y="124" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:14px">features</text><text x="160" y="142" text-anchor="middle" style="fill:var(--muted);font-size:12px">concepts across neurons</text>
+<rect x="52" y="168" width="216" height="56" rx="10" style="fill:var(--surface);stroke:var(--line2)"/><text x="160" y="192" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:14px">circuits</text><text x="160" y="210" text-anchor="middle" style="fill:var(--muted);font-size:12px">features wired into reasoning</text>
+<text x="310" y="150" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:14px">vs</text>
+<rect x="330" y="40" width="260" height="210" rx="18" style="fill:var(--teal-soft);stroke:var(--teal)"/>
+<text x="460" y="66" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:15px">vector database</text>
+<rect x="352" y="100" width="216" height="56" rx="10" style="fill:var(--surface);stroke:var(--line2)"/><text x="460" y="124" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:14px">your documents</text><text x="460" y="142" text-anchor="middle" style="fill:var(--muted);font-size:12px">chunked and embedded</text>
+<rect x="352" y="168" width="216" height="56" rx="10" style="fill:var(--surface);stroke:var(--line2)"/><text x="460" y="192" text-anchor="middle" style="font-family:var(--font);font-weight:500;font-size:14px">similarity search</text><text x="460" y="210" text-anchor="middle" style="fill:var(--muted);font-size:12px">looked up at query time</text>
+</svg></div>
+<div class="note">That's why RAG exists: it gives a frozen network access to private or current information without retraining a single weight.</div>`
+};
+const STEPS=[
+ {key:"overview",stage:null,title:"The whole machine",kicker:"overview"},
+ {key:"tokenize",stage:"tok",title:"1 &middot; Text becomes tokens",kicker:"input"},
+ {key:"embed",stage:"vec",title:"2 &middot; Tokens become vectors",kicker:"meaning"},
+ {key:"attention",stage:"lay",title:"3 &middot; Tokens look at each other",kicker:"attention"},
+ {key:"layers",stage:"lay",title:"4 &middot; Repeat through the stack",kicker:"depth"},
+ {key:"predict",stage:"prob",title:"5 &middot; Score the next word",kicker:"prediction"},
+ {key:"loop",stage:"loop",title:"6 &middot; Append and repeat",kicker:"generation"},
+ {key:"train",stage:null,title:"7 &middot; How it learned all this",kicker:"training"},
+ {key:"memory",stage:null,title:"8 &middot; Where the knowledge lives",kicker:"weights vs RAG"}
+];
+const railLabels=["Overview","Tokenize","Embed","Attention","Layer stack","Predict","Generate loop","Training","Knowledge"];
+const stage=document.getElementById('stage'),rail=document.getElementById('rail'),dots=document.getElementById('dots');
+let cur=0;
+function fboot(){
+  STEPS.forEach((s,i)=>{const p=document.createElement('div');p.className='panel';p.dataset.key=s.key;
+    p.innerHTML='<div class="kicker">'+s.kicker+'</div><h2>'+s.title+'</h2>'+BODIES[s.key];stage.appendChild(p);});
+  railLabels.forEach((lab,i)=>{const b=document.createElement('button');b.innerHTML='<span class="n">'+(i? i:'&middot;')+'</span><span class="label">'+lab+'</span>';
+    b.onclick=()=>fgo(i);rail.appendChild(b);
+    const d=document.createElement('div');d.className='pd';d.onclick=()=>fgo(i);dots.appendChild(d);});
+}
+function fgo(i){cur=Math.max(0,Math.min(STEPS.length-1,i));
+  document.querySelectorAll('#stage .panel').forEach((p,j)=>p.classList.toggle('active',j===cur));
+  rail.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('cur',j===cur));
+  dots.querySelectorAll('.pd').forEach((d,j)=>d.classList.toggle('on',j===cur));
+  document.getElementById('f-back').disabled=cur===0;document.getElementById('f-next').disabled=cur===STEPS.length-1;
+  const stg=STEPS[cur].stage,ov=STEPS[cur].key==="overview";
+  document.querySelectorAll('#spine .snode').forEach(n=>n.classList.toggle('on',ov||(stg!==null&&n.dataset.stage===stg)));
+  const fn=INIT[STEPS[cur].key];if(fn&&!fn.done){fn();fn.done=true;}
+}
+document.getElementById('f-next').onclick=()=>fgo(cur+1);
+document.getElementById('f-back').onclick=()=>fgo(cur-1);
+
+function svgEl(n,a){const e=document.createElementNS('http://www.w3.org/2000/svg',n);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function vecFor(seed){let v=[],s=seed;for(let i=0;i<18;i++){s=(s*1103515245+12345)&0x7fffffff;v.push((s%1000)/1000);}return v;}
+const INIT={};
+INIT.embed=function(){
+  const ex={"the cat sat on the mat":[["the",1169],["cat",6240],["sat",10560],["on",322],["the",1169],["mat",2603]],
+   "unbelievable":[["un",359],["believ",55436],["able",526]],"tokenization":[["token",30001],["ization",2065]],
+   "Belgrade 2026":[["Bel",8421],["grade",16934],["2026",26012]]};
+  let phrase="the cat sat on the mat";
+  const exDiv=document.getElementById('e-ex'),pills=document.getElementById('e-pills'),det=document.getElementById('e-det');
+  Object.keys(ex).forEach(p=>{const b=document.createElement('button');b.className='mini';b.textContent=p;b.onclick=()=>{phrase=p;render();};exDiv.appendChild(b);});
+  function render(){pills.innerHTML='';det.style.display='none';
+    ex[phrase].forEach((t,i)=>{const s=document.createElement('span');s.className='pill';s.textContent=t[0];s.onclick=()=>pick(i,s);pills.appendChild(s);});}
+  function pick(i,el){pills.querySelectorAll('.pill').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');
+    const t=ex[phrase][i];det.style.display='flex';
+    document.getElementById('e-tok').textContent='"'+t[0]+'"';document.getElementById('e-id').textContent=t[1];
+    const vb=document.getElementById('e-vec');vb.innerHTML='';vecFor(t[1]).forEach(v=>{const b=document.createElement('i');b.style.height=Math.round(8+v*38)+'px';vb.appendChild(b);});}
+  render();
+  const map=document.getElementById('e-map'),W=620,H=240,pad=34;
+  const pts=[["cat",.20,.30,"var(--flow)"],["kitten",.30,.20,"var(--flow)"],["dog",.13,.44,"var(--flow)"],["puppy",.25,.50,"var(--flow)"],
+   ["car",.70,.26,"var(--teal)"],["truck",.82,.36,"var(--teal)"],["bus",.74,.48,"var(--teal)"],
+   ["happy",.46,.74,"var(--signal)"],["joyful",.56,.82,"var(--signal)"],["sad",.36,.86,"var(--signal)"]];
+  pts.forEach(p=>{const cx=pad+p[1]*(W-2*pad),cy=pad+p[2]*(H-2*pad);
+    map.appendChild(svgEl('circle',{cx,cy,r:6,style:'fill:'+p[3]}));
+    const t=svgEl('text',{x:cx+10,y:cy+4,style:'fill:var(--muted);font-size:12px'});t.textContent=p[0];map.appendChild(t);});
+};
+INIT.attention=function(){
+  const toks=["the","cat","sat","on","the","mat"];
+  const W=[[1],[.40,.60],[.15,.55,.30],[.10,.20,.40,.30],[.10,.15,.15,.20,.40],[.08,.25,.30,.12,.05,.20]];
+  const svg=document.getElementById('a-svg'),cap=document.getElementById('a-cap');
+  const bw=80,gap=12,step=bw+gap,startX=(620-(6*bw+5*gap))/2,by=200,bh=40,cx=i=>startX+i*step+bw/2;let q=2;
+  function draw(){svg.innerHTML='';
+    W[q].forEach((w,k)=>{const x1=cx(q),x2=cx(k),mx=(x1+x2)/2;
+      svg.appendChild(svgEl('path',{d:'M'+x1+' '+by+' Q '+mx+' 60 '+x2+' '+by,style:'fill:none;stroke:var(--signal);stroke-width:'+(1+w*7).toFixed(1)+';stroke-linecap:round;opacity:'+(.2+w*.8).toFixed(2)}));
+      const l=svgEl('text',{x:x2,y:184,'text-anchor':'middle',style:'fill:var(--signal);font-size:12px'});l.textContent=Math.round(w*100)+'%';svg.appendChild(l);});
+    toks.forEach((t,i)=>{const att=i<=q,isq=i===q;const g=svgEl('g',{style:'cursor:pointer'});g.onclick=()=>{q=i;draw();};
+      g.appendChild(svgEl('rect',{x:startX+i*step,y:by,width:bw,height:bh,rx:8,style:'fill:'+(isq?'var(--signal-soft)':'var(--surface)')+';stroke:'+(isq?'var(--signal)':'var(--line2)')+';stroke-width:'+(isq?1.5:1)+';opacity:'+(att?1:.4)}));
+      const tx=svgEl('text',{x:cx(i),y:by+bh/2+1,'text-anchor':'middle','dominant-baseline':'central',style:'font-size:14px;font-weight:500;opacity:'+(att?1:.4)});tx.textContent=t;g.appendChild(tx);svg.appendChild(g);});
+    const top=W[q].map((w,k)=>[toks[k],w]).sort((a,b)=>b[1]-a[1])[0];
+    cap.textContent='query "'+toks[q]+'" attends most to "'+top[0]+'" ('+Math.round(top[1]*100)+'%). Future tokens are masked.';}
+  draw();
+};
+INIT.layers=function(){
+  const svg=document.getElementById('l-svg'),cap=document.getElementById('l-cap'),slider=document.getElementById('l-depth');
+  const N=6,x=210,w=200,top=24,h=30,gp=12;
+  function draw(){const d=+slider.value;svg.innerHTML='';
+    svg.appendChild(svgEl('line',{x1:x+w/2,y1:top-6,x2:x+w/2,y2:top+N*(h+gp),style:'stroke:var(--line2);stroke-width:1.5'}));
+    for(let i=0;i<N;i++){const yy=top+(N-1-i)*(h+gp),on=i<d;
+      svg.appendChild(svgEl('rect',{x,y:yy,width:w,height:h,rx:8,style:'fill:'+(on?'var(--signal-soft)':'var(--surface)')+';stroke:'+(on?'var(--signal)':'var(--line2)')+';stroke-width:1'}));
+      const t=svgEl('text',{x:x+w/2,y:yy+h/2+1,'text-anchor':'middle','dominant-baseline':'central',style:'font-size:13px;opacity:'+(on?1:.5)});t.textContent='layer '+(i+1)+'  attn + FFN';svg.appendChild(t);}
+    const lo=svgEl('text',{x:x+w+18,y:top+N*(h+gp)-h/2,style:'fill:var(--muted);font-size:12px'});lo.textContent='early: syntax';svg.appendChild(lo);
+    const hi=svgEl('text',{x:x+w+18,y:top+h/2+2,style:'fill:var(--muted);font-size:12px'});hi.textContent='late: meaning';svg.appendChild(hi);
+    cap.textContent='Depth '+d+' of '+N+'. Each layer reads the shared residual stream, adds what it computed, and passes it up.';}
+  slider.addEventListener('input',draw);draw();
+};
+INIT.predict=function(){
+  const cands=[["mat",8.2],["floor",7.0],["couch",6.6],["rug",6.3],["sofa",5.7],["windowsill",4.9]];
+  const bars=document.getElementById('p-bars');
+  cands.forEach((c,i)=>{const r=document.createElement('div');r.className='row';r.id='pr'+i;
+    r.innerHTML='<span class="tk">"'+c[0]+'"</span><div class="track"><div class="fill" id="pf'+i+'"></div></div><span class="pct" id="pp'+i+'"></span>';bars.appendChild(r);});
+  let probs=[];const t=document.getElementById('p-temp'),tv=document.getElementById('p-tv'),out=document.getElementById('p-out');
+  function calc(){const T=+t.value;tv.textContent=T.toFixed(1);
+    const ex=cands.map(c=>Math.exp(c[1]/T)),s=ex.reduce((a,b)=>a+b,0);probs=ex.map(e=>e/s);
+    probs.forEach((p,i)=>{document.getElementById('pf'+i).style.width=(p*100).toFixed(1)+'%';document.getElementById('pp'+i).textContent=Math.round(p*100)+'%';});}
+  document.getElementById('p-sample').onclick=()=>{bars.querySelectorAll('.row').forEach(r=>r.classList.remove('hit'));
+    let x=Math.random(),acc=0,pick=0;for(let i=0;i<probs.length;i++){acc+=probs[i];if(x<=acc){pick=i;break;}}
+    document.getElementById('pr'+pick).classList.add('hit');out.textContent='-> picked "'+cands[pick][0]+'"';};
+  t.addEventListener('input',calc);calc();
+};
+INIT.loop=function(){
+  const base=["the","cat","sat","on","the"],cont=["mat",".","It","was","a","sunny","afternoon","."];
+  let idx=0;const gr=document.getElementById('g-row');
+  function paint(){gr.innerHTML='<span>'+base.concat(cont.slice(0,idx)).join(' ')+'</span>'+(idx<cont.length?' <span style="opacity:.35">___</span>':'');}
+  function step(){if(idx>=cont.length)return;
+    gr.innerHTML='<span>'+base.concat(cont.slice(0,idx)).join(' ')+'</span> ';
+    const s=document.createElement('span');s.style.color='var(--signal)';s.textContent=cont[idx];gr.appendChild(s);idx++;
+    document.getElementById('g-status').textContent=idx>=cont.length?'done — every word fed back in, one token at a time':'each predicted token is appended, then the model runs again';}
+  document.getElementById('g-step').onclick=step;let timer=null;
+  document.getElementById('g-auto').onclick=function(){if(timer){clearInterval(timer);timer=null;this.textContent='Auto-run';return;}
+    this.textContent='Stop';timer=setInterval(()=>{if(idx>=cont.length){clearInterval(timer);timer=null;this.textContent='Auto-run';}else step();},650);};
+  document.getElementById('g-reset').onclick=()=>{idx=0;paint();document.getElementById('g-status').textContent='press a button to generate';};
+  paint();
+};
+
+/* ================= AGENT LOOP (tab 2) ================= */
+function agInit(){
+  const EV=[
+   {side:'harness',dir:'build → send to model',chip:'harness',title:'Harness builds the request',code:'system:  You are Claude Code. Fix failing tests.\ntools:   [ read_file, edit_file, run_tests ]\nuser:    "The test for add() is failing. Fix it."'},
+   {side:'model',dir:'thinking (internal)',chip:'model',title:'Model reasons',code:'"Test expects add(2,3)=5. Let me read calc.py first."'},
+   {side:'model',dir:'→ back to harness',chip:'model',stop:'tool_use',title:'Emits tool_use: read_file',code:'{ "tool": "read_file", "input": { "path": "calc.py" } }'},
+   {side:'harness',dir:'executes, result → model',chip:'harness',title:'Harness runs read_file',code:'def add(a, b):\n    return a + b + 1   # <- stray +1'},
+   {side:'model',dir:'thinking (internal)',chip:'model',title:'Model reasons',code:'"There is a stray + 1. Remove it."'},
+   {side:'model',dir:'→ back to harness',chip:'model',stop:'tool_use',title:'Emits tool_use: edit_file',code:'{ "tool":"edit_file", "input":{ "old":"a + b + 1", "new":"a + b" } }'},
+   {side:'harness',dir:'executes, result → model',chip:'harness',title:'Harness applies the edit',code:'edit applied to calc.py (1 change)'},
+   {side:'model',dir:'→ back to harness',chip:'model',stop:'tool_use',title:'Emits tool_use: run_tests',code:'{ "tool": "run_tests", "input": {} }'},
+   {side:'harness',dir:'executes, result → model',chip:'harness',title:'Harness runs the tests',code:'1 passed in 0.03s'},
+   {side:'model',dir:'→ to user',chip:'model',stop:'end_turn',title:'Final answer',code:'Fixed: add() had a stray "+ 1". Tests pass.'}
+  ];
+  let idx=0;
+  const tr=document.getElementById('ag-transcript'),ctx=document.getElementById('ag-ctx');
+  const fm=document.getElementById('ag-fmodel'),fh=document.getElementById('ag-fharness'),arr=document.getElementById('ag-arrow');
+  const dotsEl=document.getElementById('ag-dots');
+  EV.forEach((e,i)=>{const d=document.createElement('div');d.className='pd';d.onclick=()=>set(i+1);dotsEl.appendChild(d);});
+  function render(){
+    tr.innerHTML='';
+    for(let i=0;i<idx;i++){const e=EV[i];const m=document.createElement('div');m.className='msg';
+      let chips='<span class="chip '+e.chip+'">'+(e.side==='model'?'model':'harness')+'</span><span class="dir">'+e.dir+'</span>';
+      if(e.stop)chips+='<span class="chip '+(e.stop==='end_turn'?'stope':'stopu')+'">stop_reason: '+e.stop+'</span>';
+      m.innerHTML='<div class="top">'+chips+'</div><div class="title">'+e.title+'</div><pre>'+e.code+'</pre>';tr.appendChild(m);}
+    const last=EV[idx-1];
+    fm.className='fnode'+(last&&last.side==='model'?' act-model':'');
+    fh.className='fnode'+(last&&last.side==='harness'?' act-harness':'');
+    arr.textContent=last?(last.side==='model'?'→':'←'):'⇄';
+    const msgs=2+idx;const toks=1500+idx*420;
+    ctx.innerHTML='context window: <b>'+msgs+'</b> messages · ~<b>'+toks.toLocaleString()+'</b> tokens · model turns so far: <b>'+EV.slice(0,idx).filter(e=>e.side==='model'&&e.stop).length+'</b> (each a full re-run)';
+    dotsEl.querySelectorAll('.pd').forEach((d,j)=>d.classList.toggle('on',j===idx-1));
+    document.getElementById('ag-back').disabled=idx<=0;document.getElementById('ag-next').disabled=idx>=EV.length;
+  }
+  function set(i){idx=Math.max(0,Math.min(EV.length,i));render();}
+  window.__agSet=set;window.__agLen=EV.length;window.__agIdx=()=>idx;
+  document.getElementById('ag-next').onclick=()=>set(idx+1);
+  document.getElementById('ag-back').onclick=()=>set(idx-1);
+  set(1);
+}
+
+/* ================= THINKING (tab 3) ================= */
+function thInit(){
+  let thinkingOn=true,timers=[];
+  const toggle=document.getElementById('th-toggle'),out=document.getElementById('th-out'),hint=document.getElementById('th-hint');
+  toggle.onclick=()=>{thinkingOn=!thinkingOn;toggle.textContent='Thinking: '+(thinkingOn?'on':'off');toggle.classList.toggle('on',thinkingOn);out.innerHTML='';hint.textContent='';};
+  const lines=["Travel time: 14:20 → 17:05 is 2 h 45 m.","Faster train: 2 h 45 m − 35 m = 2 h 10 m.","Leaves 14:20, so arrives 14:20 + 2 h 10 m."];
+  const answer="It arrives at 16:30.";
+  document.getElementById('th-run').onclick=()=>{
+    timers.forEach(clearTimeout);timers=[];out.innerHTML='';
+    if(!thinkingOn){hint.textContent='answered directly — no scratchpad';
+      const a=document.createElement('div');a.className='answer';a.textContent=answer;out.appendChild(a);return;}
+    hint.textContent='generating thinking tokens, then the answer…';
+    const box=document.createElement('div');box.className='thinkbox';
+    const hd=document.createElement('div');hd.style.cssText='font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px';hd.textContent='thinking (scratchpad)';box.appendChild(hd);out.appendChild(box);
+    lines.forEach((ln,i)=>timers.push(setTimeout(()=>{const d=document.createElement('div');d.className='tl';d.textContent='• '+ln;box.appendChild(d);},500*(i+1))));
+    timers.push(setTimeout(()=>{const a=document.createElement('div');a.className='answer';a.textContent=answer;out.appendChild(a);hint.textContent='the answer was conditioned on the scratchpad above';},500*(lines.length+1)));
+  };
+}
+
+/* ================= LONG CONTEXT (tab 4) ================= */
+function cxInit(){
+  const s=document.getElementById('cx-size');
+  const cache=document.getElementById('cx-cache');
+  function draw(){const t=+s.value;
+    document.getElementById('cx-tok').textContent=t.toLocaleString()+' tok';
+    document.getElementById('cx-v-tok').textContent=t.toLocaleString();
+    document.getElementById('cx-v-word').textContent=Math.round(t/1.3).toLocaleString();
+    document.getElementById('cx-v-cost').textContent='$'+(t/1e6*3).toFixed(2);
+    const att=Math.min(100,Math.pow(t/1e6,2)*100*1);document.getElementById('cx-att').style.width=Math.max(1,att).toFixed(1)+'%';
+    const over200=t>200000;
+    document.getElementById('cx-note').innerHTML=(over200?'Above 200K tokens you are in 1M-context territory (beta). ':'')+'A KV cache + prompt caching let the model skip recomputing the unchanged <b>prefix</b> (system prompt + tools), so re-reads cost roughly 90% less. But more tokens is not automatically better: accuracy drifts as the window fills — "context rot" — so what you put in matters as much as how much fits.';
+    cache.innerHTML='';
+    const prefix=Math.min(0.45,30000/Math.max(t,30000));const pw=Math.round(prefix*580);
+    cache.appendChild(svgEl('rect',{x:20,y:20,width:pw,height:34,rx:7,style:'fill:var(--teal-soft);stroke:var(--teal)'}));
+    const t1=svgEl('text',{x:20+pw/2,y:41,'text-anchor':'middle',style:'font-size:11.5px'});t1.textContent='cached prefix';cache.appendChild(t1);
+    cache.appendChild(svgEl('rect',{x:24+pw,y:20,width:576-pw,height:34,rx:7,style:'fill:var(--signal-soft);stroke:var(--signal)'}));
+    const t2=svgEl('text',{x:24+pw+(576-pw)/2,y:41,'text-anchor':'middle',style:'font-size:11.5px'});t2.textContent='new tokens each turn';cache.appendChild(t2);
+    const t3=svgEl('text',{x:20,y:78,style:'fill:var(--muted);font-size:11.5px'});t3.textContent='system + tools (cheap to re-read)';cache.appendChild(t3);
+    const t4=svgEl('text',{x:600,y:78,'text-anchor':'end',style:'fill:var(--muted);font-size:11.5px'});t4.textContent='messages, files, thinking (full price)';cache.appendChild(t4);
+  }
+  s.addEventListener('input',draw);draw();
+}
+
+/* ================= TAB SWITCHING ================= */
+const inited={};
+const TABINIT={fundamentals:()=>{fboot();fgo(0);},agent:agInit,thinking:thInit,context:cxInit,embed2:()=>{}};
+let currentTab='fundamentals';
+function showTab(id){
+  currentTab=id;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('show',t.id==='tab-'+id));
+  document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+  if(!inited[id]){TABINIT[id]&&TABINIT[id]();inited[id]=true;}
+}
+document.querySelectorAll('#tabbar button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+document.addEventListener('keydown',e=>{
+  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;
+  const d=e.key==='ArrowRight'?1:-1;
+  if(currentTab==='fundamentals')fgo(cur+d);
+  else if(currentTab==='agent'&&window.__agSet)window.__agSet(window.__agIdx()+d);
+});
+showTab('fundamentals');
+</script>
+</body>
+</html>

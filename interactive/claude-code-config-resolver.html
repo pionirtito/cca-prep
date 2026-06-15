@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code · config & permission resolver</title>
+<style>
+:root{
+  --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+  --text:#1f1e1c; --text2:#5f5e5a; --text3:#9b9a93;
+  --border:#dedcd3; --border2:#c8c6bc;
+  --accent:#185fa5; --good:#3E7842; --bad:#A33E3E; --warn:#9A6212;
+  --radius:12px; --radius-sm:8px;
+  --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1a18; --surface:#242320; --surface2:#2e2d29;
+    --text:#e8e6df; --text2:#aaa89f; --text3:#75746c;
+    --border:#3a3934; --border2:#4c4b44;
+    --accent:#85b7eb; --good:#7CB87F; --bad:#D98B8B; --warn:#D4A85A;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;padding:32px 16px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:21px;font-weight:600;margin:0 0 4px}
+.sub{font-size:13px;color:var(--text2);margin:0 0 20px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.pill{font-size:12px;padding:5px 11px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit}
+.pill[aria-pressed="true"]{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:600}
+.stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:14px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px}
+.ph{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;font-weight:600}
+.ph .glyph{color:var(--text2);font-size:14px}
+/* stack of scopes */
+.scope{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin:5px 0;font-size:12px;transition:border-color .3s,opacity .3s,background .3s}
+.scope .sh{display:flex;align-items:center;gap:7px;font-weight:600}
+.scope .pri{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:auto}
+.scope .path{font-family:var(--mono);font-size:10.5px;color:var(--text3);margin-top:1px}
+.scope .body{font-family:var(--mono);font-size:11px;margin-top:6px;white-space:pre-wrap;line-height:1.5}
+.scope.win{border-color:var(--good);background:color-mix(in srgb,var(--good) 8%,transparent)}
+.scope.lose{opacity:.5}
+.scope.deny{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 9%,transparent)}
+.scope.eval{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.badge{font-size:9.5px;font-family:var(--mono);font-weight:700;padding:1.5px 6px;border-radius:4px;white-space:nowrap}
+/* resolution trace */
+.trace{font-family:var(--mono);font-size:11.5px;line-height:1.7}
+.trace .tl{display:flex;gap:8px;padding:3px 0}
+.trace .tl .mark{width:14px;flex:none;text-align:center}
+.trace .tl.hit{color:var(--good);font-weight:600}
+.trace .tl.stop{color:var(--bad);font-weight:600}
+.trace .tl.skip{color:var(--text3)}
+.outcome{margin-top:12px;padding:10px 13px;border-radius:var(--radius-sm);font-size:13px;font-weight:600}
+.outcome.allow{background:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good);border:1px solid var(--good)}
+.outcome.deny{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad);border:1px solid var(--bad)}
+.outcome.ask{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn);border:1px solid var(--warn)}
+.outcome.merge{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent);border:1px solid var(--accent)}
+.q{font-size:12px;color:var(--text2);margin-bottom:8px;font-style:italic}
+.hint{font-size:10.5px;color:var(--text3);margin-top:12px;line-height:1.55}
+.explain{font-size:14px;line-height:1.6;margin:14px 0 10px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm)}
+.payload{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface)}
+.phead{font-size:11px;font-family:var(--mono);padding:6px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+pre{margin:0;padding:12px;font-size:11.5px;font-family:var(--mono);line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+.ctrl{display:flex;align-items:center;gap:10px;margin-top:12px}
+button.nav{font:13px/1 inherit;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer}
+button.nav:hover:not(:disabled){background:var(--surface2)}
+button.nav:disabled{opacity:.4;cursor:default}
+.stepn{font-size:12px;color:var(--text2)}
+.foot{font-size:12px;color:var(--text3);margin-top:24px;line-height:1.7}
+.foot a{color:var(--accent)}
+@media (max-width:720px){.stage{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Claude Code — config &amp; permission resolver</h1>
+<p class="sub">Watch which configuration <i>wins</i>. CLAUDE.md memory layering, settings precedence, the deny→ask→allow permission engine, scoped rules, and how headless mode reads all of it. The question each scenario answers: given these files, what actually happens? Grounded in the official Claude Code docs.</p>
+
+<div class="pills" id="pills"></div>
+
+<div class="stage">
+  <div class="panel" id="lpanel">
+    <div class="ph"><span class="glyph">☰</span><span id="ltitle">configuration scopes</span></div>
+    <div id="scopes"></div>
+    <div class="hint" id="lhint"></div>
+  </div>
+  <div class="panel" id="rpanel">
+    <div class="ph"><span class="glyph">▶</span>resolution</div>
+    <div class="q" id="rq"></div>
+    <div class="trace" id="trace"></div>
+    <div class="outcome" id="outcome"></div>
+  </div>
+</div>
+
+<div class="explain" id="explain"></div>
+
+<div class="payload">
+  <div class="phead" id="phead">config / file</div>
+  <pre id="pcode"></pre>
+</div>
+
+<div class="ctrl">
+  <button class="nav" id="prev" onclick="mv(-1)">← Back</button>
+  <button class="nav" id="next" onclick="mv(1)" style="font-weight:600">Step →</button>
+  <span class="stepn" id="stepn"></span>
+</div>
+
+<p class="foot">Grounded in: <a href="https://code.claude.com/docs/en/settings" target="_blank" rel="noopener">Settings</a> · <a href="https://code.claude.com/docs/en/memory" target="_blank" rel="noopener">Memory (CLAUDE.md)</a> · <a href="https://code.claude.com/docs/en/iam" target="_blank" rel="noopener">Permissions / IAM</a> · CCA-F guide ch. 5–8. Exam anchors: settings precedence managed &gt; CLI args &gt; local project &gt; shared project &gt; user — managed cannot be overridden by anything; settings merge = scalars from higher scope win, arrays concatenate; permission rules evaluate <b>deny → ask → allow</b>, first match wins regardless of specificity, and deny/allow lists from all scopes merge so a higher-scope deny always sticks; CLAUDE.md = more-specific-overrides-broader, with <code>@path</code> imports; Read/Edit patterns use gitignore syntax; <code>-p</code> headless reads the same files (no interactive approvals — pre-approve via allowlist or it blocks).</p>
+</div>
+
+<script>
+const SB={managed:["managed","#FCEBEB","#791F1F"],cli:["CLI args","#E6F1FB","#0C447C"],local:["local project","#EEEDFE","#3C3489"],project:["shared project","#FAEEDA","#633806"],user:["user","#F1EFE8","#444441"],enterprise:["enterprise policy","#FCEBEB","#791F1F"],sub:["subdirectory","#E1F5EE","#085041"]};
+function scope(key,path,body,state,badge){return{k:key,path:path,body:body,st:state||'',badge:badge}}
+function tl(mark,text,cls){return{m:mark,t:text,c:cls||''}}
+const S=[
+
+{n:"1 · Settings precedence",
+ltitle:"settings.json scopes (5 layers)",
+lhint:"Five sources, one precedence chain. Managed sits at the ceiling — no CLI flag, local, project, or user file can override it. This is the security-compliance guarantee.",
+steps:[
+{e:"Claude Code resolves every setting through a five-layer stack. From highest to lowest: managed (admin-deployed) → command-line args → local project (.claude/settings.local.json, gitignored) → shared project (.claude/settings.json, committed) → user (~/.claude/settings.json). Here four layers each set a different model. Which wins?",
+scopes:[
+scope("managed","/Library/.../managed-settings.json",'"model": "claude-opus-4-8"',"",null),
+scope("cli","--model sonnet",'model = sonnet',"",null),
+scope("local",".claude/settings.local.json",'"model": "claude-haiku-4-5"',"",null),
+scope("user","~/.claude/settings.json",'"model": "claude-sonnet-4-6"',"",null)],
+rq:"Four scopes set model. Which value is used?",
+trace:[tl("✓","managed sets model → highest scope wins","hit"),tl("·","CLI arg — outranked by managed","skip"),tl("·","local — outranked","skip"),tl("·","user — outranked","skip")],
+out:["merge","Resolved: claude-opus-4-8 (managed)"],
+p:'precedence (highest → lowest):\n  1. managed         ← admin, the ceiling\n  2. CLI args        (--model, --allowedTools …)\n  3. local project   (.claude/settings.local.json)\n  4. shared project  (.claude/settings.json)\n  5. user            (~/.claude/settings.json)\n\nmanaged wins → "claude-opus-4-8"'},
+{e:"Remove the managed layer and the CLI flag wins — it outranks every file. This is why a developer can override project/user defaults for one session with --model, but can never punch through a managed policy. The exam tests exactly this ordering, often by asking 'a dev runs claude --model X but IT deployed managed model Y — what runs?' Answer: Y, always.",
+scopes:[
+scope("cli","--model sonnet",'model = sonnet',"win","WINS"),
+scope("local",".claude/settings.local.json",'"model": "claude-haiku-4-5"',"lose",null),
+scope("project",".claude/settings.json",'"model": "claude-opus-4-8"',"lose",null),
+scope("user","~/.claude/settings.json",'"model": "claude-sonnet-4-6"',"lose",null)],
+rq:"No managed layer. Dev passes --model sonnet. Which wins?",
+trace:[tl("✓","CLI arg is now the highest present scope","hit"),tl("·","local / project / user all outranked","skip")],
+out:["merge","Resolved: sonnet (CLI flag) — but managed would have beaten even this"],
+p:'with NO managed layer:\n  CLI arg  --model sonnet   ← highest present → wins\n\nkey rule: managed > CLI args.\nA managed policy beats even a command-line flag.\nThere is no developer-side escape hatch.'},
+{e:"Precedence is per-KEY, and non-conflicting keys MERGE rather than replace. Scalars from the higher scope win; arrays concatenate. So user sets env A, project sets env B and a model — the result is the union, with the higher scope winning only where they actually collide. 'My setting isn't working' is almost always a wrong-scope or a merge-vs-override misunderstanding, not a bug.",
+scopes:[
+scope("project",".claude/settings.json",'"model": "opus"\n"env": { "TZ": "UTC" }',"",null),
+scope("user","~/.claude/settings.json",'"model": "sonnet"\n"env": { "EDITOR": "vim" }',"",null)],
+rq:"Project and user set different keys + one shared key. Result?",
+trace:[tl("✓","model: opus (project beats user on the collision)","hit"),tl("+","env.TZ=UTC (project) + env.EDITOR=vim (user) — merged","hit"),tl("ℹ","arrays concatenate; scalars take the higher scope","")],
+out:["merge","Merged: model=opus, env={TZ:UTC, EDITOR:vim}"],
+p:'merge semantics:\n  scalar key in both scopes → higher scope wins\n  array key in both scopes  → concatenate\n  key only in one scope     → kept as-is\n\nso settings COMBINE across scopes — precedence\nonly decides the winner on a direct collision.'}]},
+
+{n:"2 · CLAUDE.md memory",
+ltitle:"CLAUDE.md memory hierarchy",
+lhint:"At startup Claude Code loads every applicable CLAUDE.md and combines them. More-specific instructions take precedence over broader ones — a subdirectory file refines the project file, which refines user/managed.",
+steps:[
+{e:"Memory (CLAUDE.md) is separate from settings.json — it carries instructions and context, not permissions. At startup Claude loads ALL applicable files up the tree and merges them into the system context. The governing rule: more specific overrides broader. If managed policy says 4-space indent but the project CLAUDE.md says 2-space, the project wins for that project.",
+scopes:[
+scope("enterprise","/Library/.../CLAUDE.md","# org standard\n4-space indentation","lose",null),
+scope("user","~/.claude/CLAUDE.md","# my prefs\nprefer verbose comments","",null),
+scope("project","./CLAUDE.md","# this project\n2-space indentation","win","MORE SPECIFIC"),
+scope("sub","./src/api/CLAUDE.md","# api module\nall handlers async","win","MOST SPECIFIC")],
+rq:"Indent conflict: enterprise=4, project=2. Which applies?",
+trace:[tl("✓","project CLAUDE.md = more specific → 2-space wins here","hit"),tl("+","src/api/CLAUDE.md adds 'async handlers' for that dir","hit"),tl("+","user prefs merged where not overridden","hit"),tl("ℹ","all loaded & combined; specificity breaks ties","")],
+out:["merge","2-space indent · verbose comments · async handlers in src/api"],
+p:'memory load order (all loaded, combined):\n  enterprise/managed CLAUDE.md   (broadest)\n  user        ~/.claude/CLAUDE.md\n  project     ./CLAUDE.md\n  subdirectory ./src/api/CLAUDE.md (most specific)\n\nspecific overrides broad → project beats enterprise\non a direct conflict; non-conflicts merge.'},
+{e:"CLAUDE.md supports @path imports — pull shared standards into one file so they aren't copy-pasted across repos. Imports resolve relative to the importing file and can nest. This is how teams keep one canonical coding-standard doc and @-import it everywhere, rather than drifting copies. (CLAUDE.local.md exists for personal, gitignored project notes — but the docs flag its precedence as a known point of confusion; prefer settings.local.json for personal config.)",
+scopes:[
+scope("project","./CLAUDE.md","# Project\n@./docs/coding-standards.md\n@~/.claude/my-shortcuts.md\nUse pnpm, not npm.","eval",null),
+scope("sub","./docs/coding-standards.md","# Standards\nConventional commits.\nTest before merge.","",null)],
+rq:"./CLAUDE.md uses @imports. What's in context?",
+trace:[tl("✓","@./docs/coding-standards.md pulled in (relative to file)","hit"),tl("✓","@~/.claude/my-shortcuts.md pulled in","hit"),tl("+","inline 'Use pnpm' kept","hit"),tl("ℹ","imports resolve relative to the importing file; can nest","")],
+out:["merge","Context = project text + both imported files, combined"],
+p:'# ./CLAUDE.md\n@./docs/coding-standards.md   ← relative import\n@~/.claude/my-shortcuts.md    ← home-dir import\nUse pnpm, not npm.\n\nimports let one canonical standard be reused\neverywhere instead of copied. They nest.\nCLAUDE.local.md = personal/gitignored (precedence\nis a documented gotcha — prefer settings.local.json).'}]},
+
+{n:"3 · Permission engine",
+ltitle:"permissions: deny / ask / allow",
+lhint:"Three lists, one evaluation order: deny → ask → allow. First match wins, REGARDLESS of specificity. Lists from every scope merge first, so a deny anywhere up the chain always applies.",
+steps:[
+{e:"The single most-tested Claude Code mechanic. Permission rules live in three lists and are evaluated in a FIXED order: deny first, then ask, then allow. The first rule that matches decides the outcome — and specificity does NOT break ties, order does. A command hits the deny list → blocked, no prompt, no override, even if a more specific allow exists.",
+scopes:[
+scope("project",'permissions.deny','"Bash(rm -rf:*)"',"deny","CHECKED 1st"),
+scope("project",'permissions.ask','"Bash(git push:*)"',"",null),
+scope("project",'permissions.allow','"Bash(rm:*)"\n"Bash(git:*)"',"lose",null)],
+rq:"Claude wants: rm -rf build/  — what happens?",
+trace:[tl("✗","deny: Bash(rm -rf:*) MATCHES → BLOCKED","stop"),tl("·","ask — never reached","skip"),tl("·","allow: Bash(rm:*) would match, but deny ran first","skip")],
+out:["deny","BLOCKED — deny wins over a more general allow"],
+p:'evaluation order (fixed):\n  1. deny  → if match: BLOCK (no prompt, no override)\n  2. ask   → if match: prompt the user\n  3. allow → if match: run without prompting\n  none match → default policy for that tool\n\nfirst match wins. specificity is irrelevant —\nORDER decides. Bash(rm -rf:*) deny beats Bash(rm:*) allow.'},
+{e:"Same engine, a command that misses deny and ask. 'git status' isn't denied, isn't in ask, but matches an allow → it runs with no prompt. Note the matching syntax: Bash(git:*) means the prefix 'git' then a separator then anything — it will NOT match 'gitleaks' (different prefix) and won't match a wrapped 'sh -c \"git status\"' (matched on the literal string the harness sees, not the eventual effect).",
+scopes:[
+scope("project",'permissions.deny','"Bash(rm -rf:*)"',"lose",null),
+scope("project",'permissions.ask','"Bash(git push:*)"',"lose",null),
+scope("project",'permissions.allow','"Bash(git:*)"',"win","MATCH (allow)")],
+rq:"Claude wants: git status — what happens?",
+trace:[tl("·","deny: no match","skip"),tl("·","ask: Bash(git push:*) — no match","skip"),tl("✓","allow: Bash(git:*) matches 'git status' → RUN","hit")],
+out:["allow","ALLOWED — runs without a prompt"],
+p:'Bash(git:*) matching:\n  ✓ git status        (prefix + separator + rest)\n  ✓ git push origin   (but git push is in ASK → prompts)\n  ✗ gitleaks scan     (different prefix — no match)\n  ✗ sh -c "git status" (matched literally as the wrapper)\n\nuse Bash(git status) exact-form if you mean ONLY that.'},
+{e:"git push isn't denied, but it IS in the ask list — so Claude prompts before running it. ask is the middle tier: reversible-but-worth-seeing operations. The rule of thumb the docs suggest: reversible+frequent → allow; irreversible or rare → ask; destructive → deny. A PreToolUse hook can add runtime checks on top, but hook output does NOT override a matching deny or ask rule.",
+scopes:[
+scope("project",'permissions.deny','"Bash(git push --force:*)"',"lose",null),
+scope("project",'permissions.ask','"Bash(git push:*)"',"win","MATCH (ask)"),
+scope("project",'permissions.allow','"Bash(git:*)"',"",null)],
+rq:"Claude wants: git push origin main — what happens?",
+trace:[tl("·","deny: Bash(git push --force:*) — no match (not a force push)","skip"),tl("⚠","ask: Bash(git push:*) MATCHES → PROMPT user","hit"),tl("·","allow: Bash(git:*) would match, but ask ran first","skip")],
+out:["ask","ASK — Claude prompts before pushing"],
+p:'three-tier intent:\n  deny  Bash(git push --force:*)  destructive → never\n  ask   Bash(git push:*)         reversible → confirm\n  allow Bash(git:*)              routine → silent\n\nhooks (PreToolUse) layer ON TOP but cannot loosen\na deny/ask. They only add checks, never override.'}]},
+
+{n:"4 · Cross-scope merge",
+ltitle:"permission lists merge across scopes",
+lhint:"Deny/allow/ask lists from EVERY scope merge before evaluation. A deny set in user settings still applies even if a project file allows the same thing — the safety net can't be undone from below.",
+steps:[
+{e:"Permissions don't just pick one scope — the lists MERGE across all of them, then the deny→ask→allow engine runs on the combined set. Consequence: a deny set high in the chain (user, managed) survives any allow set lower down. Here the user globally denies curl; the project tries to allow it. The merged deny wins.",
+scopes:[
+scope("user","~/.claude/settings.json — deny",'"Bash(curl:*)"',"deny","DENY (merged in)"),
+scope("project",".claude/settings.json — allow",'"Bash(curl:*)"',"lose",null)],
+rq:"User denies curl, project allows it. Claude wants: curl ...",
+trace:[tl("ℹ","lists merge → deny:[curl] + allow:[curl]","")," ",tl("✗","deny checked first → curl BLOCKED","stop"),tl("·","project's allow never wins — deny ran first","skip")],
+out:["deny","BLOCKED — a higher-scope deny can't be undone from below"],
+p:'merge THEN evaluate:\n  combined deny  = [ Bash(curl:*) ]   (from user)\n  combined allow = [ Bash(curl:*) ]   (from project)\n→ deny runs first → blocked\n\ndesign pattern: put DENY rules in shared settings.json\nso personal settings.local.json can never loosen them.'},
+{e:"To actually get curl on your machine without weakening the team's policy, you exploit scope precedence on the SAME rule: add the allow to local settings (.claude/settings.local.json, priority 3) which outranks the project deny (priority 4) — but only if no HIGHER scope denies it. If the user or managed scope holds the deny, nothing below can allow it. The exam phrases this as 'where do I put the rule to override X?' — the answer is always 'a scope that outranks where X lives, and below nothing that re-denies'.",
+scopes:[
+scope("local",".claude/settings.local.json — allow",'"Bash(curl:*)"',"win","priority 3 — WINS vs project"),
+scope("project",".claude/settings.json — deny",'"Bash(curl:*)"',"lose","priority 4")],
+rq:"Project denies curl. Put allow in LOCAL — does it work?",
+trace:[tl("ℹ","same rule, different scopes → precedence decides","")," ",tl("✓","local (pri 3) outranks project (pri 4) → allow wins","hit"),tl("⚠","BUT a user/managed deny (higher) would still block it","")],
+out:["allow","ALLOWED — local beats project on the same rule (if nothing higher denies)"],
+p:'override curl-deny without touching team policy:\n  .claude/settings.local.json  (priority 3)\n    permissions.allow: [ "Bash(curl:*)" ]\n  → beats .claude/settings.json deny (priority 4)\n\ncaveat: if the deny sits in USER or MANAGED scope,\nno local allow can reach it. Override only works\nagainst LOWER scopes.'}]},
+
+{n:"5 · Commands · skills · agents",
+ltitle:"the three extension types",
+lhint:"Slash commands, skills, and subagents are different mechanisms with different triggers. Knowing which is which — and that subagent definitions live in .claude/agents/ — is exam-tested.",
+steps:[
+{e:"Claude Code has three ways to package reusable behavior, and the exam tests telling them apart. Slash commands (.claude/commands/*.md) are USER-invoked shortcuts — you type /name to run a prompt template. Skills (.claude/skills/) are model-invoked OR /skill-name — Claude loads them automatically when relevant, or you call them. Subagents (.claude/agents/*.md) are separate-context workers Claude delegates to via the Task tool.",
+scopes:[
+scope("project",".claude/commands/review.md","/review → runs a prompt template\n(USER types the slash command)","",null),
+scope("project",".claude/skills/pdf/SKILL.md","loaded automatically when relevant,\nor invoked as /pdf (MODEL or user)","",null),
+scope("sub",".claude/agents/security.md","delegated to via Task tool,\nseparate context (MODEL spawns)","",null)],
+rq:"Who triggers each, and where do they live?",
+trace:[tl("→","command: USER types /review — .claude/commands/","hit"),tl("→","skill: MODEL auto-loads or /pdf — .claude/skills/","hit"),tl("→","subagent: MODEL spawns via Task — .claude/agents/","hit")],
+out:["merge","command=user-invoked · skill=auto/invoked · subagent=delegated"],
+p:'extension types:\n  slash command  .claude/commands/x.md   you type /x\n  skill          .claude/skills/x/        auto-loaded\n                                          or /x\n  subagent       .claude/agents/x.md      Claude delegates\n                                          via Task (own context)\n\nsubagents here = Claude Code config files, distinct\nfrom the SDK AgentDefinition objects in debugger #2.'},
+{e:"Scoping applies to these too: a command or agent in .claude/ (project) is shared via git; one in ~/.claude/ is personal across all projects. And one direction-flip to remember: for permissions/settings, project beats personal — but for SKILLS, the resolution goes the OTHER way (personal can take precedence). The safe habit: keep team-critical behavior in project scope, personal conveniences in user scope.",
+scopes:[
+scope("project",".claude/agents/security.md","team subagent (committed, shared)","",null),
+scope("user","~/.claude/agents/security.md","personal subagent (all projects)","",null),
+scope("project",".claude/commands/deploy.md","team command (committed)","",null)],
+rq:"Project vs personal — which scope for what?",
+trace:[tl("→","project scope (.claude/) → shared via git with the team","hit"),tl("→","user scope (~/.claude/) → yours, every project","hit"),tl("⚠","settings/permissions: project > personal","skip"),tl("⚠","skills: the precedence can flip — personal may win","skip")],
+out:["merge","Team-critical → project scope · personal helpers → user scope"],
+p:'scope choice (same idea as MCP scopes, debugger #3):\n  .claude/...    project — committed, whole team\n  ~/.claude/...  user — personal, every project\n\ndirection of precedence is NOT universal:\n  permissions/settings → project beats personal\n  skills               → personal can take precedence\nput team-critical behavior in PROJECT scope.'}]},
+
+{n:"6 · Scoped rules & headless",
+ltitle:"path-scoped rules + headless reads it all",
+lhint:"Subdirectory CLAUDE.md files apply only within their tree — situation-scoped rules. Headless mode (-p) reads the entire hierarchy but has no human to answer 'ask' prompts.",
+steps:[
+{e:"Situation-scoped vs global rules: a CLAUDE.md deep in the tree applies ONLY to work within that subtree. Editing src/api/auth.ts loads root CLAUDE.md + src/api/CLAUDE.md; editing src/ui/Button.tsx loads root + src/ui/CLAUDE.md — never the api one. This is how you give one directory rules (e.g. 'all DB access via the repository layer') without imposing them globally. The more-specific-wins rule resolves any conflict between the levels.",
+scopes:[
+scope("project","./CLAUDE.md","global: TypeScript strict, no any","eval","always loaded"),
+scope("sub","./src/api/CLAUDE.md","scoped: all handlers async,\nDB via repository layer only","win","loaded for src/api/* only"),
+scope("user","./src/ui/CLAUDE.md","scoped: components must be\nfunction components","lose","NOT loaded for an api edit")],
+rq:"Claude edits src/api/auth.ts — which rules apply?",
+trace:[tl("✓","root CLAUDE.md (global) — always","hit"),tl("✓","src/api/CLAUDE.md — edit is inside its tree","hit"),tl("·","src/ui/CLAUDE.md — different subtree, NOT loaded","skip")],
+out:["merge","Applied: global strict-TS + api-scoped async/repository rules"],
+p:'path-scoped (situational) rules:\n  edit src/api/auth.ts  → ./CLAUDE.md + ./src/api/CLAUDE.md\n  edit src/ui/Button.tsx → ./CLAUDE.md + ./src/ui/CLAUDE.md\n\nscope = directory subtree. Global rules go at the root,\nsituational rules in the relevant subdirectory.\nConflicts: more specific (deeper) wins.'},
+{e:"Headless mode (-p) reads this ENTIRE hierarchy — CLAUDE.md layers, settings, permissions, rules — exactly as interactive mode does. The one thing it can't do: answer an 'ask' prompt, because no human is present. So a command in the ask tier will BLOCK a headless run. The CI fix: pre-approve the exact commands via the allow list (or --allowedTools), keeping deny rules intact. This is the bridge to the CI scenario — your weakest exam area ties directly to getting this allowlist right.",
+scopes:[
+scope("managed","managed-settings.json — deny",'"Bash(rm -rf:*)" (kept — safety)',"deny",null),
+scope("project",".claude/settings.json — ask",'"Bash(git push:*)" → blocks headless!',"lose","ASK = blocks in -p"),
+scope("cli","--allowedTools / allow list",'"Bash(git push:*)" pre-approved for CI',"win","pre-approved → runs")],
+rq:"In `claude -p`, an ask-tier command comes up. What happens?",
+trace:[tl("✗","ask tier needs a human → no one to prompt → BLOCKS","stop"),tl("✓","fix: move it to allow / --allowedTools for CI","hit"),tl("✓","keep deny rules — never blanket --dangerously-skip","")],
+out:["ask","Without pre-approval: BLOCKED in headless. Pre-approve via allow list to run."],
+p:'headless (-p) reads the full config, but:\n  ask-tier rule + no human  → run blocks/hangs\n\nCI recipe:\n  claude -p "review this PR" \\\n    --allowedTools "Read,Grep,Bash(npm test:*)" \\\n    --max-turns 5\n  # pre-approve exact commands; keep deny rules;\n  # avoid blanket bypass flags in shared pipelines'}]}
+];
+let si=0,ti=0;
+const $=id=>document.getElementById(id);
+function pills(){$("pills").innerHTML=S.map((s,i)=>'<button class="pill" aria-pressed="'+(i===si)+'" onclick="go('+i+')">'+s.n+'</button>').join('')}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function scopeEl(sc){
+const meta=SB[sc.k]||["scope","#F1EFE8","#444441"];
+const[label,bg,tx]=meta;
+let cls="scope";
+if(sc.st==='win')cls+=" win";else if(sc.st==='lose')cls+=" lose";else if(sc.st==='deny')cls+=" deny";else if(sc.st==='eval')cls+=" eval";
+let badge=sc.badge?'<span class="badge" style="background:'+bg+';color:'+tx+'">'+esc(sc.badge)+'</span>':'';
+return '<div class="'+cls+'"><div class="sh"><span class="badge" style="background:'+bg+';color:'+tx+'">'+label+'</span>'+badge+'<span class="pri"></span></div><div class="path">'+esc(sc.path)+'</div><div class="body">'+esc(sc.body)+'</div></div>';
+}
+function traceEl(t){
+if(t===' ')return '<div style="height:6px"></div>';
+return '<div class="tl '+t.c+'"><span class="mark">'+t.m+'</span><span>'+esc(t.t)+'</span></div>';
+}
+function draw(){
+const sc=S[si];const st=sc.steps[ti];
+$("ltitle").textContent=sc.ltitle;
+$("lhint").textContent=sc.lhint;
+$("scopes").innerHTML=st.scopes.map(scopeEl).join('');
+$("rq").textContent=st.rq;
+$("trace").innerHTML=st.trace.map(traceEl).join('');
+const[oc,otext]=st.out;
+$("outcome").className="outcome "+oc;
+$("outcome").textContent=otext;
+$("explain").innerHTML='<strong>'+(ti+1)+'. </strong>'+st.e;
+$("phead").textContent="config · "+sc.n.split("· ")[1];
+$("pcode").textContent=st.p;
+$("stepn").textContent='step '+(ti+1)+' of '+sc.steps.length;
+$("prev").disabled=ti===0;
+$("next").disabled=ti===sc.steps.length-1;
+pills();
+}
+function go(i){si=i;ti=0;draw()}
+function mv(d){ti=Math.max(0,Math.min(S[si].steps.length-1,ti+d));draw()}
+draw();
+</script>
+</body>
+</html>

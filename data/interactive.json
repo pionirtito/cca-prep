@@ -1,0 +1,74 @@
+[
+  {
+    "id": "how-an-llm-works",
+    "file": "interactive/how-an-llm-works.html",
+    "title": "How a large language model works — end to end",
+    "title_sr": "Kako radi veliki jezički model",
+    "desc": "Od jednog tokena do pravog agentskog loop-a koji vodi Claude Code. Izaberi scenario; većina koraka je „živa“, ne samo slike. Temelj za razumevanje svega ostalog.",
+    "group": 0,
+    "type": "explainer"
+  },
+  {
+    "id": "support-agent",
+    "file": "interactive/claude-support-agent-debugger.html",
+    "title": "Customer Support Resolution Agent · debugger",
+    "title_sr": "Agent za korisničku podršku — debager",
+    "desc": "Jedan agent okrenut korisniku rešava povraćaje, naplatu i probleme sa nalogom — i obrasci koje CCA-F testira: obrada namere, rešavanje preko alata, okidači za eskalaciju, politika sprovedena hook-om i strukturovani handoff.",
+    "group": 1,
+    "type": "debugger"
+  },
+  {
+    "id": "mcp",
+    "file": "interactive/claude-mcp-debugger.html",
+    "title": "MCP · protocol debugger",
+    "title_sr": "MCP — debager protokola",
+    "desc": "Model Context Protocol „na žici“: handshake životnog ciklusa, otkrivanje i pozivanje alata, izbor transporta, dve ravni grešaka, resursi naspram alata i opsezi konfiguracije u Claude Code-u. Host stoji između dve žice — Claude API sa jedne, MCP serveri sa druge strane.",
+    "group": 2,
+    "type": "debugger"
+  },
+  {
+    "id": "code-config",
+    "file": "interactive/claude-code-config-resolver.html",
+    "title": "Claude Code · config & permission resolver",
+    "title_sr": "Claude Code — razrešavanje konfiguracije i dozvola",
+    "desc": "Prati koja konfiguracija pobeđuje kada se preklope slojevi (enterprise, korisnik, projekat, lokalno) i kako se dozvole razrešavaju za svaki poziv alata.",
+    "group": 3,
+    "type": "debugger"
+  },
+  {
+    "id": "batching-cicd",
+    "file": "interactive/claude-batching-cicd-article.html",
+    "title": "Batching, CI/CD & automated review with Claude",
+    "title_sr": "Batching, CI/CD i automatska revizija",
+    "desc": "Interaktivni prikaz kako se Claude uklapa u automatizovane pipeline-ove — Message Batches API za masovni i zakazani posao, i Claude Code headless mode za git-driven code review i CI/CD.",
+    "group": 3,
+    "type": "article"
+  },
+  {
+    "id": "prompt-engineering",
+    "file": "interactive/claude-prompt-engineering-workbench.html",
+    "title": "Prompt engineering & structured output — workbench",
+    "title_sr": "Prompt engineering i strukturovani izlaz — radni sto",
+    "desc": "Domen 4 (20%): garantovani JSON, dizajn šeme, few-shot, eksplicitni kriterijumi, ulančavanje, interview obrazac, validate-retry petlje, batch strategije, multi-pass revizija — i granica sintaksa-naspram-semantike koja prožima sve to.",
+    "group": 4,
+    "type": "workbench"
+  },
+  {
+    "id": "stop-reason",
+    "file": "interactive/claude-api-stop-reason-debugger.html",
+    "title": "Claude API · stop_reason debugger",
+    "title_sr": "stop_reason — debager",
+    "desc": "Korak po korak kroz komunikaciju klijent ↔ server, pozive alata i svaki stop_reason. Pravljeno za CCA-F pripremu, oslonjeno na zvaničnu Messages API dokumentaciju.",
+    "group": 5,
+    "type": "debugger"
+  },
+  {
+    "id": "prompt-caching",
+    "file": "interactive/claude-prompt-caching-debugger.html",
+    "title": "Claude API · prompt caching debugger",
+    "title_sr": "Prompt caching — debager",
+    "desc": "Gde keš živi, šta u njega ulazi (alati, system, istorija, MCP katalozi), koliko traje, šta ga ruši — i kako se tačno troše ili štede tokeni na svakom zahtevu. Oslonjeno na zvaničnu prompt-caching dokumentaciju.",
+    "group": 5,
+    "type": "debugger"
+  }
+]

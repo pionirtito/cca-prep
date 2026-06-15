@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batching, CI/CD & automated review with Claude</title>
+<style>
+:root{
+  --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+  --text:#1f1e1c; --text2:#5f5e5a; --text3:#9b9a93;
+  --border:#dedcd3; --border2:#c8c6bc;
+  --accent:#185fa5; --good:#3E7842; --bad:#A33E3E; --warn:#9A6212;
+  --radius:12px; --radius-sm:8px;
+  --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1a18; --surface:#242320; --surface2:#2e2d29;
+    --text:#e8e6df; --text2:#aaa89f; --text3:#75746c;
+    --border:#3a3934; --border2:#4c4b44;
+    --accent:#85b7eb; --good:#7CB87F; --bad:#D98B8B; --warn:#D4A85A;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,-apple-system,'Segoe UI',sans-serif;padding:0}
+.wrap{max-width:760px;margin:0 auto;padding:36px 18px 80px}
+h1{font-size:25px;font-weight:600;margin:0 0 6px;line-height:1.25}
+.lede{font-size:15px;color:var(--text2);margin:0 0 8px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 30px;padding:14px;background:var(--surface2);border-radius:var(--radius)}
+.toc button{font:12px/1 inherit;padding:7px 11px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);color:var(--text2);cursor:pointer}
+.toc button:hover{border-color:var(--accent);color:var(--text)}
+h2{font-size:19px;font-weight:600;margin:42px 0 4px;scroll-margin-top:18px}
+.sectnum{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600}
+h3{font-size:15px;font-weight:600;margin:26px 0 6px}
+p{margin:10px 0}
+.lead{color:var(--text2);font-size:13px;margin:2px 0 14px}
+code{font-family:var(--mono);font-size:.87em;background:var(--surface2);padding:1.5px 5px;border-radius:4px}
+pre{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 15px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.6;margin:14px 0}
+pre code{background:none;padding:0;font-size:inherit}
+.tok-k{color:var(--accent)}
+.tok-c{color:var(--text3)}
+.tok-s{color:var(--good)}
+.callout{border-left:3px solid var(--accent);background:var(--surface);padding:11px 15px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:16px 0;font-size:14px}
+.callout.warn{border-left-color:var(--warn)}
+.callout.exam{border-left-color:var(--good)}
+.callout b{font-weight:600}
+.ctag{display:inline-block;font-size:10px;font-family:var(--mono);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+.callout .ctag{color:var(--accent)}
+.callout.warn .ctag{color:var(--warn)}
+.callout.exam .ctag{color:var(--good)}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:12px}
+td code{font-size:.85em}
+/* interactive widget */
+.widget{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:20px 0;background:var(--surface)}
+.wtabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap}
+.wtab{font:12px/1 inherit;padding:10px 14px;border:0;background:transparent;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent}
+.wtab[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent);font-weight:600;background:var(--surface)}
+.wbody{padding:16px}
+.decision{display:flex;flex-direction:column;gap:0}
+.dq{font-size:14px;font-weight:600;margin-bottom:12px}
+.dopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dopt{border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:11px 13px;cursor:pointer;font-size:13px;transition:border-color .2s,background .2s}
+.dopt:hover{border-color:var(--accent)}
+.dopt b{display:block;margin-bottom:3px}
+.dverdict{margin-top:14px;padding:12px 14px;border-radius:var(--radius-sm);font-size:13px;line-height:1.55;display:none}
+.dverdict.show{display:block}
+.dverdict.sync{background:color-mix(in srgb,var(--accent) 9%,transparent);border:1px solid var(--accent)}
+.dverdict.batch{background:color-mix(in srgb,var(--good) 12%,transparent);border:1px solid var(--good)}
+.pipeline{display:flex;flex-direction:column;gap:8px}
+.pstep{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;opacity:.4;transition:opacity .3s,border-color .3s}
+.pstep.on{opacity:1;border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.pstep.done{opacity:1}
+.pstep .pi{font-family:var(--mono);font-size:11px;color:var(--text3);white-space:nowrap;padding-top:1px}
+.pstep .pc b{font-size:12.5px}
+.pstep .pc div{font-size:11.5px;color:var(--text2);margin-top:2px;font-family:var(--mono)}
+.slabel{font-size:11px;color:var(--text3);margin-top:10px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0}
+.metric{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin-top:10px}
+.metric b{font-size:18px;font-variant-numeric:tabular-nums;display:block}
+.metric span{color:var(--text2);font-size:11px}
+.wbtn{font:12px/1 inherit;padding:8px 13px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;margin-top:12px}
+.wbtn:hover{background:var(--surface2)}
+.foot{font-size:12px;color:var(--text3);margin-top:50px;padding-top:18px;border-top:1px solid var(--border);line-height:1.7}
+.foot a{color:var(--accent)}
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:10px 0 4px;background:var(--surface2);font-size:10px;font-family:var(--mono)}
+.bar div{display:flex;align-items:center;justify-content:center;color:#fff;min-width:0;overflow:hidden;white-space:nowrap;transition:width .4s}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Batching, nightly jobs & CI/CD with Claude</h1>
+<p class="lede">An interactive walkthrough of how Claude fits into automated pipelines — the Message Batches API for bulk and scheduled work, and Claude Code headless mode for git-driven code review and CI/CD. Sourced from Anthropic's official docs.</p>
+
+<div class="toc">
+  <button type="button" onclick="goTo('two-lanes')">1 · Two lanes</button>
+  <button type="button" onclick="goTo('batch')">2 · Batch API</button>
+  <button type="button" onclick="goTo('decide')">3 · Sync or batch?</button>
+  <button type="button" onclick="goTo('nightly')">4 · Nightly jobs</button>
+  <button type="button" onclick="goTo('headless')">5 · Headless mode</button>
+  <button type="button" onclick="goTo('review')">6 · CI code review</button>
+  <button type="button" onclick="goTo('action')">7 · GitHub Action</button>
+  <button type="button" onclick="goTo('cicd')">8 · Full CI/CD</button>
+</div>
+
+<h2 id="two-lanes"><span class="sectnum">01</span> &nbsp;Two different things called "automation"</h2>
+<p class="lead">They solve different problems and almost never appear in the same sentence by accident.</p>
+<p>When people say "automate Claude," they mean one of two unrelated tools, and the first job is telling them apart. The <b>Message Batches API</b> is about <i>volume and cost</i>: you hand Anthropic a pile of independent requests and get them back later at half price. <b>Claude Code headless mode</b> is about <i>agency in a pipeline</i>: a single Claude that reads your repo, runs commands, edits files, and reports back inside a CI run.</p>
+
+<table>
+<tr><th>&nbsp;</th><th>Message Batches API</th><th>Claude Code headless (<code>-p</code>)</th></tr>
+<tr><td>Unit of work</td><td>many independent requests</td><td>one agentic task</td></tr>
+<tr><td>Optimizes for</td><td>throughput & 50% cost cut</td><td>autonomy in a CI runner</td></tr>
+<tr><td>Tool loop inside?</td><td><b>No</b> — one request, one response</td><td><b>Yes</b> — full read/edit/run loop</td></tr>
+<tr><td>Latency</td><td>up to 24h (async)</td><td>seconds to minutes (sync)</td></tr>
+<tr><td>Typical home</td><td>nightly reports, bulk extraction</td><td>PR review, issue→PR, gates</td></tr>
+</table>
+
+<div class="callout">
+<span class="ctag">The mental split</span>
+<b>Is a human waiting, and does the task need to act?</b> Nobody waiting + independent items → Batch API. Something must read code and do things → headless Claude Code. A nightly report over 10,000 documents is batch; a PR-review bot is headless. They can even feed each other — a nightly batch job that triages issues, then a headless run that opens fixes.
+</div>
+
+<h2 id="batch"><span class="sectnum">02</span> &nbsp;The Message Batches API</h2>
+<p class="lead">Bundle requests, submit once, collect later, pay half.</p>
+<p>You send up to <b>100,000 requests</b> (or <b>256 MB</b>, whichever comes first) as one batch. Each request is a normal Messages API call wrapped with a <code>custom_id</code> you choose. Anthropic processes them asynchronously — <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">most finish within an hour</a>, the hard ceiling is 24 hours — and everything is billed at <b>50% of standard prices</b>, input and output alike, with no volume threshold to unlock the discount.</p>
+
+<pre><code><span class="tok-c"># one line per request in the batch</span>
+{
+  <span class="tok-k">"custom_id"</span>: <span class="tok-s">"review-2026-001"</span>,        <span class="tok-c">// YOUR correlation key</span>
+  <span class="tok-k">"params"</span>: {
+    <span class="tok-k">"model"</span>: <span class="tok-s">"claude-sonnet-4-6"</span>,
+    <span class="tok-k">"max_tokens"</span>: <span class="tok-s">1024</span>,
+    <span class="tok-k">"messages"</span>: [{ <span class="tok-k">"role"</span>: <span class="tok-s">"user"</span>, <span class="tok-k">"content"</span>: <span class="tok-s">"Classify: ..."</span> }]
+  }
+}</code></pre>
+
+<p>The batch starts in <code>processing</code>, each request runs <b>independently</b> — one failure never touches the others — and the status flips to <code>ended</code> when all are done. Results come back in <b>no guaranteed order</b>, which is the entire reason <code>custom_id</code> exists: it's how you match each response to the document it came from.</p>
+
+<h3>The full lifecycle, in real SDK calls</h3>
+<p class="lead">Create → poll → retrieve → resubmit only failures. Method names and fields verified against the official Python SDK and batch docs.</p>
+<pre><code><span class="tok-k">import</span> anthropic
+client = anthropic.Anthropic()
+
+<span class="tok-c"># 1 — CREATE: submit up to 100k requests, each with a unique custom_id</span>
+batch = client.messages.batches.create(
+  requests=[
+    {
+      <span class="tok-k">"custom_id"</span>: f<span class="tok-s">"ticket-{t['id']}"</span>,        <span class="tok-c"># your correlation key</span>
+      <span class="tok-k">"params"</span>: {
+        <span class="tok-k">"model"</span>: <span class="tok-s">"claude-sonnet-4-6"</span>,
+        <span class="tok-k">"max_tokens"</span>: <span class="tok-s">512</span>,
+        <span class="tok-k">"messages"</span>: [{<span class="tok-k">"role"</span>: <span class="tok-s">"user"</span>, <span class="tok-k">"content"</span>: classify_prompt(t)}],
+      },
+    }
+    <span class="tok-k">for</span> t <span class="tok-k">in</span> todays_tickets        <span class="tok-c"># the API rejects duplicate custom_ids</span>
+  ],
+)
+<span class="tok-c"># batch.id → "msgbatch_01..."   batch.processing_status → "in_progress"</span>
+<span class="tok-c"># batch.request_counts → {processing: N, succeeded:0, errored:0, canceled:0, expired:0}</span>
+
+<span class="tok-c"># 2 — POLL: status flips to "ended" when every request finishes</span>
+<span class="tok-k">while</span> client.messages.batches.retrieve(batch.id).processing_status != <span class="tok-s">"ended"</span>:
+    time.sleep(<span class="tok-s">60</span>)                  <span class="tok-c"># most batches finish &lt; 1h; hard ceiling 24h</span>
+
+<span class="tok-c"># 3 — RETRIEVE: results stream back in NO guaranteed order — match on custom_id</span>
+failed = []
+<span class="tok-k">for</span> entry <span class="tok-k">in</span> client.messages.batches.results(batch.id):
+    <span class="tok-k">if</span> entry.result.type == <span class="tok-s">"succeeded"</span>:
+        save(entry.custom_id, entry.result.message.content)   <span class="tok-c"># full message obj</span>
+    <span class="tok-k">elif</span> entry.result.type == <span class="tok-s">"errored"</span>:
+        <span class="tok-c"># invalid_request → fix the body before resending; else directly retryable</span>
+        failed.append(entry.custom_id)
+    <span class="tok-k">elif</span> entry.result.type == <span class="tok-s">"expired"</span>:
+        failed.append(entry.custom_id)   <span class="tok-c"># hit 24h — not billed</span>
+
+<span class="tok-c"># 4 — RESUBMIT only the failures (no auto-retry exists), via your custom_id → data map</span>
+<span class="tok-k">if</span> failed:
+    client.messages.batches.create(requests=[build(cid) <span class="tok-k">for</span> cid <span class="tok-k">in</span> failed])</code></pre>
+<p>Each <code>succeeded</code> entry holds the <b>full message object</b> — identical to a synchronous <code>messages.create()</code> response, so <code>usage</code>, <code>stop_reason</code>, and <code>content</code> are all there. The result types you'll branch on are <code>succeeded</code>, <code>errored</code>, <code>canceled</code>, and <code>expired</code>; an <code>errored</code> entry with <code>invalid_request</code> means the request body itself is broken (fix before resending), while other errors can be retried as-is.</p>
+
+<div class="callout warn">
+<span class="ctag">Four things that bite</span>
+<b>Expiry:</b> unfinished requests at 24h <i>expire</i> (and aren't billed) — collect and resubmit them. <b>Retention:</b> results are downloadable for <b>29 days from creation</b>, then gone — persist them promptly. <b>No retries:</b> failed requests are <i>not</i> auto-retried; keep a <code>custom_id</code> → source-data map so you can rerun only the failures. <b>No agentic loop:</b> one request returns one response — if it emits <code>tool_use</code>, there's nowhere to run the tool and continue.
+</div>
+
+<h3>Watch the cost stack</h3>
+<p class="lead">Drag the slider to see how batch + prompt caching compound on a bulk-extraction job. (Reads price at 0.1× — see the caching debugger for why.)</p>
+<div class="widget">
+  <div class="wbody">
+    <div class="slabel">Documents in the run: <b id="docn">5,000</b> — each ~2,000 token shared prefix (system + extraction schema) + 400 token unique body</div>
+    <input type="range" id="docslider" min="100" max="20000" step="100" value="5000">
+    <div class="bar" id="costbar"></div>
+    <div class="metric">
+      <div><b id="m-sync">—</b><span>sync, no cache (baseline)</span></div>
+      <div><b id="m-batch" style="color:var(--good)">—</b><span>batch + cached prefix</span></div>
+      <div><b id="m-save" style="color:var(--good)">—</b><span>saved</span></div>
+    </div>
+    <p style="font-size:11.5px;color:var(--text3);margin:12px 0 0">Illustrative token-equivalents (Sonnet-class input weighting), showing the <i>shape</i> of the saving, not a billing quote. The shared prefix must be byte-identical across items for cache hits — cache hits in batches are best-effort.</p>
+  </div>
+</div>
+
+<h2 id="decide"><span class="sectnum">03</span> &nbsp;Sync or batch? Decide it</h2>
+<p class="lead">The exam phrases this as scenarios. One question settles every one of them.</p>
+<div class="widget">
+  <div class="wbody">
+    <div class="decision">
+      <div class="dq">Pick the workload — is the right lane sync or batch?</div>
+      <div class="dopts" id="dopts"></div>
+      <div class="dverdict" id="dverdict"></div>
+    </div>
+  </div>
+</div>
+<div class="callout exam">
+<span class="ctag">The rule</span>
+<b>Is a human staring at a spinner?</b> Yes → synchronous, latency is the product. No → batch, take the 50%. The planted wrong answer always puts a blocking task (pre-merge check, interactive review) on batch "to save money" — a developer cannot wait up to 24 hours to merge.
+</div>
+
+<h3>SLA arithmetic</h3>
+<p>When a deadline exists, subtract the window. Need results in 30 hours, batch can take 24 → you must submit no later than <b>30 − 24 = 6 hours</b> from now. For recurring loads, submit in fixed windows (say every 4 hours) so no single batch can blow its SLA if it runs the full 24.</p>
+
+<h2 id="nightly"><span class="sectnum">04</span> &nbsp;Nightly & scheduled jobs</h2>
+<p class="lead">Where batch and a cron schedule meet.</p>
+<p>"Nightly build" work splits cleanly along the same line. If the nightly task is <b>thousands of independent analyses</b> — classify every new support ticket, summarize every changed file, score a test corpus — that's a Batch API job kicked off by a scheduler: submit at 1 AM, collect at 6 AM, well inside the window. If the nightly task is <b>one agent doing a multi-step job</b> — "audit the repo for stale dependencies and open issues" — that's headless Claude Code on a schedule, not batch, because it needs the tool loop.</p>
+
+<pre><code><span class="tok-c"># nightly BULK job — scheduled batch submission</span>
+<span class="tok-c"># crontab: 0 1 * * *  (1 AM daily)</span>
+submit_batch(requests=[
+  {<span class="tok-k">"custom_id"</span>: f<span class="tok-s">"ticket-{id}"</span>, <span class="tok-k">"params"</span>: {...}}
+  <span class="tok-k">for</span> id <span class="tok-k">in</span> todays_new_tickets()       <span class="tok-c"># 8,000 of them</span>
+])
+<span class="tok-c"># ... poll at 6 AM, write results to the dashboard ...</span></code></pre>
+
+<p>The agentic flavor of "nightly" is a headless run on a schedule. On a bare server that's a cron line; in GitHub it's a <code>schedule</code> trigger — both just invoke <code>claude -p</code> with no human present.</p>
+<pre><code><span class="tok-c"># nightly AGENT job — headless Claude Code on a schedule</span>
+<span class="tok-c"># crontab: 0 2 * * *  (2 AM daily)</span>
+ANTHROPIC_API_KEY=<span class="tok-s">"$KEY"</span> claude -p \
+  <span class="tok-s">"Audit the repo for stale dependencies. Open a GitHub issue</span>
+<span class="tok-s">   for each one found, grouped by severity."</span> \
+  --output-format json --max-turns 8 --allowedTools <span class="tok-s">"Read,Grep,Bash"</span> \
+  &gt;&gt; /var/log/dep-audit.log
+
+<span class="tok-c"># same thing, GitHub Actions — schedule trigger, no human present</span>
+<span class="tok-c"># on: { schedule: [{ cron: "0 2 * * *" }] }</span></code></pre>
+
+<div class="callout">
+<span class="ctag">Pre-flight before any large run</span>
+Dry-run a single request shape on the <i>sync</i> API to catch validation errors cheaply, then iterate your prompt on a 20-item sample. A bad prompt discovered at 8,000 documents is an expensive lesson — and you'll have waited hours to learn it.
+</div>
+
+<h2 id="headless"><span class="sectnum">05</span> &nbsp;Headless mode — the <code>-p</code> flag</h2>
+<p class="lead">The single most important fact for the CI/CD domain.</p>
+<p>Run <code>claude</code> in a pipeline without <code>-p</code> and the job <b>hangs forever</b> waiting for interactive input — a classic CI failure. The <code>-p</code> (or <code>--print</code>) flag is the fix: Claude reads the prompt, runs its full agent loop (think → tool calls → edits), prints the result to stdout, and <b>exits</b>. No REPL, no approval prompts, no session. It's the only correct way to run Claude Code in automation, and it's composable with anything that runs a shell command — GitHub Actions, GitLab CI, Jenkins, a bare cron line.</p>
+
+<pre><code><span class="tok-c"># direct prompt</span>
+claude -p <span class="tok-s">"Analyze this PR for security issues"</span>
+
+<span class="tok-c"># piped stdin</span>
+cat error.log | claude -p <span class="tok-s">"Diagnose this failure"</span>
+
+<span class="tok-c"># structured, parseable output for the pipeline</span>
+claude -p <span class="tok-s">"Review this PR"</span> --output-format json
+
+<span class="tok-c"># bounded run — guardrails matter in CI</span>
+claude -p <span class="tok-s">"$(cat review-prompt.txt)"</span> \
+  --output-format json --max-turns 3 --allowedTools <span class="tok-s">"Read,Grep"</span></code></pre>
+
+<table>
+<tr><th>Flag</th><th>Why it matters in CI</th></tr>
+<tr><td><code>-p / --print</code></td><td>non-interactive; without it the job hangs</td></tr>
+<tr><td><code>--output-format json</code></td><td>parseable result → post comments, gate merges</td></tr>
+<tr><td><code>--max-turns N</code></td><td>caps the agent loop — runaway runs cost real money</td></tr>
+<tr><td><code>--allowedTools "..."</code></td><td>least privilege — restrict what Claude can do</td></tr>
+<tr><td><code>--model ...</code></td><td>route cheap reviews to a smaller model</td></tr>
+</table>
+
+<div class="callout warn">
+<span class="ctag">The story behind the flags</span>
+A widely-cited cautionary tale: a first headless run went 47 minutes and burned $18 reformatting a file nobody touched; another silently "passed" a suite with zero real tests. The cost controls — bounded turns, restricted tools, a tight prompt, and a real <code>CLAUDE.md</code> — are what separate a useful gate from an expensive one.
+</div>
+
+<h2 id="review"><span class="sectnum">06</span> &nbsp;Git-driven code review</h2>
+<p class="lead">The patterns the exam tests on top of the mechanism.</p>
+
+<h3>Use an independent instance</h3>
+<p>The same Claude session that generated code is a poor reviewer of it — it still holds its own reasoning and is unlikely to challenge its own decisions. A <b>fresh instance</b>, given only the diff and the review criteria without the generation context, judges the artifact instead of defending the intent. In CI this is automatic: the review job is a separate <code>claude -p</code> invocation with no shared history.</p>
+
+<h3>Don't repeat yourself across commits</h3>
+<p>On a re-review after new commits, naïvely re-running floods the PR with duplicate comments. The fix: feed the <b>prior review results</b> into context and instruct Claude to report only <i>new or unresolved</i> issues. (The official action does this differently — it buffers inline comments and classifies them via Haiku before posting, to filter out probe/test noise.)</p>
+
+<h3>Scope the review to stay sharp</h3>
+<p>A single pass over a 14-file PR dilutes attention — deep on a few files, shallow on the rest. Split it: one pass per file for local issues, then an integration pass for cross-file problems (type drift, circular deps). This is the multi-pass review pattern from the prompt-engineering material, applied to a diff.</p>
+
+<div class="callout exam">
+<span class="ctag">CCA-F watch-list</span>
+<b>Headless = <code>-p</code></b> (not an env var, not a config key). <b>Independent reviewer</b> beats self-review. <b>Structured JSON output</b> is what lets the pipeline act (post comments, fail the build). <b>Prior-results-in-context</b> prevents duplicate comments. <b>Least-privilege tools</b> and <b>bounded turns</b> are the cost/safety controls.
+</div>
+
+<h2 id="action"><span class="sectnum">07</span> &nbsp;The official GitHub Action</h2>
+<p class="lead"><code>anthropics/claude-code-action@v1</code> — the runtime in a runner, not a thin API call.</p>
+<p>For GitHub specifically, Anthropic ships an official action that runs the full Claude Code runtime inside a standard runner: it reads the repo, analyzes diffs, runs git, can edit code and push commits, and handles the comment/PR plumbing. The fastest setup is running <code>/install-github-app</code> inside Claude Code, which installs the GitHub App and wires up the secret. It auto-detects two modes:</p>
+
+<table>
+<tr><th>Mode</th><th>Trigger</th><th>Use</th></tr>
+<tr><td><b>Interactive</b></td><td><code>@claude</code> mention in an issue/PR/comment</td><td>ad-hoc: "fix the failing test in auth.ts"</td></tr>
+<tr><td><b>Automation</b></td><td>a <code>prompt</code> in the workflow YAML</td><td>runs headlessly on every matching event</td></tr>
+</table>
+
+<pre><code><span class="tok-c"># .github/workflows/claude.yml</span>
+<span class="tok-k">on</span>:
+  issue_comment:        { types: [created] }   <span class="tok-c"># @claude mentions</span>
+  pull_request:         { types: [opened, synchronize] }
+<span class="tok-k">jobs</span>:
+  claude:
+    runs-on: ubuntu-latest
+    permissions: { contents: write, issues: write, pull-requests: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: <span class="tok-s">"Review this PR for security and correctness"</span>
+          claude_args: <span class="tok-s">"--max-turns 5 --allowedTools Read,Grep,Bash"</span></code></pre>
+
+<p>Key inputs (from the action's docs): <code>prompt</code> is the instruction — omit it on a comment event and the action responds to the trigger phrase instead; <code>claude_args</code> passes CLI flags straight through (<code>--max-turns</code>, <code>--model</code>, <code>--allowedTools</code>); <code>anthropic_api_key</code> is the credential (not needed on Bedrock/Vertex, which authenticate via the cloud provider).</p>
+
+<div class="callout warn">
+<span class="ctag">Security, from the official docs</span>
+By default <b>only contributors with write access</b> can trigger the action — external contributors and bots are blocked unless explicitly allowed. Setting <code>allowed_non_write_users: "*"</code> bypasses this and the docs flag it as a significant risk. The action also strips hidden content (HTML comments, invisible chars, image alt text) from triggers to guard against <b>prompt injection</b> via crafted PR/issue text. Keep the key in CI secrets — or skip the static key entirely with <b>Workload Identity Federation</b> (OIDC), exchanging the runner's GitHub token for a short-lived Anthropic token so there's nothing to leak or rotate.
+</div>
+
+<h2 id="cicd"><span class="sectnum">08</span> &nbsp;The full CI/CD picture</h2>
+<p class="lead">Step through a pull-request pipeline that combines everything above.</p>
+<div class="widget">
+  <div class="wtabs" id="ptabs"></div>
+  <div class="wbody">
+    <div class="pipeline" id="pipeline"></div>
+    <button class="wbtn" id="pnext">Next step →</button>
+  </div>
+</div>
+
+<p>Across these scenarios the same load-bearing ideas recur: <code>CLAUDE.md</code> is your CI config — review criteria, code style, and project rules defined once and obeyed on every run; <code>-p</code> with structured output is the bridge between Claude and the pipeline's decision logic; bounded turns and restricted tools keep cost and blast-radius in check; and an independent review instance keeps the judgment honest. Batch handles the bulk/scheduled half, the headless agent handles the act-on-the-repo half, and a scheduler stitches either into "nightly."</p>
+
+<div class="foot">
+Sources (official): <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank" rel="noopener">Message Batches API</a> · <a href="https://github.com/anthropics/claude-code-action" target="_blank" rel="noopener">anthropics/claude-code-action</a> (<a href="https://github.com/anthropics/claude-code-action/blob/main/docs/setup.md" target="_blank" rel="noopener">setup</a>, <a href="https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md" target="_blank" rel="noopener">usage</a>) · Claude Code headless mode &amp; CLI reference (code.claude.com/docs) · CCA-F guide ch. 5.9–5.10, 7. Numbers (100k/256MB, 24h, 29-day retention, 50% discount, workspace scope) verified against the batch-processing page; <code>-p</code>, <code>--output-format json</code>, <code>--max-turns</code>, <code>--allowedTools</code>, and the action inputs verified against the action repo docs. This article is study material, not a substitute for the docs at exam time.
+</div>
+
+</div>
+
+<script>
+/* ---- in-page navigation (avoids iframe fragment-nav interstitial) ---- */
+function goTo(id){
+  var el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---- cost stack widget ---- */
+const docslider=document.getElementById('docslider');
+function fmt(n){return Math.round(n).toLocaleString('en-US')}
+function costcalc(){
+  const n=+docslider.value, prefix=2000, body=400;
+  // baseline: full price every token, no cache
+  const sync=n*(prefix+body);
+  // batch + cache: prefix written once (1.25x), read 0.1x thereafter; body fresh; all *0.5 batch
+  const cacheInput = prefix*1.25 + (n-1)*prefix*0.1 + n*body;
+  const batch = cacheInput*0.5;
+  document.getElementById('docn').textContent=fmt(n);
+  document.getElementById('m-sync').textContent=fmt(sync)+' te';
+  document.getElementById('m-batch').textContent=fmt(batch)+' te';
+  const save=Math.round((1-batch/sync)*100);
+  document.getElementById('m-save').textContent=save+'%';
+  const bw=Math.max(6,batch/sync*100);
+  document.getElementById('costbar').innerHTML=
+    '<div style="background:var(--good);width:'+bw+'%">batch+cache</div>'+
+    '<div style="background:var(--border2);width:'+(100-bw)+'%;color:var(--text2)">saved vs baseline</div>';
+}
+docslider.addEventListener('input',costcalc);costcalc();
+
+/* ---- sync/batch decision widget ---- */
+const WL=[
+  {t:"Pre-merge PR check",d:"developer blocked, waiting to merge",v:"sync",why:"A person is staring at the build. 24 hours is unthinkable — the latency IS the product."},
+  {t:"Overnight tech-debt report",d:"due by morning, nobody watching",v:"batch",why:"No one waiting; the result is needed at 9 AM, not now. Take the 50% discount."},
+  {t:"Classify 10,000 support tickets",d:"daily backfill into a dashboard",v:"batch",why:"Thousands of independent items, no human in the loop — the canonical batch job."},
+  {t:"Interactive code review in the IDE",d:"developer asking questions live",v:"sync",why:"Conversational, immediate. Batch's async model can't serve a back-and-forth."},
+  {t:"Weekly security audit corpus",d:"scheduled, results reviewed later",v:"batch",why:"Not urgent, runs on a schedule, independent requests — submit and collect."},
+  {t:"Chatbot answering a user now",d:"live customer conversation",v:"sync",why:"Real-time. Even a single batch request can take minutes — never use batch as fake-sync."}
+];
+let pickIdx=0;
+function renderDopts(){
+  document.getElementById('dopts').innerHTML=WL.map((w,i)=>
+    '<div class="dopt" onclick="pick('+i+')"><b>'+w.t+'</b><span style="color:var(--text2);font-size:12px">'+w.d+'</span></div>').join('');
+}
+function pick(i){
+  const w=WL[i];const el=document.getElementById('dverdict');
+  el.className='dverdict show '+w.v;
+  el.innerHTML='<b>'+(w.v==='sync'?'Synchronous API':'Batch API')+'</b> — '+w.why;
+  [...document.querySelectorAll('.dopt')].forEach((d,j)=>d.style.borderColor=j===i?(w.v==='sync'?'var(--accent)':'var(--good)'):'');
+}
+renderDopts();
+
+/* ---- pipeline stepper ---- */
+const PIPE={
+  "PR opened":[
+    {i:"trigger",b:"Developer opens a pull request",d:"pull_request: [opened] fires the workflow"},
+    {i:"checkout",b:"Runner checks out the code",d:"actions/checkout@v4 — full history for the diff"},
+    {i:"claude -p",b:"Headless review, independent instance",d:"claude_args: --max-turns 5 --allowedTools Read,Grep"},
+    {i:"CLAUDE.md",b:"Claude reads the repo's rules",d:"review criteria + style obeyed automatically"},
+    {i:"json out",b:"Findings emitted as structured JSON",d:"--output-format json → parseable by the pipeline"},
+    {i:"post",b:"Action posts inline PR comments",d:"Haiku classifies real findings vs probe noise first"}
+  ],
+  "@claude fix":[
+    {i:"comment",b:"Reviewer writes \u201c@claude fix the auth bug\u201d",d:"issue_comment: [created] — interactive mode"},
+    {i:"guard",b:"Write-access check passes",d:"non-contributors blocked by default"},
+    {i:"loop",b:"Claude reads, edits, runs tests",d:"full agent loop in the runner's shell"},
+    {i:"commit",b:"Fix pushed to the PR branch",d:"contents: write permission used"},
+    {i:"reply",b:"Claude comments what it changed",d:"closes the loop with the reviewer"}
+  ],
+  "Nightly audit":[
+    {i:"cron",b:"Scheduled trigger at 2 AM",d:"on: schedule: cron — no human present"},
+    {i:"claude -p",b:"Agent audits the repo",d:"\u201caudit stale deps, open issues for each\u201d"},
+    {i:"bounded",b:"--max-turns caps the run",d:"prevents the 47-minute runaway"},
+    {i:"issues",b:"Opens issues for findings",d:"issues: write — triaged for the morning"}
+  ]
+};
+const tabs=Object.keys(PIPE);
+let curTab=0,curStep=0;
+function renderTabs(){
+  document.getElementById('ptabs').innerHTML=tabs.map((t,i)=>
+    '<button class="wtab" role="tab" aria-selected="'+(i===curTab)+'" onclick="setTab('+i+')">'+t+'</button>').join('');
+}
+function renderPipe(){
+  const steps=PIPE[tabs[curTab]];
+  document.getElementById('pipeline').innerHTML=steps.map((s,i)=>
+    '<div class="pstep '+(i<curStep?'done':i===curStep?'on':'')+'"><div class="pi">'+s.i+'</div><div class="pc"><b>'+s.b+'</b><div>'+s.d+'</div></div></div>').join('');
+  document.getElementById('pnext').textContent=curStep>=steps.length-1?'↺ Restart':'Next step →';
+}
+function setTab(i){curTab=i;curStep=0;renderTabs();renderPipe();}
+document.getElementById('pnext').addEventListener('click',()=>{
+  const steps=PIPE[tabs[curTab]];
+  curStep=curStep>=steps.length-1?0:curStep+1;
+  renderPipe();
+});
+renderTabs();renderPipe();
+</script>
+</body>
+</html>

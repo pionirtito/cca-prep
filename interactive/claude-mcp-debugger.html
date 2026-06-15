@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP · protocol debugger</title>
+<style>
+:root{
+  --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+  --text:#1f1e1c; --text2:#5f5e5a; --text3:#9b9a93;
+  --border:#dedcd3; --border2:#c8c6bc;
+  --accent:#185fa5;
+  --radius:12px; --radius-sm:8px;
+  --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1a18; --surface:#242320; --surface2:#2e2d29;
+    --text:#e8e6df; --text2:#aaa89f; --text3:#75746c;
+    --border:#3a3934; --border2:#4c4b44;
+    --accent:#85b7eb;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;padding:32px 16px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:21px;font-weight:600;margin:0 0 4px}
+.sub{font-size:13px;color:var(--text2);margin:0 0 20px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.pill{font-size:12px;padding:5px 11px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit}
+.pill[aria-pressed="true"]{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:600}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1.2fr) 54px minmax(0,1fr);align-items:stretch}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px;transition:border-color .3s;min-height:225px}
+.panel.live{border-color:var(--accent)}
+.ph{display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:12.5px;font-weight:600}
+.ph .glyph{color:var(--text2);font-size:13px}
+.kv{font-size:11px;color:var(--text2);line-height:1.7}
+.kv b{font-weight:600;color:var(--text)}
+.srv{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:5px 7px;border-radius:6px;margin:3px 0;border:1px solid transparent;font-size:11px;font-family:var(--mono)}
+.srv.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%, transparent)}
+.tag{font-size:9.5px;font-family:var(--mono);font-weight:600;padding:1.5px 6px;border-radius:4px;white-space:nowrap}
+.stat{font-size:11.5px;color:var(--text2);margin-top:8px}
+.hint{font-size:10.5px;color:var(--text3);margin-top:10px;line-height:1.55}
+.wire{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 4px}
+.wl{font-size:10px;color:var(--text2);text-align:center;margin-bottom:5px;min-height:40px;font-family:var(--mono)}
+.line{position:relative;width:100%;height:8px}
+.line::before{content:"";position:absolute;top:3.5px;left:0;right:0;height:1px;background:var(--border2)}
+.dot{position:absolute;top:0;width:8px;height:8px;border-radius:50%;background:var(--accent);display:none}
+@media (prefers-reduced-motion: no-preference){
+  @keyframes goR{from{left:0}to{left:calc(100% - 8px)}}
+  @keyframes goL{from{left:calc(100% - 8px)}to{left:0}}
+  .dotR{animation:goR 1.1s ease-in-out infinite}
+  .dotL{animation:goL 1.1s ease-in-out infinite}
+}
+.wt{font-size:9.5px;color:var(--text3);margin-top:5px;text-align:center}
+.explain{font-size:14px;line-height:1.6;margin:14px 0 10px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm)}
+.payload{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface)}
+.phead{font-size:11px;font-family:var(--mono);padding:6px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+pre{margin:0;padding:12px;font-size:11.5px;font-family:var(--mono);line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+.ctrl{display:flex;align-items:center;gap:10px;margin-top:12px}
+button{font:13px/1 inherit;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer}
+button:hover:not(:disabled){background:var(--surface2)}
+button:disabled{opacity:.4;cursor:default}
+.stepn{font-size:12px;color:var(--text2)}
+.foot{font-size:12px;color:var(--text3);margin-top:24px;line-height:1.7}
+.foot a{color:var(--accent)}
+@media (max-width:760px){.stage{grid-template-columns:1fr}.wire{flex-direction:row;gap:10px;padding:10px 0}.line{width:120px}.wl{margin:0;min-height:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>MCP · protocol debugger</h1>
+<p class="sub">The Model Context Protocol on the wire: lifecycle handshake, tool discovery and calls, transport selection, the two error planes, resources vs tools, and Claude Code config scopes. The host sits between two wires — Claude API on one side, MCP servers on the other.</p>
+
+<div class="pills" id="pills"></div>
+
+<div class="stage">
+  <div class="panel" id="apanel">
+    <div class="ph"><span class="glyph">▣</span>api.anthropic.com</div>
+    <div class="kv" id="astat"></div>
+    <div style="margin-top:10px;font-size:10.5px;color:var(--text3)">stop_reason</div>
+    <div id="srb" style="margin-top:3px"></div>
+    <div class="hint">The model never speaks MCP. It only ever sees ordinary tool schemas and tool_results in the Messages API. MCP ends at the host.</div>
+  </div>
+  <div class="wire">
+    <div class="wl" id="w1l"></div>
+    <div class="line"><div class="dot" id="d1"></div></div>
+    <div class="wt">Messages API<br>(HTTPS)</div>
+  </div>
+  <div class="panel" id="hpanel">
+    <div class="ph"><span class="glyph">⌘</span>Host — Claude Code</div>
+    <div style="font-size:10.5px;color:var(--text3);font-family:var(--mono);margin-bottom:3px">mcp clients (1 per server)</div>
+    <div id="srvs"></div>
+    <div class="stat" id="hstat"></div>
+    <div class="hint">The host creates one MCP client per server and translates between worlds: model tool_use ⇄ JSON-RPC tools/call.</div>
+  </div>
+  <div class="wire">
+    <div class="wl" id="w2l"></div>
+    <div class="line"><div class="dot" id="d2"></div></div>
+    <div class="wt">MCP / JSON-RPC 2.0<br><span id="w2t">(transport)</span></div>
+  </div>
+  <div class="panel" id="spanel">
+    <div class="ph"><span class="glyph">⛁</span><span id="sname">MCP server</span></div>
+    <div class="kv" id="sinfo"></div>
+    <div class="stat" id="sstat"></div>
+    <div class="hint" id="shint">Exposes tools, resources, and prompts. Same data layer regardless of transport.</div>
+  </div>
+</div>
+
+<div class="explain" id="explain"></div>
+
+<div class="payload">
+  <div class="phead" id="phead">on the wire</div>
+  <pre id="pcode"></pre>
+</div>
+
+<div class="ctrl">
+  <button id="prev" onclick="mv(-1)">← Back</button>
+  <button id="next" onclick="mv(1)" style="font-weight:600">Step →</button>
+  <span class="stepn" id="stepn"></span>
+</div>
+
+<p class="foot">Grounded in: <a href="https://modelcontextprotocol.io/specification/2025-06-18/basic/lifecycle">MCP spec — lifecycle</a> · <a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/transports">MCP spec — transports</a> · <a href="https://modelcontextprotocol.io/docs/learn/architecture">MCP architecture</a> · <a href="https://code.claude.com/docs/en/mcp">Claude Code — MCP</a> · CCA-F guide ch. 4. Exam anchors: initialize MUST be the first interaction; one MCP client per server; stdio = local single-client, streamable HTTP = remote multi-client, SSE deprecated; protocol errors (JSON-RPC error object) are invisible to the model while tool errors (isError: true inside the result) are visible and enable self-correction; project scope = .mcp.json in version control with env-var secrets.</p>
+</div>
+
+<script>
+const TAG={stdio:["#E1F5EE","#085041"],http:["#E6F1FB","#0C447C"],sse:["#FCEBEB","#791F1F"],local:["#F1EFE8","#444441"],project:["#EEEDFE","#3C3489"],user:["#FAEEDA","#633806"],ready:["#EAF3DE","#27500A"],connecting:["#FAEEDA","#633806"],error:["#FCEBEB","#791F1F"],off:["#F1EFE8","#444441"]};
+const SR={end_turn:["#EAF3DE","#27500A"],tool_use:["#EEEDFE","#3C3489"]};
+function Sv(name,tr,sc,st,tools,on){return{n:name,tr:tr,sc:sc,st:st,t:tools,o:on?1:0}}
+const S=[
+{n:"1 · Lifecycle handshake",steps:[
+{d:"host",w1:"",w2:"",e:"Registration. claude mcp add writes the server config — here a local stdio server for Jira. Nothing has run yet; this only tells the host HOW to launch and reach the server. Scope decides where the config lives (scenario 6 digs into that).",
+p:'$ claude mcp add --transport stdio --scope project jira \\\n    --env JIRA_TOKEN=${JIRA_TOKEN} \\\n    -- npx -y mcp-server-jira\n\n# → written to .mcp.json at the project root\n# stdio = host will SPAWN this as a child process\n# and speak newline-delimited JSON-RPC over its\n# stdin/stdout',
+sv:[Sv("jira","stdio","project","off",0,1)],hs:"config registered, server not started",as:"Idle",ss:"Not running",sn:"jira (stdio)",si:"—",sr:null,tp:"stdio"},
+{d:"h2s",w1:"",w2:"initialize →",e:"Session start: the host spawns the process and the MCP lifecycle begins. The spec is strict — initialize MUST be the first interaction. The client proposes a protocol version (date-versioned) and declares ITS capabilities (roots it can expose, sampling support), plus clientInfo.",
+p:'{\n  "jsonrpc": "2.0", "id": 1,\n  "method": "initialize",\n  "params": {\n    "protocolVersion": "2025-06-18",\n    "capabilities": {\n      "roots": { "listChanged": true },\n      "sampling": {}\n    },\n    "clientInfo": { "name": "claude-code",\n                    "version": "2.x" }\n  }\n}',
+sv:[Sv("jira","stdio","project","connecting",0,1)],hs:"spawned child process, handshaking",as:"Idle",ss:"Reading stdin…",sn:"jira (stdio)",si:"—",sr:null,tp:"stdio"},
+{d:"s2h",w1:"",w2:"← initialize result",e:"The server answers with the version it will speak (same one if supported, otherwise its own latest — if the client can't accept that, it disconnects) and advertises ITS capabilities: tools, resources, prompts, logging, each with sub-capabilities like listChanged. This negotiation defines what either side may use for the rest of the session.",
+p:'{\n  "jsonrpc": "2.0", "id": 1,\n  "result": {\n    "protocolVersion": "2025-06-18",\n    "capabilities": {\n      "tools":     { "listChanged": true },\n      "resources": { "subscribe": true,\n                     "listChanged": true },\n      "prompts":   { "listChanged": true },\n      "logging":   {}\n    },\n    "serverInfo": { "name": "mcp-server-jira",\n                    "version": "1.4.0" }\n  }\n}',
+sv:[Sv("jira","stdio","project","connecting",0,1)],hs:"capabilities received",as:"Idle",ss:"Capabilities sent",sn:"mcp-server-jira v1.4.0",si:"tools · resources · prompts · logging",sr:null,tp:"stdio"},
+{d:"h2s",w1:"",w2:"initialized (notif) →",e:"The client confirms with notifications/initialized — a one-way notification, so no id and no response expected. Only after this is the connection in the operation phase. (Before it, the rules are tight: client sends nothing but pings; server nothing but pings and logging.)",
+p:'{\n  "jsonrpc": "2.0",\n  "method": "notifications/initialized"\n}\n\n# notification = fire-and-forget, no "id" field\n# lifecycle now: INITIALIZATION ✓ → OPERATION',
+sv:[Sv("jira","stdio","project","ready",0,1)],hs:"operation phase entered",as:"Idle",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"tools · resources · prompts · logging",sr:null,tp:"stdio"},
+{d:"h2s",w1:"",w2:"tools/list →",e:"Discovery. The host asks for the tool catalog. Each entry is a name, a description (the model's primary selection signal — quality here decides whether the model picks the right tool later), and a JSON Schema for inputs.",
+p:'→ { "jsonrpc": "2.0", "id": 2,\n    "method": "tools/list" }\n\n← { "jsonrpc": "2.0", "id": 2, "result": {\n    "tools": [\n      { "name": "search_issues",\n        "description": "Search Jira issues by JQL.\n          Use for finding tickets by status,\n          assignee, or text. Returns key,\n          summary, status per issue.",\n        "inputSchema": { "type": "object",\n          "properties": { "jql": {"type":"string"} },\n          "required": ["jql"] } },\n      { "name": "create_issue", ... }\n    ] } }',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"2 tools discovered",as:"Idle",ss:"Catalog served",sn:"mcp-server-jira v1.4.0",si:"tools: search_issues, create_issue",sr:null,tp:"stdio"},
+{d:"h2m",w1:"POST /v1/messages →",w2:"",e:"The bridge moment. The host injects the discovered MCP tools into the Claude API request as ordinary tool schemas — indistinguishable from hand-written ones. The model has no concept of MCP, transports, or JSON-RPC; it just sees callable tools. If the server later changes its catalog, it fires notifications/tools/list_changed and the host re-lists.",
+p:'POST /v1/messages\n{\n  "tools": [\n    { "name": "mcp__jira__search_issues",\n      "description": "Search Jira issues by JQL...",\n      "input_schema": { ... } },\n    { "name": "mcp__jira__create_issue", ... }\n  ],\n  "messages": [ ... ]\n}\n# MCP catalog → plain Messages API tool schemas',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"tools exposed to the model",as:"Request received",ss:"Idle",sn:"mcp-server-jira v1.4.0",si:"tools: search_issues, create_issue",sr:null,tp:"stdio"},
+{d:"host",w1:"",w2:"",e:"Shutdown, for completeness: the protocol defines NO shutdown message. Termination is the transport's job. For stdio the client closes the child's stdin, waits, then escalates SIGTERM → SIGKILL. For HTTP it simply closes the connection. Exam-friendly detail because it is counterintuitive — people expect a 'shutdown' RPC.",
+p:'stdio shutdown sequence (client-initiated):\n  1. close server\'s stdin\n  2. wait for exit\n  3. SIGTERM if still alive\n  4. SIGKILL as last resort\n\nhttp shutdown: close the HTTP connection(s)\n# no JSON-RPC shutdown method exists',
+sv:[Sv("jira","stdio","project","off",2,1)],hs:"session ended cleanly",as:"Idle",ss:"Process exited",sn:"jira (stdio)",si:"—",sr:null,tp:"stdio"}]},
+
+{n:"2 · tools/call round trip",steps:[
+{d:"h2m",w1:"POST /v1/messages →",w2:"",e:"The user asks something that needs Jira. The host sends the conversation plus the MCP-discovered tool schemas to the Messages API — the loop you know from the first debugger, unchanged.",
+p:'POST /v1/messages\n{\n  "tools": [ mcp__jira__search_issues, ... ],\n  "messages": [{ "role": "user",\n    "content": "Which tickets are blocked in TR3I?" }]\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"awaiting model decision",as:"Sampling…",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"tools: search_issues, create_issue",sr:null,tp:"stdio"},
+{d:"m2h",w1:"← stop_reason: tool_use",w2:"",e:"The model emits a perfectly ordinary tool_use block. Note what it does NOT contain: no JSON-RPC, no server address, no transport. Routing is the host's problem.",
+p:'{\n  "content": [{ "type": "tool_use",\n    "id": "toolu_9f2",\n    "name": "mcp__jira__search_issues",\n    "input": { "jql": "project=TR3I AND\n                       status=Blocked" } }],\n  "stop_reason": "tool_use"\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"routing tool_use → jira client",as:"Paused — waiting for result",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"tools: search_issues, create_issue",sr:"tool_use",tp:"stdio"},
+{d:"h2s",w1:"",w2:"tools/call →",e:"Translation. The host maps the tool_use to the owning MCP client and issues a JSON-RPC tools/call with the tool name and arguments. Same shape whether the transport is a local pipe or HTTPS to another continent — the data layer doesn't care.",
+p:'{\n  "jsonrpc": "2.0", "id": 7,\n  "method": "tools/call",\n  "params": {\n    "name": "search_issues",\n    "arguments": { "jql": "project=TR3I AND\n                           status=Blocked" }\n  }\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"tools/call dispatched",as:"Paused",ss:"Executing search_issues…",sn:"mcp-server-jira v1.4.0",si:"running JQL against Jira API",sr:"tool_use",tp:"stdio"},
+{d:"server",w1:"",w2:"",e:"Execution happens wherever the SERVER lives — here a local process calling Jira's REST API with the token from its environment. The model never holds credentials; the host never sees them either. The server is the trust boundary for its own backend.",
+p:'# inside mcp-server-jira\nGET https://tr3i.atlassian.net/rest/api/3/search\nAuthorization: Bearer $JIRA_TOKEN\n→ 200, 3 issues',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"waiting on server",as:"Paused",ss:"Calling Jira REST…",sn:"mcp-server-jira v1.4.0",si:"backend: tr3i.atlassian.net",sr:"tool_use",tp:"stdio"},
+{d:"s2h",w1:"",w2:"← result",e:"The result comes back as a successful JSON-RPC response whose result carries content blocks (text here; image and resource blocks also exist) and an isError flag — false on success. Remember that flag; scenario 4 is built on it.",
+p:'{\n  "jsonrpc": "2.0", "id": 7,\n  "result": {\n    "content": [{ "type": "text", "text":\n      "TR3I-142 Paycor upload blocked\\n\n       TR3I-156 crosswalk review blocked\\n\n       TR3I-161 SST survey blocked" }],\n    "isError": false\n  }\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"result received, translating back",as:"Paused",ss:"Done",sn:"mcp-server-jira v1.4.0",si:"3 issues returned",sr:"tool_use",tp:"stdio"},
+{d:"h2m",w1:"POST (+ tool_result) →",w2:"",e:"Translation, reverse direction: the host wraps the MCP content as a Messages API tool_result, matched by the original tool_use id, appends it to history, and resends. From the model's perspective an ordinary tool just answered.",
+p:'{ "role": "user", "content": [\n  { "type": "tool_result",\n    "tool_use_id": "toolu_9f2",\n    "content": "TR3I-142 Paycor upload blocked\\n\n                TR3I-156 crosswalk review...\\n\n                TR3I-161 SST survey..." }\n] }',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"tool_result appended, resent",as:"Sampling…",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"tools: search_issues, create_issue",sr:null,tp:"stdio"},
+{d:"m2h",w1:"← stop_reason: end_turn",w2:"",e:"Final answer; loop exits on end_turn. The full chain, worth memorizing as one sentence: model tool_use → host routes → JSON-RPC tools/call → server executes against its backend → result → host wraps tool_result → model continues. Two protocols, one host translating in the middle.",
+p:'{\n  "content": [{ "type": "text", "text":\n    "Three tickets are blocked in TR3I:\n     142, 156 and 161 — all waiting on..." }],\n  "stop_reason": "end_turn"\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"answer rendered",as:"Done",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"tools: search_issues, create_issue",sr:"end_turn",tp:"stdio"}]},
+
+{n:"3 · Transport selection",steps:[
+{d:"host",w1:"",w2:"",e:"Two layers, deliberately separated. The DATA layer (JSON-RPC 2.0: lifecycle, tools, resources, prompts, notifications) is identical everywhere. The TRANSPORT layer only moves those messages. You write a server's capabilities once and expose them over whichever transport fits the deployment — that separation is the design.",
+p:'┌──────────────────────────────┐\n│ data layer (JSON-RPC 2.0)    │  ← same always\n│  initialize · tools/call ·   │\n│  resources/read · notifs     │\n├──────────────────────────────┤\n│ transport layer              │  ← you choose\n│  stdio   |  streamable HTTP  │\n└──────────────────────────────┘',
+sv:[Sv("jira","stdio","project","ready",2),Sv("github","http","user","ready",9)],hs:"two servers, two transports",as:"Idle",ss:"—",sn:"transport comparison",si:"—",sr:null,tp:"—"},
+{d:"h2s",w1:"",w2:"newline JSON-RPC →",e:"stdio: the host spawns the server as a child process and they exchange newline-delimited JSON-RPC over stdin/stdout. Local only, typically ONE client per server. Zero network overhead, no port, no TLS, no CORS — the process boundary is the security boundary. Secrets travel as environment variables. Ideal: local tools, filesystem access, prototypes, anything that should never leave the machine.",
+p:'.mcp.json:\n{ "mcpServers": { "jira": {\n    "type": "stdio",\n    "command": "npx",\n    "args": ["-y", "mcp-server-jira"],\n    "env": { "JIRA_TOKEN": "${JIRA_TOKEN}" }\n} } }\n\nwire: stdin/stdout pipes, one JSON-RPC\nmessage per line — no HTTP at all',
+sv:[Sv("jira","stdio","project","ready",2,1),Sv("github","http","user","ready",9)],hs:"stdio: process per client",as:"Idle",ss:"Child process",sn:"jira (stdio)",si:"auth: env vars · clients: 1",sr:null,tp:"stdio"},
+{d:"h2s",w1:"",w2:"POST /mcp →",e:"Streamable HTTP (spec 2025-03-26, current): ONE endpoint accepting POST and GET; responses can stream via Server-Sent Events when needed. Built for REMOTE servers serving MANY clients. Auth is real HTTP auth — bearer tokens, API-key headers, and OAuth as the recommended flow. The server may assign an Mcp-Session-Id during initialization that the client echoes on every subsequent request.",
+p:'claude mcp add --transport http github \\\n    https://api.githubcopilot.com/mcp/\n\nPOST /mcp HTTP/1.1\nAuthorization: Bearer <oauth-token>\nMcp-Session-Id: 8d4f...\n\n{ "jsonrpc": "2.0", "id": 3,\n  "method": "tools/call", ... }\n\n# "streamable-http" accepted as alias for\n# "http" in the type field',
+sv:[Sv("jira","stdio","project","ready",2),Sv("github","http","user","ready",9,1)],hs:"http: remote, multi-client",as:"Idle",ss:"Remote service",sn:"github (streamable HTTP)",si:"auth: OAuth/bearer · clients: many",sr:null,tp:"streamable HTTP"},
+{d:"host",w1:"",w2:"",e:"The third name you'll see in older material: the original HTTP+SSE transport (two endpoints, one for SSE stream, one for POST). It is DEPRECATED — streamable HTTP replaced it with the single-endpoint design. Claude Code still accepts --transport sse for legacy servers, but the guidance is to use http wherever the server supports it.",
+p:'deprecated:  HTTP+SSE   (two endpoints)\ncurrent:     streamable HTTP (one endpoint,\n             optional SSE streaming inside it)\n\nclaude mcp add --transport sse old-api https://...\n# works, but migrate when the server offers /mcp',
+sv:[Sv("jira","stdio","project","ready",2),Sv("old-api","sse","local","ready",1,1),Sv("github","http","user","ready",9)],hs:"sse kept for legacy only",as:"Idle",ss:"—",sn:"legacy SSE server",si:"two-endpoint design, retired",sr:null,tp:"SSE (deprecated)"},
+{d:"host",w1:"",w2:"",e:"The selection logic the exam tests, condensed. Ask three questions: where does the server run, how many clients share it, and how are credentials handled? Local + single user + env-var secrets → stdio. Remote + shared + HTTP auth/OAuth → streamable HTTP. SSE → only when a legacy server gives you no choice.",
+p:'                 stdio          streamable HTTP\nlocation         local process  remote service\nclients          one            many\nauth             env vars       headers / OAuth\nnetwork          none (pipes)   HTTPS\nsession          process life   Mcp-Session-Id\nstreaming        n/a            SSE inside POST/GET\nbest for         dev tools,     SaaS, team servers,\n                 filesystem,    centralized audit\n                 secrets-local',
+sv:[Sv("jira","stdio","project","ready",2),Sv("github","http","user","ready",9)],hs:"decision table",as:"Idle",ss:"—",sn:"transport comparison",si:"—",sr:null,tp:"—"}]},
+
+{n:"4 · Two error planes",steps:[
+{d:"h2s",w1:"",w2:"tools/call →",e:"Plane one: PROTOCOL errors. The host (due to a bug or stale catalog) calls a tool name the server doesn't have. This is a malformed interaction at the JSON-RPC level — the kind of thing the standard error codes exist for.",
+p:'{\n  "jsonrpc": "2.0", "id": 9,\n  "method": "tools/call",\n  "params": { "name": "serach_issues",   ← typo\n              "arguments": { ... } }\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"dispatching (buggy) call",as:"Paused",ss:"Rejecting…",sn:"mcp-server-jira v1.4.0",si:"unknown method name",sr:"tool_use",tp:"stdio"},
+{d:"s2h",w1:"",w2:"← JSON-RPC error",e:"The server answers with a JSON-RPC ERROR OBJECT — not a result. Standard codes: -32700 parse, -32600 invalid request, -32601 method not found, -32602 invalid params, -32603 internal. Critical property: this error is handled by the HOST (log it, surface a dialog, retry the integration). The model NEVER sees it — protocol errors are invisible to the LLM and not self-correctable by it.",
+p:'{\n  "jsonrpc": "2.0", "id": 9,\n  "error": {\n    "code": -32602,\n    "message": "Unknown tool: serach_issues"\n  }\n}\n\n# "error" object, no "result" — this plane\n# belongs to the integration, not the model',
+sv:[Sv("jira","stdio","project","error",2,1)],hs:"host handles it — model never told",as:"Paused (unaware)",ss:"Error returned",sn:"mcp-server-jira v1.4.0",si:"-32602 invalid params",sr:"tool_use",tp:"stdio"},
+{d:"h2s",w1:"",w2:"tools/call →",e:"Plane two: TOOL EXECUTION errors. Now the request is perfectly valid — right tool, right schema — but the work itself fails: Jira answers 401 because the token expired. The RPC succeeded; the business operation did not. This must NOT become a protocol error.",
+p:'{\n  "jsonrpc": "2.0", "id": 10,\n  "method": "tools/call",\n  "params": { "name": "search_issues",\n              "arguments": { "jql": "..." } }\n}\n\n# inside the server:\n# GET tr3i.atlassian.net/... → 401 Unauthorized',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"valid call dispatched",as:"Paused",ss:"Backend returned 401",sn:"mcp-server-jira v1.4.0",si:"token expired",sr:"tool_use",tp:"stdio"},
+{d:"s2h",w1:"",w2:"← result (isError: true)",e:"The spec's rule, near-verbatim: errors originating from the tool SHOULD be reported inside the result object with isError set to true, NOT as a protocol-level error — otherwise the model could never see that something failed and self-correct. So this is a SUCCESSFUL JSON-RPC response carrying a failure. And like in the multi-agent debugger: structure it — category, retryability, what to do — not just 'operation failed'.",
+p:'{\n  "jsonrpc": "2.0", "id": 10,\n  "result": {\n    "content": [{ "type": "text", "text":\n      "{ \\"errorCategory\\": \\"permission\\",\n         \\"isRetryable\\": false,\n         \\"message\\": \\"Jira 401 — token expired\\",\n         \\"action\\": \\"re-authenticate via /mcp\\" }" }],\n    "isError": true        ← the whole point\n  }\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"wrapping as tool_result for the model",as:"Paused",ss:"Failure reported in-band",sn:"mcp-server-jira v1.4.0",si:"isError: true",sr:"tool_use",tp:"stdio"},
+{d:"h2m",w1:"POST (+ error result) →",w2:"",e:"The host forwards it as a tool_result with is_error: true in the Messages API. NOW the model can reason about the failure: permission category → don't retry; tell the user to re-authenticate, or work from cached data, or escalate. The error became conversational material.",
+p:'{ "role": "user", "content": [\n  { "type": "tool_result",\n    "tool_use_id": "toolu_c41",\n    "is_error": true,\n    "content": "{ errorCategory: permission,\n                 isRetryable: false,\n                 message: Jira 401 — token expired,\n                 action: re-authenticate }" } ] }',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"model sees the failure",as:"Sampling recovery…",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"—",sr:null,tp:"stdio"},
+{d:"m2h",w1:"← end_turn",w2:"",e:"The model self-corrects within its means and answers honestly. The exam distinction in one line: protocol error = broken INTEGRATION, host's job, model blind; isError result = failed OPERATION, model's job, self-correction possible. A failed tool inside a successful RPC response is the classic trap — and the most common SDK bug in the wild is collapsing the two planes.",
+p:'{\n  "content": [{ "type": "text", "text":\n    "I can\'t reach Jira — the token expired.\n     Run /mcp to re-authenticate the jira server\n     and I\'ll retry the search." }],\n  "stop_reason": "end_turn"\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"graceful degradation",as:"Done",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"—",sr:"end_turn",tp:"stdio"}]},
+
+{n:"5 · Resources vs tools",steps:[
+{d:"host",w1:"",w2:"",e:"MCP exposes three primitives, and picking the right one is a design question the exam probes. Tools = actions the MODEL decides to invoke (model-controlled, side effects allowed). Resources = read-only data identified by URI that the APPLICATION attaches as context (application-controlled, no side effects). Prompts = reusable templates the USER invokes (user-controlled — think slash commands).",
+p:'primitive   controlled by   nature\n──────────────────────────────────────────\ntools       the model       actions, may mutate\nresources   the application read-only context\nprompts     the user        invoked templates',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"three primitives",as:"Idle",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"tools · resources · prompts",sr:null,tp:"stdio"},
+{d:"h2s",w1:"",w2:"resources/read →",e:"The anti-pattern resources prevent: the model burning a half-dozen exploratory tool calls just to learn what data exists. A resource hands over the map directly — here the project's issue-type schema, fetched once by URI and attached as context.",
+p:'→ { "jsonrpc": "2.0", "id": 12,\n    "method": "resources/read",\n    "params": { "uri": "jira://tr3i/schema" } }\n\n← { "result": { "contents": [{\n      "uri": "jira://tr3i/schema",\n      "mimeType": "application/json",\n      "text": "{ issueTypes: [Bug, Story, Epic],\n                statuses: [Open, Blocked, Done],\n                customFields: {...} }" }] } }',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"schema attached as context",as:"Idle",ss:"Resource served",sn:"mcp-server-jira v1.4.0",si:"jira://tr3i/schema",sr:null,tp:"stdio"},
+{d:"h2m",w1:"POST (schema in context) →",w2:"",e:"With the schema already in context, the model writes a correct JQL query on the FIRST tool call instead of discovering field names by trial and error. Resources feed knowledge in; tools act on it. Servers with the subscribe capability can even notify the client when a resource changes.",
+p:'messages: [\n  { "role": "user", "content":\n    "<jira_schema>{ issueTypes:..., statuses:\n     [Open, Blocked, Done] }</jira_schema>\n\n     Move all Blocked TR3I bugs to Open" } ]\n\n→ model calls search_issues with valid JQL\n  immediately — zero exploratory calls',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"informed first call",as:"Sampling…",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"—",sr:"tool_use",tp:"stdio"},
+{d:"host",w1:"",w2:"",e:"Decision rule: if the model needs to KNOW something, expose it as a resource; if the model needs to DO something, expose it as a tool. Read-only lookups crammed into tools waste loop iterations and context; mutations disguised as resources break the no-side-effects contract. Each primitive also carries its own context cost — every connected server's catalog consumes tokens, which is why you keep server lists lean.",
+p:'know → resource   (schemas, docs, catalogs,\n                    config, issue summaries)\ndo   → tool       (search, create, update,\n                    execute, send)\nreuse → prompt    (templated workflows the\n                    user triggers explicitly)',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"design rule",as:"Idle",ss:"Ready",sn:"mcp-server-jira v1.4.0",si:"—",sr:null,tp:"stdio"}]},
+
+{n:"6 · Config scopes",steps:[
+{d:"host",w1:"",w2:"",e:"Three scopes decide where a server's config lives and who gets it. local (the default): private to YOU in THIS project, stored in ~/.claude.json keyed by project path. project: .mcp.json at the project root — committed to git, shared with the whole team. user: ~/.claude.json globally — yours in every project.",
+p:'claude mcp add --scope local   ...  # default\n  → ~/.claude.json (keyed by this project)\n  → only you, only here — experiments\n\nclaude mcp add --scope project ...\n  → .mcp.json at project root\n  → version-controlled, whole team\n\nclaude mcp add --scope user    ...\n  → ~/.claude.json (global)\n  → only you, every project',
+sv:[Sv("experiment","stdio","local","ready",1,1),Sv("jira","stdio","project","ready",2),Sv("github","http","user","ready",9)],hs:"three scopes, three lifetimes",as:"Idle",ss:"—",sn:"scope overview",si:"—",sr:null,tp:"—"},
+{d:"host",w1:"",w2:"",e:"The project scope is the teamwork one, and it has a hard rule: secrets never enter the file. .mcp.json is committed, so credentials go in as ${ENV_VAR} references that expand from each developer's environment at launch. The file ships the integration; every machine supplies its own token.",
+p:'.mcp.json   (committed to git)\n{\n  "mcpServers": {\n    "jira": {\n      "type": "stdio",\n      "command": "npx",\n      "args": ["-y", "mcp-server-jira"],\n      "env": { "JIRA_TOKEN": "${JIRA_TOKEN}" }\n    }                        ↑ expanded per-machine,\n  }                            token never committed\n}',
+sv:[Sv("jira","stdio","project","ready",2,1)],hs:"team config, personal secrets",as:"Idle",ss:"—",sn:".mcp.json",si:"env-var expansion",sr:null,tp:"—"},
+{d:"host",w1:"",w2:"",e:"When the same server name exists in several scopes, the most specific wins: local overrides project overrides user. Same precedence direction you'll meet again in the CLAUDE.md and settings hierarchy — specific beats general, personal beats shared. For project-scoped servers Claude Code also asks for approval before first use, since committed config means someone ELSE may have added it.",
+p:'precedence (same server name):\n  local  >  project  >  user\n\n# i.e. your private override beats the team\'s\n# .mcp.json, which beats your global default.\n# project-scope servers prompt for approval\n# on first use — they arrived via git, not you.',
+sv:[Sv("jira (local override)","stdio","local","ready",2,1),Sv("jira (shadowed)","stdio","project","off",0)],hs:"specific beats general",as:"Idle",ss:"—",sn:"precedence",si:"—",sr:null,tp:"—"},
+{d:"host",w1:"",w2:"",e:"Day-to-day management commands worth having in muscle memory. Inside a session, /mcp shows per-server connection state and handles OAuth flows for HTTP servers — it's also the answer to scenario 4's expired token.",
+p:'claude mcp list            # all servers + health\nclaude mcp get <name>      # one server\'s config\nclaude mcp remove <name>   # delete (per scope)\nclaude mcp add-json <name> \'{ ... }\'\nclaude mcp add-from-claude-desktop\n\nin-session:\n/mcp                       # status + OAuth auth',
+sv:[Sv("jira","stdio","project","ready",2),Sv("github","http","user","ready",9,1)],hs:"operational toolkit",as:"Idle",ss:"—",sn:"claude mcp CLI",si:"—",sr:null,tp:"—"}]}
+];
+let si=0,ti=0;
+const $=id=>document.getElementById(id);
+function pills(){$("pills").innerHTML=S.map((s,i)=>'<button class="pill" aria-pressed="'+(i===si)+'" onclick="go('+i+')">'+s.n+'</button>').join('')}
+function tag(t,k){const[bg,tx]=TAG[k]||TAG.off;return '<span class="tag" style="background:'+bg+';color:'+tx+'">'+t+'</span>'}
+function srow(s){return '<div class="srv'+(s.o?' on':'')+'"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">'+s.n+'</span>'+tag(s.tr,s.tr)+tag(s.sc,s.sc)+tag(s.st==='ready'?'ready · '+s.t+' tools':s.st,s.st)+'</div>'}
+function draw(){
+const st=S[si].steps[ti];
+$("srvs").innerHTML=st.sv.map(srow).join('');
+$("hstat").textContent="› "+st.hs;
+$("astat").innerHTML="<b>status:</b> "+st.as;
+if(st.sr){const[bg,tx]=SR[st.sr];$("srb").innerHTML='<span style="font-size:11px;font-family:var(--mono);font-weight:600;padding:3px 9px;border-radius:5px;background:'+bg+';color:'+tx+'">"'+st.sr+'"</span>'}
+else $("srb").innerHTML='<span style="font-size:11px;color:var(--text3)">—</span>';
+$("sname").textContent=st.sn;
+$("sinfo").innerHTML="<b>"+st.ss+"</b><br>"+st.si;
+$("sstat").textContent="";
+$("w1l").textContent=st.w1;
+$("w2l").textContent=st.w2;
+$("w2t").textContent="("+st.tp+")";
+const d1=$("d1"),d2=$("d2");
+d1.className="dot "+(st.d==='h2m'?'dotL':st.d==='m2h'?'dotR':'');
+d1.style.display=(st.d==='h2m'||st.d==='m2h')?'block':'none';
+d2.className="dot "+(st.d==='h2s'?'dotR':st.d==='s2h'?'dotL':'');
+d2.style.display=(st.d==='h2s'||st.d==='s2h')?'block':'none';
+$("apanel").className='panel'+((st.d==='m2h'||st.d==='h2m')?' live':'');
+$("hpanel").className='panel'+((st.d==='host'||st.d==='h2m'||st.d==='h2s')?' live':'');
+$("spanel").className='panel'+((st.d==='server'||st.d==='s2h')?' live':'');
+$("explain").innerHTML='<strong>'+(ti+1)+'. </strong>'+st.e;
+$("phead").textContent=st.d==='h2m'?'host → api.anthropic.com (Messages API)':st.d==='m2h'?'api.anthropic.com → host':st.d==='h2s'?'host → MCP server (JSON-RPC 2.0)':st.d==='s2h'?'MCP server → host (JSON-RPC 2.0)':st.d==='server'?'inside the MCP server':'host — Claude Code';
+$("pcode").textContent=st.p;
+$("stepn").textContent='step '+(ti+1)+' of '+S[si].steps.length;
+$("prev").disabled=ti===0;
+$("next").disabled=ti===S[si].steps.length-1;
+pills();
+}
+function go(i){si=i;ti=0;draw()}
+function mv(d){ti=Math.max(0,Math.min(S[si].steps.length-1,ti+d));draw()}
+draw();
+</script>
+</body>
+</html>

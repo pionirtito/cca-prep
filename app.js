@@ -4,8 +4,10 @@ let GLOSSARY = [];
 let PATTERNS = [];
 let GUIDE = null;
 let LARIONOV = null;
+let INTERACTIVE = [];
 let view = "overview";
 let quiz = null;
+let interactiveFile = null;
 let guideLang = "both"; // "both" | "en" | "sr"
 let lrLang = "en"; // "en" | "sr" — Larionov tab default view
 
@@ -23,6 +25,7 @@ async function load() {
     try { PATTERNS = await fetch("./data/patterns.json").then((r) => r.json()); } catch (e) { PATTERNS = []; }
     try { GUIDE = await fetch("./data/guide.json").then((r) => r.json()); } catch (e) { GUIDE = null; }
     try { LARIONOV = await fetch("./data/larionov.json").then((r) => r.json()); } catch (e) { LARIONOV = null; }
+    try { INTERACTIVE = await fetch("./data/interactive.json").then((r) => r.json()); } catch (e) { INTERACTIVE = []; }
     renderStats();
     render();
   } catch (e) {
@@ -48,6 +51,7 @@ document.querySelectorAll("#tabs button").forEach((b) => {
     document.querySelectorAll("#tabs button").forEach((x) => x.classList.remove("active"));
     b.classList.add("active");
     quiz = null;
+    interactiveFile = null;
     render();
   };
 });
@@ -59,6 +63,7 @@ function render() {
   else if (view === "patterns") renderPatterns();
   else if (view === "guide") renderGuide();
   else if (view === "larionov") renderLarionov();
+  else if (view === "interactive") renderInteractive();
 }
 
 // ---- overview + search ----
@@ -626,6 +631,62 @@ function wireGloss() {
     hide();
     jumpToTerm(link.dataset.term);
   });
+}
+
+// ---- interactive tools (self-contained HTML pages in iframe) ----
+const IX_GROUPS = {
+  0: "Osnove",
+  1: "Domen 1 · Agentic Architecture",
+  2: "Domen 2 · Tool Design & MCP",
+  3: "Domen 3 · Claude Code",
+  4: "Domen 4 · Prompt Engineering",
+  5: "Domen 5 · Context & Reliability",
+};
+
+function openInteractive(file) { interactiveFile = file; renderInteractive(); window.scrollTo(0, 0); }
+function closeInteractive() { interactiveFile = null; renderInteractive(); }
+
+function renderInteractive() {
+  if (!INTERACTIVE.length) {
+    app.innerHTML = `<p class="empty">Interaktivni alati nisu učitani. Proveri data/interactive.json (pokreni preko lokalnog servera).</p>`;
+    return;
+  }
+
+  // viewer: a single tool open in an iframe
+  if (interactiveFile) {
+    const item = INTERACTIVE.find((x) => x.file === interactiveFile);
+    const title = item ? item.title : "";
+    app.innerHTML = `
+      <div class="ix-viewer-bar">
+        <button class="btn" onclick="closeInteractive()">← Nazad</button>
+        <span class="ix-viewer-title">${esc(title)}</span>
+        <a class="ix-open" href="${esc(interactiveFile)}" target="_blank" rel="noopener">otvori u novom tabu ↗</a>
+      </div>
+      <iframe class="ix-frame" src="${esc(interactiveFile)}" loading="lazy" title="${esc(title)}"></iframe>`;
+    return;
+  }
+
+  // gallery: cards grouped by domain
+  const groups = [...new Set(INTERACTIVE.map((x) => x.group))].sort((a, b) => a - b);
+  const sections = groups.map((g) => {
+    const cards = INTERACTIVE.filter((x) => x.group === g).map((x) => `
+      <div class="ix-card" onclick="openInteractive('${esc(x.file)}')">
+        <div class="ix-card-top">
+          <span class="pill">${esc(x.type)}</span>
+          <a class="ix-card-ext" href="${esc(x.file)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="otvori u novom tabu">↗</a>
+        </div>
+        <h3 class="ix-card-title">${esc(x.title_sr)}</h3>
+        <div class="ix-card-en">${esc(x.title)}</div>
+        <p class="ix-card-desc">${esc(x.desc)}</p>
+      </div>`).join("");
+    return `<h2 class="ix-group-h">${esc(IX_GROUPS[g] || ("Grupa " + g))}</h2><div class="ix-grid">${cards}</div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="ix-intro">
+      <p>Interaktivni alati i objašnjenja — samostalne stranice koje rade uživo. Klikni karticu da je otvoriš ovde, ili „↗“ za novi tab.</p>
+    </div>
+    ${sections}`;
 }
 
 // ---- cross-navigation ----

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Support Resolution Agent · debugger</title>
+<style>
+:root{
+  --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+  --text:#1f1e1c; --text2:#5f5e5a; --text3:#9b9a93;
+  --border:#dedcd3; --border2:#c8c6bc;
+  --accent:#185fa5; --good:#3E7842; --bad:#A33E3E; --warn:#9A6212;
+  --radius:12px; --radius-sm:8px;
+  --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1a18; --surface:#242320; --surface2:#2e2d29;
+    --text:#e8e6df; --text2:#aaa89f; --text3:#75746c;
+    --border:#3a3934; --border2:#4c4b44;
+    --accent:#85b7eb; --good:#7CB87F; --bad:#D98B8B; --warn:#D4A85A;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;padding:32px 16px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:21px;font-weight:600;margin:0 0 4px}
+.sub{font-size:13px;color:var(--text2);margin:0 0 20px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.pill{font-size:12px;padding:5px 11px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit}
+.pill[aria-pressed="true"]{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:600}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 84px minmax(0,1fr);align-items:stretch}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;transition:border-color .3s;min-height:250px}
+.panel.live{border-color:var(--accent)}
+.ph{display:flex;align-items:center;gap:6px;margin-bottom:9px;font-size:13px;font-weight:600}
+.ph .glyph{color:var(--text2);font-size:14px}
+.turn{padding:7px 10px;border-radius:8px;margin:4px 0;font-size:12px;border:1px solid transparent}
+.turn .who{font-size:10px;font-family:var(--mono);font-weight:700;text-transform:uppercase;letter-spacing:.4px;opacity:.7;margin-bottom:2px}
+.turn.cust{background:#E1F5EE;color:#0c3b30}
+.turn.agent{background:#EEEDFE;color:#2d2668}
+.turn.tool{background:#FAEEDA;color:#5a3406;font-family:var(--mono);font-size:11px}
+.turn.sys{background:var(--surface2);color:var(--text2);font-size:11px}
+@media (prefers-color-scheme: dark){
+.turn.cust{background:#143830;color:#bfe8da}
+.turn.agent{background:#241f47;color:#cdc8f0}
+.turn.tool{background:#3a2e16;color:#e6cfa0}
+}
+.tools{margin-top:6px}
+.tool-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-family:var(--mono);padding:3px 8px;border-radius:5px;margin:2px;border:1px solid var(--border)}
+.tool-chip.allow{border-color:var(--good);color:var(--good)}
+.tool-chip.fire{background:color-mix(in srgb,var(--accent) 12%,transparent);border-color:var(--accent);color:var(--accent);font-weight:600}
+.tool-chip.block{border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.hookbar{margin-top:10px;padding:8px 10px;border-radius:7px;font-size:11px;border:1px dashed var(--border2);color:var(--text2)}
+.hookbar.active{border-style:solid;border-color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent);color:var(--text)}
+.hookbar.block{border-style:solid;border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.stat{font-size:11.5px;color:var(--text2);margin-top:8px}
+.hint{font-size:10.5px;color:var(--text3);margin-top:10px;line-height:1.55}
+.wire{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 6px}
+.wl{font-size:10.5px;color:var(--text2);text-align:center;margin-bottom:6px;min-height:40px;font-family:var(--mono)}
+.line{position:relative;width:100%;height:8px}
+.line::before{content:"";position:absolute;top:3.5px;left:0;right:0;height:1px;background:var(--border2)}
+.dot{position:absolute;top:0;width:8px;height:8px;border-radius:50%;background:var(--accent);display:none}
+@media (prefers-reduced-motion: no-preference){
+  @keyframes goR{from{left:0}to{left:calc(100% - 8px)}}
+  @keyframes goL{from{left:calc(100% - 8px)}to{left:0}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .dotR{animation:goR 1.1s ease-in-out infinite}
+  .dotL{animation:goL 1.1s ease-in-out infinite}
+  .busy{animation:pulse 1.2s ease-in-out infinite}
+}
+.srb{font-size:11px;font-family:var(--mono);font-weight:600;padding:3px 9px;border-radius:5px;display:inline-block;margin-top:3px}
+.verdict{font-size:11px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:5px;margin-top:6px;display:inline-block}
+.explain{font-size:14px;line-height:1.6;margin:14px 0 10px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm)}
+.payload{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface)}
+.phead{font-size:11px;font-family:var(--mono);padding:6px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+pre{margin:0;padding:12px;font-size:11.5px;font-family:var(--mono);line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+.ctrl{display:flex;align-items:center;gap:10px;margin-top:12px}
+button.nav{font:13px/1 inherit;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer}
+button.nav:hover:not(:disabled){background:var(--surface2)}
+button.nav:disabled{opacity:.4;cursor:default}
+.stepn{font-size:12px;color:var(--text2)}
+.foot{font-size:12px;color:var(--text3);margin-top:24px;line-height:1.7}
+.foot a{color:var(--accent)}
+@media (max-width:720px){.stage{grid-template-columns:1fr}.wire{flex-direction:row;gap:10px;padding:10px 0}.line{width:120px}.wl{margin:0;min-height:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Customer Support Resolution Agent — debugger</h1>
+<p class="sub">A single customer-facing agent resolving returns, billing, and account issues — and the patterns the CCA-F tests: intent handling, tool-driven resolution, the escalation triggers, hook-enforced policy, and structured handoff. Grounded in Anthropic's customer-support guide + the SDK docs.</p>
+
+<div class="pills" id="pills"></div>
+
+<div class="stage">
+  <div class="panel" id="cpanel">
+    <div class="ph"><span class="glyph">⌘</span>Agent runtime — conversation + tools</div>
+    <div id="convo"></div>
+    <div class="tools" id="tools"></div>
+    <div class="hookbar" id="hook">no hook on this step</div>
+    <div class="stat" id="cstat"></div>
+  </div>
+  <div class="wire">
+    <div class="wl" id="wlabel"></div>
+    <div class="line"><div class="dot" id="dot"></div></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:6px">Messages API</div>
+  </div>
+  <div class="panel" id="spanel">
+    <div class="ph"><span class="glyph">▣</span>api.anthropic.com</div>
+    <div class="stat" id="sstat" style="margin-top:0"></div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3)">stop_reason</div>
+    <div id="srbWrap" style="margin-top:2px"></div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3)">resolution state</div>
+    <div id="verdictWrap" style="margin-top:2px"></div>
+    <div class="hint">The model decides which tool to call; the runtime executes it and (unless a hook intercepts) returns the result. The only reliable "done" signal is stop_reason end_turn — never parsed text or an iteration cap.</div>
+  </div>
+</div>
+
+<div class="explain" id="explain"></div>
+
+<div class="payload">
+  <div class="phead" id="phead">on the wire</div>
+  <pre id="pcode"></pre>
+</div>
+
+<div class="ctrl">
+  <button class="nav" id="prev" onclick="mv(-1)">← Back</button>
+  <button class="nav" id="next" onclick="mv(1)" style="font-weight:600">Step →</button>
+  <span class="stepn" id="stepn"></span>
+</div>
+
+<p class="foot">Grounded in: <a href="https://docs.anthropic.com/en/docs/about-claude/use-case-guides/customer-support-chat" target="_blank" rel="noopener">Customer support agent guide</a> · <a href="https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview" target="_blank" rel="noopener">Tool use overview</a> · <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank" rel="noopener">Building Effective Agents</a> (routing) · CCA-F guide ch. 3.2/3.5, 9, 10. Exam anchors: escalate immediately on explicit "manager" request — never try to solve first; acknowledge → resolve → escalate only on REITERATION for emotional venting; policy gaps and above-threshold financials escalate; financial limits enforced by a HOOK (deterministic 100%), not a prompt (probabilistic); sentiment / self-rated confidence / auto-classifiers are NOT reliable escalation triggers; the human sees ONLY the structured handoff, not the transcript; least-privilege allowed_tools.</p>
+</div>
+
+<script>
+const SRC={end_turn:["#EAF3DE","#27500A"],tool_use:["#EEEDFE","#3C3489"]};
+const VC={resolving:["#E6F1FB","#0C447C"],resolved:["#EAF3DE","#27500A"],escalating:["#FAEEDA","#633806"],escalated:["#FAEEDA","#633806"],blocked:["#FCEBEB","#791F1F"]};
+// tool states: a=allowed idle, f=firing, b=blocked
+function tool(name,st){return{n:name,s:st||'a'}}
+const ALLOW=["get_customer","lookup_order","process_refund","escalate_to_human"];
+function defTools(fire,block){return ALLOW.map(n=>tool(n, n===fire?'f':n===block?'b':'a'))}
+const S=[
+
+{n:"0 · Setup",steps:[
+{d:"client",w:"",e:"The agent is one AgentDefinition: a name, a system prompt that encodes the policy, and a least-privilege allowed_tools list. Four MCP tools — three to act (get_customer, lookup_order, process_refund) and one to escalate (escalate_to_human). The target the exam frames this around: 80%+ first-contact resolution WITH appropriate escalation. Note what's NOT in the tool list — no delete_account, no issue_credit — least privilege means the agent literally cannot take actions outside its mandate.",
+p:'agent = AgentDefinition(\n  name="customer_support",\n  description="Handles returns, billing, and account issues",\n  system_prompt=SUPPORT_POLICY,        # see next step\n  allowed_tools=[\n    "get_customer",      # look up the account\n    "lookup_order",      # fetch order details\n    "process_refund",    # issue a refund (hook-capped)\n    "escalate_to_human", # hand off with a summary\n  ],\n)',
+convo:[["sys","Agent configured · target: 80%+ first-contact resolution"]],tools:defTools(),hook:null,cs:"agent defined, least privilege",ss:"Idle",sr:null,verdict:null},
+{d:"client",w:"",e:"The system prompt is where reliability lives — the official guidance is blunt: vague prompts ('be helpful, use good judgment') sound fine in a demo but don't define behavior under pressure. Write the escalation rules, the refusal boundaries, and the resolution flow EXPLICITLY, with few-shot examples for the ambiguous cases. The policy below is what every scenario in this debugger runs against.",
+p:'SUPPORT_POLICY = """\nYou are a customer support agent for an electronics retailer.\n\nRESOLUTION FLOW:\n1. Verify the customer (get_customer) before any account action.\n2. For order issues, fetch details (lookup_order) first.\n3. Resolve within policy where you can.\n\nESCALATE (call escalate_to_human) when:\n- the customer explicitly asks for a human/manager — immediately\n- the request falls outside policy (e.g. competitor price match)\n- you cannot make progress after a reasonable attempt\n- a refund exceeds your authority (also hook-enforced)\n\nDO NOT escalate merely because a customer is upset — first\nacknowledge, then offer a concrete resolution.\nNever invent order data. If multiple customers match, ask for\nanother identifier; do not guess.\n"""',
+convo:[["sys","System prompt = the policy layer (explicit, not vague)"]],tools:defTools(),hook:null,cs:"policy encoded in system prompt",ss:"Idle",sr:null,verdict:null}]},
+
+{n:"1 · Clean resolution",steps:[
+{d:"recv",w:"← tool_use",e:"A straightforward return. The model's first move follows the policy: verify the customer before touching anything. It emits a get_customer tool_use — model-driven, not a hard-coded script. stop_reason tool_use pauses the turn for the runtime to act.",
+p:'customer: "I want to return my headphones, order #67890."\n\n← { "content": [{ "type": "tool_use", "id": "t1",\n      "name": "get_customer",\n      "input": { "email": "ivan@example.com" } }],\n    "stop_reason": "tool_use" }',
+convo:[["cust","\"I want to return my headphones, order #67890.\""],["agent","→ verifying customer first (per policy)"]],tools:defTools("get_customer"),hook:null,cs:"executing get_customer()",ss:"Paused — tool_use",sr:"tool_use",verdict:"resolving"},
+{d:"send",w:"tool_result →",e:"One customer matches cleanly — no ambiguity, so no need to ask for more identifiers. The runtime appends the tool_result and resends the full history. The model now has a verified identity and moves to the next policy step.",
+p:'{ "role":"user", "content":[\n  { "type":"tool_result", "tool_use_id":"t1",\n    "content": { "customer_id":"CUST-12345",\n                 "name":"Ivan P.", "tier":"standard",\n                 "matches": 1 } } ] }',
+convo:[["cust","\"...return my headphones, order #67890.\""],["tool","get_customer → CUST-12345 (1 match)"],["agent","verified · now fetching the order"]],tools:defTools("lookup_order"),hook:null,cs:"executing lookup_order()",ss:"Sampling…",sr:null,verdict:"resolving"},
+{d:"recv",w:"← tool_use",e:"lookup_order confirms the purchase is within the 30-day return window. The order data is real, fetched from the tool — the policy line 'never invent order data' is satisfied structurally because the agent reads it rather than guessing.",
+p:'← { "content":[{ "type":"tool_use", "id":"t2",\n      "name":"lookup_order",\n      "input":{ "order_id":"ORD-67890" } }],\n    "stop_reason":"tool_use" }\n\n# tool returns: purchased 8 days ago, $89.99,\n#               eligible for return ✓',
+convo:[["tool","get_customer → CUST-12345"],["tool","lookup_order → $89.99, 8 days, eligible ✓"],["agent","within return window — proceeding to refund"]],tools:defTools("process_refund"),hook:null,cs:"about to call process_refund()",ss:"Paused — tool_use",sr:"tool_use",verdict:"resolving"},
+{d:"client",w:"",e:"process_refund for $89.99 is requested — and EVERY refund passes through the PreToolUse hook first. $89.99 is under the $500 authority limit, so the hook allows it through. This is the deterministic guard doing its job silently on the happy path; scenario 4 shows it firing.",
+p:'@hook("PreToolUse")\ndef enforce_refund_limit(call):\n    if call.name == "process_refund" and call.args.amount > 500:\n        return redirect_to_escalation(call)\n    return ALLOW          # $89.99 ≤ $500 → passes\n\n# refund executes: $89.99 credited to CUST-12345',
+convo:[["tool","lookup_order → eligible ✓"],["agent","→ process_refund $89.99"],["tool","hook: $89.99 ≤ $500 → ALLOW · refund issued"]],tools:defTools("process_refund"),hook:{c:"PreToolUse: $89.99 ≤ $500 limit → ALLOW",k:"active"},cs:"refund issued, composing reply",ss:"Sampling…",sr:null,verdict:"resolving"},
+{d:"recv",w:"← end_turn",e:"The model confirms the refund in natural language and ends its turn. stop_reason end_turn is the ONLY reliable signal the task is complete — not 'the text says done', not a turn counter. First-contact resolution, no human needed: exactly the 80%+ target case.",
+p:'← { "content":[{ "type":"text", "text":\n      "All set, Ivan — I\'ve issued a full refund of\n       $89.99 to your original payment method. It\n       should appear in 3–5 business days." }],\n    "stop_reason":"end_turn" }',
+convo:[["tool","refund issued"],["agent","\"Issued a full refund of $89.99, 3–5 business days.\""]],tools:defTools(),hook:null,cs:"resolved — first contact",ss:"Done",sr:"end_turn",verdict:"resolved"}]},
+
+{n:"2 · Explicit manager",steps:[
+{d:"recv",w:"← tool_use",e:"The single most-tested escalation rule. The customer's FIRST message explicitly asks for a manager. The correct behavior is immediate escalation — the model must NOT say 'I can help with that, let me look into it' and attempt a resolution first. An explicit human request is a hard, immediate trigger.",
+p:'customer: "I don\'t want to deal with a bot. Get me a\n           manager, now."\n\n← { "content":[{ "type":"tool_use", "id":"t1",\n      "name":"escalate_to_human", "input":{ ... } }],\n    "stop_reason":"tool_use" }\n\n# NOT: get_customer, lookup_order, or any resolution attempt',
+convo:[["cust","\"Get me a manager, now.\""],["agent","→ escalate_to_human (immediately)"]],tools:defTools("escalate_to_human"),hook:null,cs:"escalating without resolution attempt",ss:"Paused — tool_use",sr:"tool_use",verdict:"escalating"},
+{d:"client",w:"",e:"The escalation carries a STRUCTURED handoff summary — and this is the exam's other key fact: the human operator does NOT see the conversation transcript. They see only this object, so it must be complete and self-contained: who, what, what was tried, what's recommended, and why it escalated. A handoff that just says 'angry customer, please help' fails the pattern.",
+p:'escalate_to_human({\n  "customer_id": "CUST-12345",\n  "customer_name": "Ivan P.",\n  "issue_summary": "Customer requests a human agent",\n  "order_id": null,\n  "actions_taken": [],          # none — escalated on request\n  "recommended_action": "Connect to a live agent",\n  "escalation_reason": "Customer explicitly requested a manager"\n})',
+convo:[["cust","\"Get me a manager, now.\""],["agent","→ escalate_to_human"],["tool","handoff: reason = explicit manager request"]],tools:defTools(),hook:null,cs:"structured handoff sent to human queue",ss:"Idle",sr:null,verdict:"escalated"},
+{d:"recv",w:"← end_turn",e:"The agent tells the customer they're being connected and ends the turn. Contrast with scenario 3: a customer VENTING ('this is outrageous') is not the same as REQUESTING a human — those get acknowledge-then-resolve. Only an explicit ask for a person triggers immediate escalation.",
+p:'← { "content":[{ "type":"text", "text":\n      "Understood — I\'m connecting you with a human\n       agent now. They have the full context of your\n       request." }],\n    "stop_reason":"end_turn" }',
+convo:[["agent","→ escalated with summary"],["agent","\"Connecting you with a human agent now.\""]],tools:defTools(),hook:null,cs:"handed off — appropriate escalation",ss:"Done",sr:"end_turn",verdict:"escalated"}]},
+
+{n:"3 · Upset ≠ escalate",steps:[
+{d:"recv",w:"← end_turn",e:"An emotional opening: 'This is outrageous, the quality is terrible!' — but no request for a human. The trap answer is to escalate on this. The correct pattern is acknowledge → resolve: validate the emotion FIRST, then offer a concrete resolution. Note there's no tool call yet — just an empathetic reply that moves toward a fix.",
+p:'customer: "This is outrageous! The speaker I bought is\n           complete garbage, terrible quality!"\n\n← { "content":[{ "type":"text", "text":\n      "I\'m sorry the speaker hasn\'t met expectations —\n       that\'s frustrating. I can help make this right.\n       I can offer a replacement or a full refund —\n       which would you prefer?" }],\n    "stop_reason":"end_turn" }',
+convo:[["cust","\"This is outrageous! Terrible quality!\""],["agent","\"I'm sorry... I can offer a replacement or a refund.\""]],tools:defTools(),hook:null,cs:"acknowledged + offered resolution",ss:"Done",sr:"end_turn",verdict:"resolving"},
+{d:"recv",w:"← tool_use",e:"The customer REITERATES the desire for a human after the offer: 'No, I don't want a refund, I want to talk to a real person!' THIS is the escalation trigger — the second, explicit request for a person following a genuine resolution attempt. The agent escalates now, not before.",
+p:'customer: "No! I don\'t want a refund, I want to talk\n           to a real person!"\n\n← { "content":[{ "type":"tool_use", "name":"escalate_to_human",\n      "input":{ ... } }],\n    "stop_reason":"tool_use" }',
+convo:[["agent","\"...replacement or a full refund?\""],["cust","\"No! I want to talk to a real person!\""],["agent","→ escalate_to_human (reiterated request)"]],tools:defTools("escalate_to_human"),hook:null,cs:"escalating on reiteration",ss:"Paused — tool_use",sr:"tool_use",verdict:"escalating"},
+{d:"client",w:"",e:"The handoff captures the full arc — including that a resolution was offered and declined — so the human starts informed, not from zero. The principle, verbatim from the guide: acknowledge emotion first, propose a concrete solution, and escalate only if the customer reiterates the desire for a human. Do not escalate on the first expression of dissatisfaction.",
+p:'escalate_to_human({\n  "customer_id": "CUST-77003",\n  "issue_summary": "Dissatisfied with speaker quality",\n  "actions_taken": [\n    "Acknowledged frustration",\n    "Offered replacement OR full refund — customer declined,\n     insists on speaking to a person"\n  ],\n  "recommended_action": "Live agent; refund pre-approved if requested",\n  "escalation_reason": "Customer reiterated request for a human"\n})',
+convo:[["agent","→ escalate_to_human"],["tool","handoff: offered+declined, reiterated request"],["agent","\"Connecting you with someone now.\""]],tools:defTools(),hook:null,cs:"escalated with full context",ss:"Idle",sr:null,verdict:"escalated"}]},
+
+{n:"4 · Hook stops a refund",steps:[
+{d:"recv",w:"← tool_use",e:"A legitimate but large claim: a $1,200 laptop arrived damaged. The model, reasoning within the conversation, decides a full refund is fair and calls process_refund for $1,200. On its own the model MIGHT do this — prompt instructions about limits are only ~90% reliable. That gap is unacceptable for a financial action.",
+p:'customer: "My $1,200 laptop arrived cracked. I want a\n           full refund."\n\n← { "content":[{ "type":"tool_use", "id":"t5",\n      "name":"process_refund",\n      "input":{ "customer_id":"CUST-88012",\n                "amount":1200.00 } }],\n    "stop_reason":"tool_use" }',
+convo:[["cust","\"$1,200 laptop arrived cracked. Full refund.\""],["agent","→ process_refund $1,200.00"]],tools:defTools("process_refund"),hook:null,cs:"refund requested — entering hook",ss:"Paused — tool_use",sr:"tool_use",verdict:"resolving"},
+{d:"client",w:"",e:"The PreToolUse hook intercepts BEFORE the tool runs. $1,200 > $500, so it does not execute the refund — it redirects to escalation. This is the deterministic guarantee: a hook enforces the limit 100% of the time, regardless of how the model reasoned. The exam rule: when failure has financial, legal, or safety consequences, use a hook, not a prompt.",
+p:'@hook("PreToolUse")\ndef enforce_refund_limit(call):\n    if call.name == "process_refund" and call.args.amount > 500:\n        return redirect_to_escalation(call)   # ← fires\n    return ALLOW\n\n# $1,200 > $500  →  refund BLOCKED, routed to human',
+convo:[["agent","→ process_refund $1,200.00"],["tool","HOOK: $1,200 > $500 → BLOCK + redirect"]],tools:defTools(null,"process_refund"),hook:{c:"PreToolUse: $1,200 > $500 → BLOCK, redirect to escalation",k:"block"},cs:"refund blocked deterministically",ss:"Idle",sr:null,verdict:"blocked"},
+{d:"recv",w:"← end_turn",e:"With the refund blocked, the flow becomes an escalation: the agent hands off with a recommendation (approve the refund — it's a valid claim, just above the agent's authority) and tells the customer a specialist will finalize it. The customer still gets a good outcome; the control just moved to a human for the high-value decision. Hook + escalation working together.",
+p:'# after redirect, the agent escalates:\nescalate_to_human({\n  "issue_summary": "Damaged $1,200 laptop, full refund requested",\n  "actions_taken": ["Verified order", "Refund exceeds $500 agent limit"],\n  "refund_amount": "$1,200.00",\n  "recommended_action": "Approve full refund — valid damage claim",\n  "escalation_reason": "Refund above agent authority ($500)"\n})\n← { "stop_reason":"end_turn" }',
+convo:[["tool","HOOK blocked $1,200 refund"],["agent","→ escalate_to_human (recommend approve)"],["agent","\"A specialist will finalize your refund shortly.\""]],tools:defTools(),hook:{c:"limit held — financial safety guaranteed",k:"active"},cs:"escalated for high-value approval",ss:"Done",sr:"end_turn",verdict:"escalated"}]},
+
+{n:"5 · Policy gap",steps:[
+{d:"recv",w:"← tool_use",e:"A request the policy simply doesn't address: matching a competitor's price. The policy covers price adjustments on the retailer's OWN site, and is silent on competitor matching. The model must NOT invent a discount to be helpful — a silent policy = escalate, because acting outside policy is worse than handing off.",
+p:'customer: "Competitor X sells this 30% cheaper. Match it\n           or I\'m leaving."\n\n# policy: price adjustments only on our own site;\n#         competitor matching = NOT covered\n\n← { "content":[{ "type":"tool_use", "name":"escalate_to_human",\n      "input":{ ... } }],\n    "stop_reason":"tool_use" }',
+convo:[["cust","\"Competitor X is 30% cheaper. Match it.\""],["agent","→ escalate_to_human (policy is silent)"]],tools:defTools("escalate_to_human"),hook:null,cs:"escalating on policy gap",ss:"Paused — tool_use",sr:"tool_use",verdict:"escalating"},
+{d:"client",w:"",e:"The handoff names the gap precisely so the human can make the call (and so the gap can later be fixed in policy). Contrast the wrong moves: inventing a discount (acting outside authority) or flatly refusing without escalation (a worse customer outcome). The right move on an uncovered request is a clean, well-summarized handoff.",
+p:'escalate_to_human({\n  "issue_summary": "Competitor price-match request (30% off)",\n  "actions_taken": ["Confirmed item & price",\n                    "Policy does not cover competitor matching"],\n  "recommended_action": "Human decision — outside current policy",\n  "escalation_reason": "Request falls outside documented policy"\n})',
+convo:[["agent","→ escalate_to_human"],["tool","handoff: reason = policy gap (competitor match)"],["agent","\"Let me bring in a colleague who can review this.\""]],tools:defTools(),hook:null,cs:"escalated — policy gap documented",ss:"Done",sr:"end_turn",verdict:"escalated"}]},
+
+{n:"6 · Wrong triggers",steps:[
+{d:"client",w:"",e:"The flip side the exam loves: things that look like escalation signals but are NOT reliable. Sentiment analysis — a calm customer can have a legally complex case; an angry one may want a simple refund. Mood doesn't correlate with complexity. Routing on sentiment escalates the wrong cases and resolves the wrong ones.",
+p:'# ANTI-PATTERN: escalate when sentiment is negative\nif sentiment_score(message) < 0.3:\n    escalate_to_human(...)        # ✘ unreliable\n\n# why it fails: an upset customer often wants a quick\n# refund (resolvable); a polite one may have a complex\n# dispute (needs a human). Mood ≠ complexity.',
+convo:[["sys","Anti-pattern: escalate on negative sentiment"],["sys","✘ customer mood does not correlate with case complexity"]],tools:defTools(),hook:null,cs:"why sentiment-routing fails",ss:"—",sr:null,verdict:null},
+{d:"client",w:"",e:"Second false trigger: asking the model to self-rate its confidence 1–10 and escalating on low scores. Model confidence is poorly calibrated — it can be confidently wrong, which means a high self-score on a case it's actually botching. Self-rated confidence is not a dependable gate for human handoff.",
+p:'# ANTI-PATTERN: escalate on low self-rated confidence\n"Rate your confidence 1-10. If < 6, escalate."  # ✘\n\n# why it fails: the model can be CONFIDENTLY WRONG —\n# a 9/10 self-rating on a case it is mishandling.\n# Calibration is poor; the number is not trustworthy.',
+convo:[["sys","Anti-pattern: escalate on self-rated confidence < 6"],["sys","✘ the model can be confidently wrong (poor calibration)"]],tools:defTools(),hook:null,cs:"why confidence self-rating fails",ss:"—",sr:null,verdict:null},
+{d:"client",w:"",e:"Third: building a bespoke ML classifier to decide escalation. That's overengineering — it needs training data you likely don't have and adds a failure mode for a problem that clear RULES already solve. The reliable triggers are categorical and writable in the prompt: explicit human request, policy gap, no-progress-after-attempt, above-threshold financial (hook-enforced), ambiguous identity (ask, don't guess).",
+p:'RELIABLE escalation triggers (clear rules, in the prompt):\n  · explicit request for a human/manager  → immediate\n  · request outside documented policy     → escalate\n  · no progress after a reasonable attempt → escalate\n  · financial action over threshold        → HOOK + escalate\n  · multiple identity matches               → ask, don\'t guess\n\nUNRELIABLE: sentiment · self-rated confidence · a custom\nclassifier you have no training data for.',
+convo:[["sys","✓ Reliable: explicit ask · policy gap · no progress · over-threshold · ambiguous ID"],["sys","✘ Unreliable: sentiment · self-confidence · bespoke classifier"]],tools:defTools(),hook:null,cs:"the rule, summarized",ss:"—",sr:null,verdict:null}]},
+
+{n:"7 · Routing & errors",steps:[
+{d:"client",w:"",e:"Cost/quality architecture from 'Building Effective Agents': route by query type. A cheap, fast model (Haiku class) handles common, easy requests — order status, return eligibility; a more capable model (Sonnet class) takes hard or unusual ones — multi-issue disputes, ambiguous claims. A lightweight router classifies intent first, then dispatches. This is how a support system hits volume targets without paying top-tier cost on every 'where's my order?'.",
+p:'def route(message):\n    kind = classify(message)   # cheap intent classification\n    if kind in ("order_status", "return_eligibility", "faq"):\n        return run(model="claude-haiku-4-5", ...)   # fast & cheap\n    else:  # disputes, exceptions, multi-part issues\n        return run(model="claude-sonnet-4-6", ...)  # more capable\n\n# routing ≠ escalation: this picks a MODEL, not a human',
+convo:[["sys","Router: easy → Haiku · hard → Sonnet"],["sys","intent classification BEFORE the agent runs"]],tools:defTools(),hook:null,cs:"query routing for cost/quality",ss:"—",sr:null,verdict:null},
+{d:"client",w:"",e:"When a tool fails, the error CATEGORY decides the move — same table as the multi-agent debugger, applied to support. Transient (order DB times out): retry with backoff. Validation (bad input): fix and retry. Business (policy/threshold): explain to the customer, offer an alternative — don't retry. Permission (access denied): escalate. A generic 'something went wrong' gives the agent nothing to decide with.",
+p:'category    example                       action\n──────────────────────────────────────────────────────\ntransient   order DB 503 / timeout        retry w/ backoff\nvalidation  malformed order id            fix input, retry\nbusiness    refund over policy limit      explain + alternative\npermission  account access denied         escalate\n\n# return structured errors (type, what failed, alternatives) —\n# never a bare "lookup failed"',
+convo:[["tool","lookup_order → 503 (transient)"],["agent","retry w/ backoff → success"],["sys","category determines recovery, not a generic message"]],tools:defTools(),hook:null,cs:"error category → recovery action",ss:"—",sr:null,verdict:null},
+{d:"recv",w:"← tool_use",e:"The ambiguity trigger in action: get_customer returns MULTIPLE matches. The policy line 'if multiple customers match, ask for another identifier; do not guess' kicks in — the agent asks a clarifying question rather than acting on the wrong account. Guessing here could refund the wrong person; asking is the only safe move. This closes the loop on identity-resolution.",
+p:'← get_customer → { "matches": 3, "candidates":[...] }\n\n← { "content":[{ "type":"text", "text":\n      "I found a few accounts under that name — could you\n       share the email or order number on the purchase so\n       I pull up the right one?" }],\n    "stop_reason":"end_turn" }\n# does NOT call lookup_order / process_refund on a guess',
+convo:[["tool","get_customer → 3 matches (ambiguous)"],["agent","\"Could you share the email or order number?\""],["sys","ask for another identifier — never guess identity"]],tools:defTools(),hook:null,cs:"disambiguating before acting",ss:"Done",sr:"end_turn",verdict:"resolving"}]}
+];
+let si=0,ti=0;
+const $=id=>document.getElementById(id);
+function pills(){$("pills").innerHTML=S.map((s,i)=>'<button class="pill" aria-pressed="'+(i===si)+'" onclick="go('+i+')">'+s.n+'</button>').join('')}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function turn(t){
+const cls={cust:"cust",agent:"agent",tool:"tool",sys:"sys"}[t[0]];
+const who={cust:"customer",agent:"agent",tool:"tool result",sys:"system"}[t[0]];
+return '<div class="turn '+cls+'"><div class="who">'+who+'</div>'+esc(t[1])+'</div>';
+}
+function toolchip(t){
+const cls=t.s==='f'?'fire':t.s==='b'?'block':'allow';
+const ic=t.s==='f'?'▶ ':t.s==='b'?'⛔ ':'';
+return '<span class="tool-chip '+cls+'">'+ic+t.n+'</span>';
+}
+function draw(){
+const st=S[si].steps[ti];
+$("convo").innerHTML=st.convo.map(turn).join('');
+$("tools").innerHTML=st.tools.map(toolchip).join('');
+const hk=$("hook");
+if(st.hook){hk.textContent=st.hook.c;hk.className="hookbar "+(st.hook.k==='block'?'block':'active');}
+else{hk.textContent="no hook on this step";hk.className="hookbar";}
+$("cstat").textContent="› "+st.cs;
+$("sstat").textContent=st.ss;
+$("sstat").className="stat"+(st.d==='server'?' busy':'');
+if(st.sr&&SRC[st.sr]){const[bg,tx]=SRC[st.sr];$("srbWrap").innerHTML='<span class="srb" style="background:'+bg+';color:'+tx+'">"'+st.sr+'"</span>';}
+else $("srbWrap").innerHTML='<span style="font-size:11px;color:var(--text3)">—</span>';
+if(st.verdict&&VC[st.verdict]){const[bg,tx]=VC[st.verdict];$("verdictWrap").innerHTML='<span class="verdict" style="background:'+bg+';color:'+tx+'">'+st.verdict+'</span>';}
+else $("verdictWrap").innerHTML='<span style="font-size:11px;color:var(--text3)">—</span>';
+$("wlabel").textContent=st.w;
+const dot=$("dot");
+dot.className="dot "+(st.d==='send'?'dotR':st.d==='recv'?'dotL':'');
+dot.style.display=(st.d==='send'||st.d==='recv')?'block':'none';
+$("cpanel").className='panel'+((st.d==='client'||st.d==='send')?' live':'');
+$("spanel").className='panel'+((st.d==='server'||st.d==='recv')?' live':'');
+$("explain").innerHTML='<strong>'+(ti+1)+'. </strong>'+st.e;
+$("phead").textContent=st.d==='send'?'runtime → server (tool_result + history)':st.d==='recv'?'server → runtime':st.d==='server'?'inside the server':'client-side — runtime / config';
+$("pcode").textContent=st.p;
+$("stepn").textContent='step '+(ti+1)+' of '+S[si].steps.length;
+$("prev").disabled=ti===0;
+$("next").disabled=ti===S[si].steps.length-1;
+pills();
+}
+function go(i){si=i;ti=0;draw()}
+function mv(d){ti=Math.max(0,Math.min(S[si].steps.length-1,ti+d));draw()}
+draw();
+</script>
+</body>
+</html>
