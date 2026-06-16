@@ -11,7 +11,9 @@
       "d1-q023",
       "d1-q027",
       "d1-q028",
-      "d2-q008"
+      "d2-q008",
+      "d3-q003",
+      "d1-q039"
     ]
   },
   {
@@ -60,7 +62,9 @@
     "lesson_sr": "Strategiju dekompozicije biraj prema PRIRODI zadatka, ne univerzalno. Strukturiran/predvidljiv/ponovljiv zadatak -> fiksni sekvencijalni pipeline (jeftin, deterministički, pouzdan). Otvoren/kompleksan/varijabilan zadatak -> dinamička adaptivna dekompozicija (model sam odlučuje korake). Kad sistem ima zadatke različite prirode, koristi MEŠAVINU - i proveri da je raspored tačan. Zamka: opcija sa istim obrascem za sve zadatke pada; opcija sa pravom idejom ali obrnutim rasporedom je najopasniji distraktor.",
     "lesson_en": "Choose the decomposition strategy by the NATURE of the task, not one-size-fits-all. Structured/predictable/repeatable task -> fixed sequential pipeline (cheap, deterministic, reliable). Open-ended/complex/variable task -> dynamic adaptive decomposition (the model decides the steps). When a system has tasks of different natures, use a MIX - and verify the mapping is correct. Trap: the option using one pattern for all tasks fails; the option with the right idea but reversed mapping is the most dangerous distractor.",
     "seen_in": [
-      "d1-q003"
+      "d1-q003",
+      "d1-q035",
+      "d1-q040"
     ]
   },
   {
@@ -83,7 +87,8 @@
     "seen_in": [
       "d1-q005",
       "d1-q024",
-      "d1-q026"
+      "d1-q026",
+      "d5-q004"
     ]
   },
   {
@@ -103,7 +108,10 @@
       "d2-q013",
       "d2-q021",
       "d2-q022",
-      "d2-q024"
+      "d2-q024",
+      "d2-q029",
+      "d2-q032",
+      "d4-q001"
     ]
   },
   {
@@ -124,7 +132,8 @@
     "lesson_en": "When a subagent 'forgets' in a later invocation what it earlier knew/approved, the cause is its STATELESS nature + the coordinator not passing context - NEVER some 'lost/overwritten/cached' state. Each Task call starts from scratch. Fix: the coordinator must explicitly include the history of prior steps and relevant constraints in the prompt of every subsequent call. Memory is the orchestrator's responsibility, not a built-in subagent feature. Sibling of structured-data-between-agents (that one about the FORMAT of transfer, this one about the RESPONSIBILITY to transfer).",
     "seen_in": [
       "d1-q007",
-      "d1-q010"
+      "d1-q010",
+      "d1-q038"
     ]
   },
   {
@@ -156,7 +165,8 @@
       "d1-q008",
       "d1-q009",
       "d1-q023",
-      "d1-q028"
+      "d1-q028",
+      "d3-q003"
     ]
   },
   {
@@ -178,7 +188,8 @@
     "lesson_en": "When one subagent depends on another's result, do NOT wire them directly (peer-to-peer) - it is brittle: there is no layer checking whether the upstream step succeeded, so one agent's failure silently poisons the next (e.g. the downstream agent hallucinates from empty/incomplete input) and debugging becomes a nightmare. Fix: hub-and-spoke / coordinator - everything routes through a central hub that centralizes error handling, validation, and retry/backoff, and invokes the downstream agent ONLY on upstream success. Errors are caught at the boundary, not inside the agent that hallucinates. Traps: monolithic merge (sacrifices modularity/fault isolation, 'halt' is not principled error handling); shared memory bus + polling (over-engineering, coupling, busy-wait, does not solve validation); letting the downstream agent parse the other's logs (violates separation of concerns). Same 'keep error handling outside the agent doing the work' root as handle-errors-outside-model-loop (there at the hook level, here at the orchestration level), and complements subagent-stateless-coordinator-passes-context (the coordinator is not just a context carrier but also a flow gate).",
     "seen_in": [
       "d1-q011",
-      "d1-q024"
+      "d1-q024",
+      "d1-q036"
     ]
   },
   {
@@ -190,7 +201,8 @@
     "seen_in": [
       "d1-q012",
       "d1-q024",
-      "d1-q026"
+      "d1-q026",
+      "d1-q038"
     ]
   },
   {
@@ -200,7 +212,8 @@
     "lesson_sr": "Kad jedan agent žongliranjem previše zadataka/tool-ova istovremeno upadne u cognitive overload (zbunjenost, ispušteni zadaci, prekoračeni reasoning limiti), lek je DEKOMPOZICIJA na coordinator-subagent: koordinator rastavi posao, delegira svaki deo specijalizovanom subagentu sa fokusiranim kontekstom i jednim poslom, pa agregira nalaze (manji reasoning load po agentu, nema tool-selection zabune, paralelno izvršenje). Bottleneck je ORKESTRACIJA/kognitivni teret, ne kapacitet ni brzina. Zamke koje napadaju pogrešnu polugu: veći token window (tretira kao manjak prostora - daje više sobe da se zbuni, bez strukture); manji/brzi model (pogoršava - slabije rezonovanje na istom poslu); peer-to-peer glasanje (zvuči distribuirano ali ne smanjuje teret po zadatku, dodaje coordination overhead, krhko bez huba). Rastereti kroz PODELU, ne kroz 'daj mu više/brže'. Linkuje [[coordinator-gates-not-peer-to-peer]] (taj o topologiji/gejtovanju; ovaj o rasterećenju kroz podelu) i [[match-decomposition-to-task-nature]] (taj bira KOJU dekompoziciju; ovaj kaže da DEKOMPONUJEŠ umesto da skaliraš isti agent).",
     "lesson_en": "When a single agent juggling too many tasks/tools at once falls into cognitive overload (confusion, dropped tasks, exceeded reasoning limits), the fix is DECOMPOSITION into coordinator-subagent: the coordinator splits the work, delegates each part to a specialized subagent with focused context and one job, then aggregates findings (lower reasoning load per agent, no tool-selection confusion, parallel execution). The bottleneck is ORCHESTRATION/cognitive load, not capacity or speed. Traps that pull the wrong lever: bigger token window (treats it as lack of room - gives more space to get confused, no structure); smaller/faster model (makes it worse - weaker reasoning on the same work); peer-to-peer voting (sounds distributed but does not reduce per-task burden, adds coordination overhead, brittle without a hub). Relieve via DIVISION, not via 'give it more/faster'. Links coordinator-gates-not-peer-to-peer (that one about topology/gating; this one about relief through division) and match-decomposition-to-task-nature (that one picks WHICH decomposition; this one says DECOMPOSE rather than scale the same agent).",
     "seen_in": [
-      "d1-q013"
+      "d1-q013",
+      "d2-q031"
     ]
   },
   {
@@ -210,7 +223,9 @@
     "lesson_sr": "Seckanje dugačkog ulaza na chunk-ove vraća LOKALNU tačnost (izbegava attention dilution jednog ogromnog prompta), ali GUBI globalni/cross-chunk pregled - problemi koji se protežu preko više chunk-ova (npr. narativna doslednost preko celog videa) ispadaju jer nijedan pojedinačni chunk ne vidi ostale. Lek: dodaj drugi-stepeni integration/synthesis (reduce) pass koji rezonuje nad SAŽECIMA/izlazima lokalnih prolaza -> hvata long-range obrasce, a bez povratka dilution-a (jer integraciji ulaze sažeci, ne sirov ceo ulaz). To je Map-Reduce / Synthesis pattern: map = lokalni prolazi, reduce = integracija. Zamke: vraćanje na jedan prompt (čak i sa strogim XML tagovima) = nazad u attention dilution (tagovi ne smanjuju količinu konteksta); 'map-reduce BEZ finalnog integration koraka' = samo paralelizam, izostavlja baš reduce koji JESTE rešenje; biranje koje chunk-ove čitati (dinamička adaptacija) = i dalje lokalna odluka, nema agregacionog sloja; temperature nema veze sa opsegom problema. Pouka: različiti OPSEZI (lokalni vs globalni) traže različite SLOJEVE analize. Linkuje [[match-decomposition-to-task-nature]] (taj bira strategiju dekompozicije po prirodi zadatka; ovaj rešava lokalno/globalno kompromis chunking-a kroz reduce sloj).",
     "lesson_en": "Chunking a long input restores LOCAL accuracy (avoids the attention dilution of one giant prompt) but LOSES the global/cross-chunk view - issues that span multiple chunks (e.g. narrative consistency across a whole video) slip through because no single chunk sees the others. Fix: add a second-stage integration/synthesis (reduce) pass that reasons over the SUMMARIES/outputs of the local passes -> it catches long-range patterns without bringing back dilution (the integration consumes summaries, not the raw whole input). This is the Map-Reduce / Synthesis pattern: map = local passes, reduce = integration. Traps: reverting to a single prompt (even with strict XML tags) = back to attention dilution (tags do not reduce the amount of context); 'map-reduce WITHOUT a final integration step' = just parallelism, omitting the very reduce that IS the fix; choosing which chunks to read (dynamic adaptation) = still a local decision, no aggregation layer; temperature has nothing to do with the scope of the problem. Lesson: different SCOPES (local vs global) require different LAYERS of analysis. Links match-decomposition-to-task-nature (that one picks the decomposition strategy by task nature; this one resolves the local/global tradeoff of chunking via a reduce layer).",
     "seen_in": [
-      "d1-q014"
+      "d1-q014",
+      "d4-q005",
+      "d4-q004"
     ]
   },
   {
@@ -334,7 +349,8 @@
     "seen_in": [
       "d2-q001",
       "d2-q007",
-      "d2-q008"
+      "d2-q008",
+      "d2-q031"
     ]
   },
   {
@@ -408,7 +424,8 @@
     "lesson_sr": "Kad agent zloupotrebljava alat dat van njegove odgovornosti (npr. Code Writer pokreće integraciene testove pre nego što završi kod → pipeline failures), fix je ARHITEKTONSKI: ukloni alat iz njegovog skupa i rutiraj taj posao pravom specijalisti (QA Tester) - separation of concerns / Generate-Validate Pattern (jedan generiše, drugi validira). NE prompt-upozorenje u opisu alata (ponašanje je non-deterministicko, može ignorisati - flaster za deterministički redosled), NE merge agenata u jedan (monolit, gubi specijalizaciju, složeniji prompt/logika), NE tool_choice:{\"type\":\"any\"} (forsira poziv alata ali ne rešava POGREŠAN REDOSLED). DISKRIMINATOR vs [[scoped-tool-for-high-frequency-need-route-complex]]: ako agent ima čestu LEGITIMNU sitnu potrebu → daj uzak scoped alat lokalno; ako alat PRIPADA drugom agentu i njegovo prisustvo lomi tok → ukloni + rutiraj. Veži i sa [[deterministic-needs-hook-not-prompt]] (zašto B/prompt-kontrola pada).",
     "lesson_en": "When an agent misuses a tool given outside its responsibility (e.g. a Code Writer running integration tests before finishing code → pipeline failures), the fix is ARCHITECTURAL: remove the tool from its toolset and route that work to the right specialist (QA Tester) - separation of concerns / Generate-Validate Pattern (one generates, another validates). NOT a warning in the tool description (behavior is non-deterministic, it may ignore it - a band-aid for deterministic ordering), NOT merging the agents into one (monolith, loses specialization, more complex prompt/logic), NOT tool_choice:{\"type\":\"any\"} (forces a tool call but doesn't fix the WRONG ORDER). DISCRIMINATOR vs scoped-tool-for-high-frequency-need-route-complex: if the agent has a frequent LEGITIMATE minor need → give a narrow scoped tool locally; if the tool BELONGS to another agent and its presence breaks the flow → remove it + route. Relate to deterministic-needs-hook-not-prompt (why B/prompt control fails).",
     "seen_in": [
-      "d2-q008"
+      "d2-q008",
+      "d1-q039"
     ]
   },
   {
@@ -475,7 +492,8 @@
     "seen_in": [
       "d2-q014",
       "d2-q015",
-      "d2-q016"
+      "d2-q016",
+      "d2-q030"
     ]
   },
   {
@@ -488,7 +506,8 @@
       "d2-q015",
       "d2-q016",
       "d2-q023",
-      "d2-q025"
+      "d2-q025",
+      "d2-q030"
     ]
   },
   {
@@ -519,7 +538,9 @@
     "lesson_sr": "Kad model preterano primenjuje alat na slučajeve van opsega (prosleđuje nevalidne parametre i ruši backend), uzrok je opis bez granica. Popravka: u opis eksplicitno upiši šta alat podržava I šta NE podržava, sa uputstvom da ga ne koristi za te slučajeve — model tada zaključi da je van opsega i ne pozove ga. Sprečavanje na mestu IZBORA pobija reaktivne zakrpe (try-catch koji samo ljupko padne, dummy parametre koji lažu) i radikalne (ukloni alat = baciš deterministički proračun). Veza: [[intercept-before-not-after]], [[constrain-tool-interface-to-prevent-bad-input]] (hard schema guardrail), [[tool-available-not-used-instruct-in-prompt]] (ogledalo: opis/prompt upravlja i KADA da se koristi).",
     "lesson_en": "When the model over-applies a tool to out-of-scope cases (passing invalid parameters and crashing the backend), the cause is a description that omits boundaries. Fix: state explicitly in the description what the tool supports AND what it does NOT, instructing the model not to use it for those cases — the model then reasons it is out of scope and won't call it. Preventing at tool-SELECTION time beats reactive patches (a try-catch that just fails gracefully, dummy parameters that lie) and drastic ones (removing the tool discards a deterministic calculator).",
     "seen_in": [
-      "d2-q019"
+      "d2-q019",
+      "d2-q029",
+      "d2-q032"
     ]
   },
   {
@@ -540,7 +561,8 @@
     "lesson_en": "To find files/code in a large repo, pick the built-in tool by WHAT YOU MATCH ON. By name/path/extension → Glob (e.g. **/*.cy.ts; ** is a recursive wildcard across all nested folders; returns exact paths efficiently without reading contents). By CONTENT/symbol/string inside a file → Grep (e.g. anthropic.Anthropic()). NOT Read on the root + manually parsing the file list (unnecessary I/O + extra filter logic; globbing does this natively and faster). NOT Grep on a code keyword (e.g. describe() to find test files — that searches by CONTENT: scans every file, returns non-test files that happen to use the keyword, needs manual filtering; when the criterion is name/extension, use Glob. NEVER mutate the repo (Edit/rename/move) just for discovery — destructive, breaks dependencies, risks the codebase. Mirror of grep-to-entry-point-read-sequentially-not-bulk (the Grep/content side of the same built-in-tool selection theme).",
     "seen_in": [
       "d2-q026",
-      "d2-q027"
+      "d2-q027",
+      "d2-q033"
     ]
   },
   {
@@ -551,6 +573,83 @@
     "lesson_en": "Pick the mutation tool by the NATURE of the change. Full-file content replacement -> Write: atomic create/overwrite, single-step, clean. Targeted, contextual edit of a small region -> Edit. NOT rm (Bash) then recreate (file-system churn, permission/metadata issues). NOT a search tool (Grep) to delete contents — Grep is for searching, not mutation. Using Edit to match the first/last line for a full-file replace on a large file is brittle and error-prone. See [[discovery-by-name-glob-by-content-grep]] and [[right-size-tool-to-task]].",
     "seen_in": [
       "d2-q028"
+    ]
+  },
+  {
+    "id": "multi-concern-parallel-tracks-then-synthesize",
+    "title": "Multi-concern: paralelne staze po DIMENZIJI, pa sinteza",
+    "domain": 1,
+    "lesson_sr": "Kad upit ima više analitičkih DIMENZIJA nad istim subjektima (npr. uticaj na sredinu + isplativost za 2 vozila), dekomponuj po dimenziji u paralelne staze — svaka staza obrađuje sve subjekte istom metodologijom — pa sintetizuj. Podela po SUBJEKTU rizikuje nekonzistentnu metodologiju i neuporedivo poređenje. Dinamička adaptivna dekompozicija je za otvorene istrage, ne za jasno strukturisan upit.",
+    "lesson_en": "When a query has multiple analytical DIMENSIONS over the same subjects (e.g. environmental impact + cost across two vehicles), decompose by dimension into parallel tracks — each track covers all subjects with one consistent methodology — then synthesize. Splitting by SUBJECT risks inconsistent methodology and a non-comparable result. Dynamic adaptive decomposition is for open-ended investigations, not a clearly structured query.",
+    "seen_in": [
+      "d1-q035"
+    ]
+  },
+  {
+    "id": "independent-review-needs-fresh-instance",
+    "title": "Nezavisna recenzija/žalba traži SVEŽU instancu, ne istu sesiju",
+    "domain": 1,
+    "lesson_sr": "Isti agent/sesija koji je proizveo izlaz ne može nepristrasno da ga preispita — nosi originalni reasoning u kontekstu i usidren je za svoje zaključke (self-review bias, sumnjivo visoko slaganje). Genuina recenzija, QA, žalba ili CI-review zahteva ZASEBNU instancu/sesiju BEZ pristupa originalnom rezonovanju, koja vidi samo sadržaj. Jači prompt, viša temperatura ili moćniji model NE rešavaju strukturnu pristrasnost.",
+    "lesson_en": "The same agent/session that produced an output cannot review it impartially — it carries the original reasoning in context and is anchored to its conclusions (self-review bias, suspiciously high agreement). Genuine review, QA, appeal, or CI-review needs a SEPARATE instance/session with no access to the original reasoning, seeing only the content. A stronger prompt, higher temperature, or a more powerful model do NOT fix the structural bias.",
+    "seen_in": [
+      "d1-q037",
+      "d3-q004",
+      "d3-q005",
+      "d3-q006",
+      "d4-q006"
+    ]
+  },
+  {
+    "id": "path-scoped-rules-over-root-claudemd",
+    "title": "Path-scoped .claude/rules umesto root CLAUDE.md",
+    "domain": 3,
+    "lesson_sr": "Konvencije specifične za tip/lokaciju fajla idu u .claude/rules/ sa glob paths frontmatter-om — učitavaju se automatski samo kad se edituje podudaran fajl, bez obzira na direktorijum, bez održavanja. Root CLAUDE.md se učitava u SVAKOJ sesiji (troši tokene i kad nije relevantno); CLAUDE.md po direktorijumu ne hvata razbacane fajlove; glob '**/*' poništava poentu uslovnog učitavanja; skill se aktivira on-demand, a pravila treba da oblikuju svaki edit.",
+    "lesson_en": "File-type/location-specific conventions belong in .claude/rules/ with a glob `paths` frontmatter — they load automatically only when a matching file is edited, regardless of directory, with no maintenance. Root CLAUDE.md loads in EVERY session (wastes tokens when irrelevant); per-directory CLAUDE.md misses scattered files; a `**/*` glob defeats conditional loading; a skill activates on-demand, whereas rules should shape every matching edit.",
+    "seen_in": [
+      "d3-q001",
+      "d3-q002"
+    ]
+  },
+  {
+    "id": "retry-format-errors-not-capability-gaps",
+    "title": "Retry boundary: ponovi format-greške, NE praznine u sposobnosti",
+    "domain": 4,
+    "lesson_sr": "Retry sa feedbackom popravlja POPRAVLJIVE format-greške (npr. prazno polje na sadržaju koji model razume). Praznine u SPOSOBNOSTI (nepoznat jezik, nedostajuća dozvola) ili trajni otkazi (403, business greška) se NE rešavaju ponavljanjem — rutiraj na čoveka ili eskaliraj, ne povećavaj broj pokušaja. Razlikuj 'može da uradi ali je pogrešio format' od 'ne može uopšte'.",
+    "lesson_en": "Retry-with-feedback fixes FIXABLE format errors (e.g. an empty field on content the model understands). CAPABILITY gaps (an unreadable language, missing permission) or permanent failures (403, business error) are NOT solved by retrying — route to a human or escalate, don't raise the retry count. Distinguish 'can do it but got the format wrong' from 'cannot do it at all'.",
+    "seen_in": [
+      "d4-q002"
+    ]
+  },
+  {
+    "id": "propagate-structured-error-not-silent-suppress",
+    "title": "Propagiraj strukturiran error kontekst, ne guši grešku",
+    "domain": 5,
+    "lesson_sr": "Subagent na otkaz mora vratiti STRUKTURIRAN error kontekst (tip otkaza, šta je pokušano, parcijalni rezultati, alternative) da koordinator može inteligentno da odluči (retry, alternativa, nastavi sa parcijalnim + napomena o rupi). Najgori anti-patern je silent suppression — prazan rezultat označen kao uspeh — jer koordinator misli da je uspelo i ne pokušava oporavak. Generička poruka ('unavailable') i terminacija celog workflow-a takođe gube kontekst/parcijalne rezultate.",
+    "lesson_en": "On failure a subagent must return STRUCTURED error context (failure type, what was attempted, partial results, alternatives) so the coordinator can decide intelligently (retry, alternative, proceed-with-partial + gap annotation). The worst anti-pattern is silent suppression — empty result marked as success — because the coordinator thinks it succeeded and never attempts recovery. A generic message ('unavailable') or terminating the whole workflow also lose context/partial results.",
+    "seen_in": [
+      "d5-q002",
+      "d5-q003"
+    ]
+  },
+  {
+    "id": "preserve-provenance-dont-collapse-sources",
+    "title": "Čuvaj provenienciju; ne kolabiraj/ne sažimaj izvore",
+    "domain": 5,
+    "lesson_sr": "Atribucija i konflikti moraju opstati kroz sintezu kao STRUKTURNI PODATAK (claim-source mape: tvrdnja, izvor, datum, citat), jer proza/inline linkovi se prepisuju i veza tvrdnja↔izvor se gubi. Konfliktne izvore prikaži sa punom proveniencijom i pusti čoveka da odmeri — ne proseči, ne biraj jedan, ne izbacuj. Bibliografija je atribucija na nivou dokumenta, ne tvrdnje.",
+    "lesson_en": "Attribution and conflicts must survive synthesis as STRUCTURED DATA (claim-source maps: claim, source, date, excerpt), because prose/inline links get rewritten and the claim↔source link is lost. Present conflicting sources with full provenance and let a human weigh them — don't average, don't pick one, don't drop them. A bibliography is document-level attribution, not claim-level.",
+    "seen_in": [
+      "d5-q004",
+      "d5-q005"
+    ]
+  },
+  {
+    "id": "diagnose-litm-vs-recency-vs-truncation",
+    "title": "Razlikuj lost-in-the-middle od recency/truncation/anchoring",
+    "domain": 5,
+    "lesson_sr": "Kad model promaši tačan podatak u dugačkom ulazu, dijagnozu vodi po POZICIJI promašaja: tačan podatak duboko u SREDINI a izabran pri početku/kraju = lost-in-the-middle (slabija pažnja na sredinu). Favorizovanje KRAJA = recency. Da podatak fali sasvim = truncation (ne bi ni postojao). Anchoring je ljudski bias, ne dokumentovan LLM režim za skeniranje strukturiranih podataka.",
+    "lesson_en": "When a model misses the right datum in a long input, diagnose by the POSITION of the miss: correct datum deep in the MIDDLE while it picks one near the start/end = lost-in-the-middle (reduced mid-sequence attention). Favoring the END = recency. The datum missing entirely = truncation (it wouldn't exist). Anchoring is a human bias, not a documented LLM failure mode for scanning structured data.",
+    "seen_in": [
+      "d5-q001"
     ]
   }
 ]

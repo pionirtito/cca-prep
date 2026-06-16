@@ -1,1 +1,230 @@
-[]
+[
+  {
+    "id": "d3-q001",
+    "source_id": "q-3-3-001",
+    "domain": 3,
+    "subdomain": "3.3",
+    "question": "A codebase has test files co-located with source files throughout 50+ directories (e.g., Button.test.tsx next to Button.tsx). The team wants all tests to follow the same conventions regardless of location. What is the most maintainable approach?",
+    "options": {
+      "A": "Create a rule file in .claude/rules/ with YAML frontmatter paths: [\"**/*.test.tsx\", \"**/*.test.ts\"] containing the test conventions",
+      "B": "Place a CLAUDE.md file in every directory containing test files",
+      "C": "Add all test conventions to the root CLAUDE.md file",
+      "D": "Create a skill in .claude/skills/ with the test conventions"
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. Glob patterns in .claude/rules/ match files by pattern across the entire codebase. The conventions load automatically when editing any test file, regardless of directory. No maintenance burden as new test files are added.",
+      "B": "Incorrect. With 50+ directories, this creates massive duplication and maintenance burden. Every new directory with tests would need a copy.",
+      "C": "Incorrect. Root CLAUDE.md loads for every session. Test conventions would consume tokens even when editing non-test files like API handlers or database models.",
+      "D": "Incorrect. Skills can auto-activate via a paths frontmatter field, but they load on-demand as a task-specific workflow rather than staying in context as background guidance. Test conventions should shape every edit to a matching file, which is precisely what .claude/rules/ with path scoping provides — rules load into context automatically when Claude reads a matching file, without an invocation step."
+    },
+    "claude_notes": "Test fajlovi razbacani po 50+ direktorijuma, iste konvencije svuda → jedan rule fajl u .claude/rules/ sa paths glob ('**/*.test.tsx'). Konvencije se učitavaju automatski kad se edituje bilo koji test fajl, bez obzira na direktorijum, bez održavanja. B (CLAUDE.md u svakom dir-u) = ogromna duplikacija. C (root CLAUDE.md) troši tokene i kad se ne edituju testovi. D (skill) se aktivira on-demand kao workflow, a konvencije treba da oblikuju SVAKI edit podudarnog fajla — to radi .claude/rules sa path scope-om. Provenance: Lesson 3.3 Path-Specific Rules.",
+    "glossary_refs": [
+      ".claude/rules/",
+      "path-specific rules",
+      "CLAUDE.md",
+      "Skill (SKILL.md)",
+      "frontmatter"
+    ],
+    "pattern_refs": [
+      "path-scoped-rules-over-root-claudemd"
+    ],
+    "tags": [
+      "path-rules",
+      "claude-rules",
+      "token-efficiency"
+    ]
+  },
+  {
+    "id": "d3-q002",
+    "source_id": "q-3-3-002",
+    "domain": 3,
+    "subdomain": "3.3",
+    "question": "A DevOps team's polyglot codebase has Terraform files in terraform/, Kubernetes manifests in k8s/, and Dockerfiles scattered throughout various service directories. They want Claude Code to automatically apply infrastructure-specific conventions when editing each type of file, without loading all conventions for every session. What is the correct approach?",
+    "options": {
+      "A": "Create three directory-level CLAUDE.md files: one in terraform/, one in k8s/, and one in the project root for Docker conventions",
+      "B": "Add all infrastructure conventions to the root CLAUDE.md with clear section headings so the model knows which section applies",
+      "C": "Create a single .claude/rules/infrastructure.md file with paths: [\"**/*\"] containing all infrastructure conventions",
+      "D": "Create three .claude/rules/ files: terraform.md with paths: [\"terraform/**/*\", \"**/*.tf\"], kubernetes.md with paths: [\"k8s/**/*\"], and docker.md with paths: [\"**/Dockerfile\", \"**/Dockerfile.*\", \"**/*.dockerfile\"]"
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Directory-level CLAUDE.md files in terraform/ and k8s/ would work for those specific directories, but Dockerfiles are scattered throughout various service directories. A single root CLAUDE.md for Docker conventions would load for every session, defeating the token efficiency goal. This approach does not handle the cross-directory Dockerfile pattern.",
+      "B": "Incorrect. Root CLAUDE.md loads for every session. All infrastructure conventions would consume tokens even when editing TypeScript application code. Section headings do not prevent the conventions from being loaded — the model still processes the entire file.",
+      "C": "Incorrect. The glob pattern **/* matches every file in the codebase, which means the infrastructure conventions would load for every session — exactly the same as putting them in root CLAUDE.md. This defeats the purpose of conditional loading.",
+      "D": "Correct. Each rule file targets specific infrastructure file types with appropriate glob patterns. Terraform conventions load only when editing Terraform files, Kubernetes conventions only for k8s manifests, and Docker conventions only for Dockerfiles — regardless of which directory the Dockerfiles are in. This provides token-efficient conditional loading for all three file types."
+    },
+    "claude_notes": "Hoćeš konvencije po TIPU fajla bez učitavanja svega u svakoj sesiji → tri .claude/rules/ fajla sa preciznim glob-ovima (terraform.md: ['terraform/**/*','**/*.tf'], kubernetes.md: ['k8s/**/*'], docker.md: ['**/Dockerfile','**/Dockerfile.*','**/*.dockerfile']). Dockerfile-ovi su razbacani pa glob po IMENU rešava cross-directory slučaj. A (directory-level CLAUDE.md) ne hvata razbacane Dockerfile-ove i root CLAUDE.md se učitava svuda. B (sve u root CLAUDE.md) troši tokene svuda; sekcije ne sprečavaju učitavanje. C (jedan rule sa '**/*') = isto kao root CLAUDE.md, ruši uslovno učitavanje. Provenance: Lesson 3.3.",
+    "glossary_refs": [
+      ".claude/rules/",
+      "path-specific rules",
+      "CLAUDE.md",
+      "CLAUDE.md hierarchy",
+      "frontmatter"
+    ],
+    "pattern_refs": [
+      "path-scoped-rules-over-root-claudemd"
+    ],
+    "tags": [
+      "path-rules",
+      "claude-rules",
+      "glob",
+      "token-efficiency"
+    ]
+  },
+  {
+    "id": "d3-q003",
+    "source_id": "q-3-3-005",
+    "domain": 3,
+    "subdomain": "3.3",
+    "question": "A fintech company requires that all API response payloads are normalised to snake_case before being logged, and that any file write to the src/api/ directory is automatically linted. They want these enforcements to be deterministic and not rely on the model remembering instructions. Which hook configuration achieves both requirements?",
+    "options": {
+      "A": "A PreToolUse hook on file writes that runs the linter before the write completes, and a PostToolUse hook on API response handling that normalises field names to snake_case",
+      "B": "A PostToolUse hook on file writes to src/api/ that runs the linter on the created file, and a PostToolUse hook on data processing that normalises response payloads to snake_case",
+      "C": "Add both requirements to CLAUDE.md with clear examples, and add a PreToolUse hook that reminds the model about these rules before each tool call",
+      "D": "A PreToolUse hook that blocks any file write to src/api/ unless the file has already been linted, and a PreToolUse hook that blocks API calls unless snake_case normalisation is configured"
+    },
+    "correct": "B",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. PreToolUse fires before the tool runs, so there is no file content to lint yet. Linting must happen after the file is written (PostToolUse). The ordering of hooks to actions is incorrect here.",
+      "B": "Correct. Both are PostToolUse hooks because both act on completed outputs. The linter runs after a file write to src/api/ is complete, validating the written content. The normalisation hook processes API response data after it is retrieved, converting fields to snake_case before logging. Both provide deterministic enforcement independent of model instructions.",
+      "C": "Incorrect. CLAUDE.md instructions and PreToolUse reminders both rely on the model's compliance, which is not deterministic. The requirement explicitly states that enforcement must not depend on the model remembering instructions.",
+      "D": "Incorrect. PreToolUse blocking assumes the file exists before the write, which is contradictory. You cannot lint a file that has not been written yet. PostToolUse hooks that process output after completion are the correct approach for validation and normalisation."
+    },
+    "claude_notes": "Pitanje traži determinističko sprovođenje (ne oslanjanje na pamćenje modela) → hook. Ali biraj TAJMING prema poslu: obe akcije deluju na ZAVRŠEN izlaz → PostToolUse. Lint ide POSLE pisanja fajla (PreToolUse nema šta da lintuje — fajl još ne postoji); normalizacija u snake_case ide POSLE preuzimanja API odgovora, pre logovanja. A meša (lint kao PreToolUse). D (PreToolUse blokira write dok nije lintovan) je kontradikcija — ne možeš lintovati nepostojeći fajl. C (CLAUDE.md + podsetnik) zavisi od modela = nije determinističko. Match hook to job: Pre za prevenciju PRE akcije, Post za validaciju/obradu POSLE. Provenance: Lesson 3.3.",
+    "glossary_refs": [
+      "PostToolUse hook",
+      "PreToolCall hook",
+      "deterministic enforcement",
+      "data normalization",
+      "CLAUDE.md"
+    ],
+    "pattern_refs": [
+      "match-hook-to-job",
+      "deterministic-needs-hook-not-prompt"
+    ],
+    "tags": [
+      "hooks",
+      "pre-vs-post",
+      "deterministic-enforcement"
+    ]
+  },
+  {
+    "id": "d3-q004",
+    "source_id": "q-3-6-002",
+    "domain": 3,
+    "subdomain": "3.6",
+    "question": "A CI/CD pipeline uses Claude Code to generate tests in one step and then review the same code in a subsequent step. The team notices that the review step rarely finds issues with the generated tests, but human reviewers consistently find problems. Both CI steps use the -p flag correctly. What is the most likely cause and fix?",
+    "options": {
+      "A": "The review step needs --output-format json to produce structured findings that can be parsed programmatically",
+      "B": "The CLAUDE.md file lacks testing standards and review criteria, so the review has no project-specific context",
+      "C": "The review step runs the same model tier as generation, which is not capable enough to critique its own output; upgrade the review step to a more powerful model",
+      "D": "The generation and review steps must run as independent sessions with no shared context, so the review instance approaches the code without the original reasoning bias"
+    },
+    "correct": "D",
+    "my_answer": "A",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. The output format affects how findings are reported, not whether issues are detected. The problem is that the review misses issues entirely, not that findings are in the wrong format.",
+      "B": "Incorrect. While documenting testing standards in CLAUDE.md is important, it would affect the quality of both generation and review. The specific pattern here — review missing issues that humans catch — points to self-review bias, not missing context.",
+      "C": "Incorrect. Model capability is not the bottleneck. A more powerful model still inherits self-review bias when it runs in the generating session's context, because it retains the reasoning it used to justify the code. The pattern here (a review that passes work human reviewers reject) points to shared reasoning context, which is fixed by running the review as an independent session with no shared context, not by upgrading the model.",
+      "D": "Correct. The same Claude session (or a session with carried-over context) that generated code is less effective at reviewing its own changes because it retains the reasoning context from generation. An independent review instance without that context is more likely to catch issues, matching what human reviewers find. Session context isolation for independent reviews is a key CI integration concept."
+    },
+    "claude_notes": "Ista sesija (ili sa prenetim kontekstom) koja je generisala kod loše recenzira sopstveni rad — nosi reasoning iz generisanja (self-review bias), pa propušta ono što ljudi hvataju. Ispravka (D): generisanje i recenzija kao NEZAVISNE sesije bez deljenog konteksta. A (--output-format json) menja format nalaza, ne da li se greške uopšte otkrivaju. B (testing standardi u CLAUDE.md) bi uticao na OBA koraka. C (jači model) i dalje nasleđuje pristrasnost u istoj sesiji. Oba koraka koriste -p ispravno — to nije uzrok. Provenance: Lesson 3.6 Session context isolation.",
+    "glossary_refs": [
+      "session context isolation",
+      "context isolation",
+      "independent review instance",
+      "headless mode (-p / --print)",
+      "self-review bias"
+    ],
+    "pattern_refs": [
+      "independent-review-needs-fresh-instance"
+    ],
+    "tags": [
+      "cicd",
+      "session-isolation",
+      "self-review"
+    ]
+  },
+  {
+    "id": "d3-q005",
+    "source_id": "q-3-6-004",
+    "domain": 3,
+    "subdomain": "3.6",
+    "question": "A team wants their CI pipeline to run Claude Code for both PR code review and automated test generation. The PR review should output structured JSON for integration with their review dashboard, while the test generation should produce standard text output. How should the two pipeline steps be configured?",
+    "options": {
+      "A": "Run both steps with -p and configure the review dashboard to parse plain text output from both steps",
+      "B": "Run the review step with -p --output-format json and the test generation step with -p only, as separate non-interactive invocations",
+      "C": "Run both steps in a single Claude Code session with -p, using different prompts to request different output formats",
+      "D": "Run both steps with --output-format json and have the test generation step extract code from the JSON response"
+    },
+    "correct": "B",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Plain text output requires fragile parsing logic in the review dashboard. The --output-format json flag provides structured, machine-readable output that is far more reliable for programmatic integration.",
+      "B": "Correct. Each step uses -p for non-interactive mode. The review step adds --output-format json for structured output that the dashboard can parse reliably. The test generation step uses default text output since it produces code files, not structured data. Running them as separate invocations ensures session context isolation.",
+      "C": "Incorrect. Running both steps in a single session violates session context isolation. The review step would retain reasoning context from test generation, reducing review effectiveness. Each step should be an independent invocation.",
+      "D": "Incorrect. While this would work technically, it adds unnecessary complexity to the test generation step. Using JSON output format only for the step that needs structured parsing (review) is the cleaner approach."
+    },
+    "claude_notes": "Različitim koracima različit izlaz, uz izolaciju sesija: review korak '-p --output-format json' (dashboard pouzdano parsira), test-gen korak samo '-p' (default tekst, jer pravi kod-fajlove), kao ZASEBNE non-interaktivne pozive (B). C (oba u jednoj sesiji) krši izolaciju konteksta. A (oba plain text + parsiraj) traži krhko parsiranje umesto strukturiranog json-a. D (oba json pa vadi kod) dodaje nepotrebnu složenost test-gen koraku. JSON koristi samo korak kome treba strukturirano parsiranje. Provenance: Lesson 3.6 (-p, structured output).",
+    "glossary_refs": [
+      "CLI structured output (--output-format json)",
+      "headless mode (-p / --print)",
+      "session context isolation",
+      "structured output"
+    ],
+    "pattern_refs": [
+      "independent-review-needs-fresh-instance"
+    ],
+    "tags": [
+      "cicd",
+      "output-format",
+      "session-isolation"
+    ]
+  },
+  {
+    "id": "d3-q006",
+    "source_id": "q-3-6-005",
+    "domain": 3,
+    "subdomain": "3.6",
+    "question": "A CI/CD pipeline runs three Claude Code steps in sequence: (1) generate a changelog from git commits, (2) review the changelog for accuracy, and (3) check for breaking changes. The team notices that step 2 never flags inaccuracies and step 3 misses obvious breaking changes that the changelog omits. What is the root cause?",
+    "options": {
+      "A": "The three steps are sharing session context, so steps 2 and 3 inherit the reasoning from step 1 and do not independently evaluate the changelog; each step should run as an independent session",
+      "B": "The CLAUDE.md file does not contain changelog formatting standards, so the review step has no criteria to evaluate against",
+      "C": "The -p flag is not being used, causing each step to wait for interactive input",
+      "D": "The steps need to use --output-format json so that each step can parse the previous step's structured output"
+    },
+    "correct": "A",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Correct. When review and analysis steps share context with the generation step, they inherit the original reasoning and are less likely to identify gaps or errors. Independent sessions force each step to evaluate the changelog from scratch without bias from the generation reasoning. Session context isolation is critical for CI/CD review pipelines.",
+      "B": "Incorrect. Missing formatting standards would affect the quality of the generated changelog, not the review's ability to catch inaccuracies. The pattern of reviews consistently missing issues points to shared-context bias, not missing criteria.",
+      "C": "Incorrect. If -p were missing, the pipeline would hang rather than produce output that misses issues. The steps are producing output (the changelog is generated, reviews complete), but the reviews are ineffective.",
+      "D": "Incorrect. Output format affects how results are structured, not whether reviews are thorough. JSON output would help with parsing but would not address the fundamental issue of review steps retaining generation context bias."
+    },
+    "claude_notes": "Tri koraka dele session context, pa koraci 2 i 3 nasleđuju reasoning iz koraka 1 i ne procenjuju changelog nezavisno — zato review ne hvata greške, a breaking-change provera promašuje propuste. Ispravka (A): svaki korak kao NEZAVISNA sesija, procenjuje iz nule. D (--output-format json) je samo parsiranje, ne rešava pristrasnost. C (nedostaje -p) bi obesio pipeline, a izlaz POSTOJI. B (nema changelog standarda u CLAUDE.md) bi uticao na kvalitet generisanja, ne na sposobnost recenzije da uhvati greške. Provenance: Lesson 3.6 Session context isolation.",
+    "glossary_refs": [
+      "session context isolation",
+      "context isolation",
+      "independent review instance",
+      "headless mode (-p / --print)"
+    ],
+    "pattern_refs": [
+      "independent-review-needs-fresh-instance"
+    ],
+    "tags": [
+      "cicd",
+      "session-isolation",
+      "review"
+    ]
+  }
+]

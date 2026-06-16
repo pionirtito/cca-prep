@@ -1315,5 +1315,240 @@
     "pattern_refs": [
       "guarantee-with-api-param-not-prompt"
     ]
+  },
+  {
+    "id": "d1-q035",
+    "source_id": "q-1-2-006",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "A research system receives a customer query: 'Compare the environmental impact and cost-effectiveness of electric vehicles versus hydrogen fuel cell vehicles for commercial fleet operations.' The coordinator must decide how to decompose this task. Which decomposition strategy is most appropriate?",
+    "options": {
+      "A": "Single-agent approach: assign the entire comparison to one research agent with access to all tools",
+      "B": "Multi-concern decomposition: split into parallel research tracks (environmental impact and cost-effectiveness), each investigating both vehicle types, then synthesise into a unified comparison",
+      "C": "Vehicle-based decomposition: assign one agent to research EVs and another to research hydrogen fuel cells, then merge findings",
+      "D": "Dynamic adaptive decomposition: start with a broad search and let the coordinator decide next steps based on what it finds"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. A single agent with all tools violates scoped tool access and would struggle with attention dilution across the multiple dimensions of this comparison (environmental impact, cost-effectiveness, two vehicle types, commercial fleet context).",
+      "B": "Correct. The query has two distinct analytical dimensions (environmental impact and cost-effectiveness) applied to the same subjects. Multi-concern decomposition splits these into parallel tracks, each with its own subagent. Both tracks investigate both vehicle types, ensuring consistent comparison methodology. A synthesis step produces the unified comparison.",
+      "C": "Incorrect. Splitting by vehicle type risks inconsistent comparison methodology. One agent might emphasise different environmental metrics than the other, making the comparison unreliable. Splitting by analytical dimension (environmental impact, cost-effectiveness) ensures each dimension uses consistent methodology across both vehicle types.",
+      "D": "Incorrect. The query's structure is clear and predictable — two analytical dimensions (environmental, cost), two vehicle types, one context (commercial fleets). Dynamic adaptive decomposition is for open-ended investigations where the next steps are unknown. Here, multi-concern decomposition is more efficient."
+    },
+    "claude_notes": "Poenta: dekomponuj po ANALITIČKOJ DIMENZIJI (uticaj na sredinu, isplativost), ne po SUBJEKTU (EV vs vodonik). Multi-concern dekompozicija pušta paralelne staze gde SVAKA staza obrađuje OBA vozila istom metodologijom, pa sintetizuješ — tako je poređenje konzistentno. C (podela po vozilu) je zamka: agenti mogu meriti različite metrike pa poređenje postaje neuporedivo. D (dinamička adaptivna) je za otvorene, nepredvidive istrage — ovde je struktura jasna (2 dimenzije × 2 vozila). A (jedan agent, svi alati) pati od attention dilution. Provenance: Lesson 1.2 Multi-Agent Orchestration.",
+    "glossary_refs": [
+      "multi-concern decomposition",
+      "dynamic adaptive decomposition",
+      "task decomposition",
+      "coordinator",
+      "synthesizer agent",
+      "attention dilution"
+    ],
+    "pattern_refs": [
+      "match-decomposition-to-task-nature",
+      "multi-concern-parallel-tracks-then-synthesize"
+    ],
+    "tags": [
+      "task-decomposition",
+      "orchestration",
+      "multi-agent"
+    ]
+  },
+  {
+    "id": "d1-q036",
+    "source_id": "q-1-2-009",
+    "domain": 1,
+    "subdomain": "1.2",
+    "question": "The content moderation system uses a hub-and-spoke architecture with a coordinator that routes posts to specialist subagents: a text classifier, an image analyser, and a policy enforcer. The team notices that the image analyser sometimes directly calls the policy enforcer's action tools to remove posts, bypassing the coordinator. What is the architectural violation and how should it be fixed?",
+    "options": {
+      "A": "Give the image analyser its own copy of the action tools so it does not need to call the policy enforcer's tools",
+      "B": "The image analyser is violating hub-and-spoke isolation — restrict its tool access to image analysis only and ensure all results flow back through the coordinator, which then routes to the policy enforcer",
+      "C": "Merge the image analyser and policy enforcer into a single subagent to simplify the communication flow",
+      "D": "Add a message queue between the image analyser and the policy enforcer so communication is asynchronous"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Duplicating action tools across subagents creates inconsistent enforcement and makes policy changes harder to propagate. The issue is the communication pattern, not tool availability.",
+      "B": "Correct. In hub-and-spoke orchestration, subagents must be isolated and communicate only through the coordinator. The image analyser should return its classification result to the coordinator, which then decides whether to invoke the policy enforcer. Direct subagent-to-subagent communication breaks the architecture.",
+      "C": "Incorrect. Merging subagents with distinct responsibilities (analysis vs enforcement) violates separation of concerns. The image analyser and policy enforcer have fundamentally different roles and tool requirements.",
+      "D": "Incorrect. An async queue between subagents still bypasses the coordinator. In hub-and-spoke, all inter-agent communication must flow through the coordinator regardless of synchronicity."
+    },
+    "claude_notes": "Hub-and-spoke znači da SVA komunikacija ide kroz koordinatora — subagenti su izolovani i ne zovu jedni druge direktno. Image analyser koji direktno gađa alate policy enforcer-a krši izolaciju. Ispravka: suzi mu alate samo na analizu slike i vrati rezultat koordinatoru, koji onda odlučuje da pozove enforcer. D (async queue) i dalje zaobilazi koordinatora — sinhronost nije poenta. C (spajanje agenata) ruši separation of concerns. A (duplirani alati) pravi nekonzistentno sprovođenje. Provenance: Lesson 1.2 (Isolation, Hub-and-spoke).",
+    "glossary_refs": [
+      "hub-and-spoke",
+      "context isolation",
+      "coordinator",
+      "subagent",
+      "separation of concerns",
+      "scoped tool",
+      "peer-to-peer agent communication"
+    ],
+    "pattern_refs": [
+      "coordinator-gates-not-peer-to-peer"
+    ],
+    "tags": [
+      "hub-and-spoke",
+      "isolation",
+      "multi-agent",
+      "scoped-tools"
+    ]
+  },
+  {
+    "id": "d1-q037",
+    "source_id": "q-1-4-008",
+    "domain": 1,
+    "subdomain": "1.4",
+    "question": "The moderation system handles appeals where users contest a moderation decision. Currently, the same agent that made the original decision re-evaluates the appeal. Appeal overturn rates are suspiciously low. What is the most effective architectural change?",
+    "options": {
+      "A": "Add stronger instructions to the appeal handler's prompt requiring it to consider the user's perspective fairly",
+      "B": "Route appeals to a human reviewer who has full authority to overturn automated decisions",
+      "C": "Route appeals to a separate agent instance with no access to the original decision's reasoning, providing only the content and the user's appeal justification",
+      "D": "Automatically overturn decisions where the user provides any appeal justification to improve user trust"
+    },
+    "correct": "C",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Prompt instructions cannot overcome the fundamental bias of an agent reviewing its own decision. The original reasoning context influences the re-evaluation regardless of instructions.",
+      "B": "Incorrect. Human review for every appeal does not scale and removes the benefit of automated moderation. Some appeals can be resolved automatically by a separate, unbiased instance.",
+      "C": "Correct. A fresh agent instance without access to the original reasoning context evaluates the content independently. This avoids confirmation bias from the original decision. The appeal agent sees only the content and the user's argument, enabling a genuinely independent review.",
+      "D": "Incorrect. Automatic overturn on any appeal completely undermines moderation. Users who genuinely violated policies would simply appeal every decision."
+    },
+    "claude_notes": "Isti agent koji je doneo odluku ne može nepristrasno da je preispita — nosi originalni reasoning u kontekstu (self-review bias), pa su stope poništenja sumnjivo niske. Ispravka (C): rutiraj žalbu na ZASEBNU instancu bez pristupa originalnom rezonovanju, koja vidi samo sadržaj + korisnikov argument. A (jači prompt) ne pobeđuje strukturnu pristrasnost iste sesije. B (svaku žalbu čoveku) ne skalira. D (automatski poništi svaku) ruši moderaciju. Isti obrazac kao self-review klasifikacije i CI-review. Provenance: Lesson 1.7 / 1.2 Isolation.",
+    "glossary_refs": [
+      "independent review instance",
+      "self-review bias",
+      "context isolation",
+      "human-in-the-loop"
+    ],
+    "pattern_refs": [
+      "independent-review-needs-fresh-instance"
+    ],
+    "tags": [
+      "isolation",
+      "self-review",
+      "human-in-the-loop"
+    ]
+  },
+  {
+    "id": "d1-q038",
+    "source_id": "q-1-5-004",
+    "domain": 1,
+    "subdomain": "1.5",
+    "question": "A coordinator spawns a research subagent to investigate market trends. The subagent returns detailed findings. The coordinator then needs to pass these findings to a synthesis subagent for report writing. However, the synthesis subagent produces a report that contradicts the research findings. What is the most likely cause?",
+    "options": {
+      "A": "The synthesis subagent has a conflicting system prompt that overrides the research data",
+      "B": "The coordinator is passing a summary of the research findings instead of the full structured output, causing the synthesis agent to fill in gaps from its training data",
+      "C": "The synthesis subagent has access to web search tools and is finding contradictory information online",
+      "D": "The two subagents are using different model versions with different training data"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. While possible, conflicting system prompts would produce consistently wrong outputs across all requests. The more common cause is that the coordinator is not passing the full research output, so the synthesis agent fills gaps with its own training data.",
+      "B": "Correct. Subagents do not share memory. The coordinator must explicitly pass the complete research output to the synthesis agent. If the coordinator only passes a summary, the synthesis agent has no access to the detailed findings and will rely on its training data to fill gaps, potentially contradicting the actual research.",
+      "C": "Incorrect. A synthesis subagent should not have web search tools — that violates scoped tool access. The synthesis agent should only have tools related to writing and formatting, not research.",
+      "D": "Incorrect. Model version differences would not cause contradictions with explicitly provided research data. The issue is that the research data is not being fully passed to the synthesis agent, not that the agents have different base knowledge."
+    },
+    "claude_notes": "Subagenti NE dele memoriju — koordinator mora eksplicitno da prosledi KOMPLETAN strukturirani izlaz istraživačkog agenta. Ako prosledi samo SAŽETAK (B), agent za sintezu popunjava rupe iz sopstvenih trening-podataka i protivreči nalazima. A (konfliktan system prompt) bi davao GREŠKE STALNO, ne povremenu kontradikciju. C (web_search kod synthesis agenta) krši scoped tool access. D (različite verzije modela) ne objašnjava kontradikciju sa eksplicitno datim podacima. Provenance: Lesson 1.3 Context Passing.",
+    "glossary_refs": [
+      "context passing",
+      "subagent statelessness",
+      "coordinator",
+      "synthesizer agent",
+      "structured output",
+      "hallucination"
+    ],
+    "pattern_refs": [
+      "subagent-stateless-coordinator-passes-context",
+      "structured-handoff-not-raw-dump"
+    ],
+    "tags": [
+      "context-passing",
+      "multi-agent",
+      "synthesis"
+    ]
+  },
+  {
+    "id": "d1-q039",
+    "source_id": "q-1-5-005",
+    "domain": 1,
+    "subdomain": "1.5",
+    "question": "A coordinator delegates to a data collection agent (`web_search`, `database_query`) and an analysis agent (`calculate`, `chart_generate`). In testing, the analysis agent calls `web_search` directly to fetch extra context, bypassing the data collection agent. What is the architectural violation and how should it be fixed?",
+    "options": {
+      "A": "The analysis agent's allowedTools list includes web_search, which should be removed to enforce scoped tool access. Only the data collection agent should have web_search.",
+      "B": "Add a system prompt instruction telling the analysis agent not to use web_search even though it has access",
+      "C": "Allow the analysis agent to keep web_search access since it sometimes needs additional context for better analysis",
+      "D": "Implement a PostToolUse hook that logs when the analysis agent uses web_search for monitoring purposes"
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Correct. Each agent should only have tools relevant to its specific role. The analysis agent should have calculate and chart_generate, not web_search. If the analysis agent needs additional data, it should request it through the coordinator, which then delegates to the data collection agent. This enforces the scoped tool access principle.",
+      "B": "Incorrect. Prompt instructions are probabilistic. The agent is already occasionally using web_search despite the architectural intent. The fix is to remove the tool from allowedTools, providing deterministic enforcement rather than hoping the prompt works.",
+      "C": "Incorrect. This violates scoped tool access and bypasses the data collection agent's role. If the analysis agent needs more data, the correct flow is: analysis agent signals the coordinator, coordinator delegates to the data collection agent, results flow back through the coordinator.",
+      "D": "Incorrect. Logging the violation does not prevent it. The architectural fix is to remove web_search from the analysis agent's allowedTools, not to monitor its misuse."
+    },
+    "claude_notes": "Svaki agent sme samo alate svoje uloge. Analysis agent ima calculate i chart_generate — web_search treba UKLONITI iz allowedTools (determinističko sprovođenje). B (prompt 'ne koristi web_search') je verovatnoća, ne garancija — agent već povremeno greši uprkos nameri. C (pusti mu web_search) direktno krši scoped tool access. D (PostToolUse log) samo beleži prekršaj, ne sprečava ga. Ako treba još podataka: agent traži preko koordinatora koji delegira data collection agentu. Provenance: Lesson 1.4 Scoped tool access.",
+    "glossary_refs": [
+      "scoped tool",
+      "allowedTools",
+      "deterministic enforcement",
+      "coordinator",
+      "separation of concerns"
+    ],
+    "pattern_refs": [
+      "remove-tool-that-doesnt-belong-route-to-specialist",
+      "deterministic-needs-hook-not-prompt"
+    ],
+    "tags": [
+      "scoped-tools",
+      "allowedTools",
+      "multi-agent",
+      "deterministic-enforcement"
+    ]
+  },
+  {
+    "id": "d1-q040",
+    "source_id": "q-1-6-002",
+    "domain": 1,
+    "subdomain": "1.6",
+    "question": "A consulting firm needs an agent to add a comprehensive test suite to a large legacy codebase. The codebase has no existing tests, unclear dependencies between modules, and the team does not know which areas are most critical. Which task decomposition strategy is most appropriate?",
+    "options": {
+      "A": "A fixed sequential pipeline that reviews each file in alphabetical order and generates tests for each one",
+      "B": "A single-pass analysis that processes the entire codebase at once and generates a complete test plan",
+      "C": "Dynamic adaptive decomposition that starts by mapping the codebase structure, identifies high-impact areas, and creates a prioritised plan that adapts as dependencies emerge",
+      "D": "A multi-pass architecture with per-file analysis and cross-file integration, identical to a code review pipeline"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Fixed sequential pipelines are best for predictable, structured tasks. Adding tests to a legacy codebase with unclear dependencies is an open-ended investigation that requires adaptive exploration to discover which areas are most critical and how dependencies affect test design.",
+      "B": "Incorrect. A single-pass analysis of a large codebase would suffer from attention dilution, producing inconsistent coverage. Additionally, a single pass cannot adapt to discoveries about dependencies and critical areas that emerge during exploration.",
+      "C": "Correct. Adding tests to a legacy codebase with unknown dependencies is an open-ended investigation task. Dynamic adaptive decomposition generates subtasks based on what is discovered at each step — first mapping the structure, then identifying critical areas, then adapting the test plan as dependency relationships emerge.",
+      "D": "Incorrect. Multi-pass architecture solves attention dilution for review tasks, but test generation in a legacy codebase requires adaptive exploration — understanding which modules are critical, discovering dependencies, and prioritising coverage. The decomposition must adapt to findings, not follow a fixed per-file pattern."
+    },
+    "claude_notes": "Dodavanje testova u veliki legacy bez testova, sa nejasnim zavisnostima i nepoznatim kritičnim oblastima = OTVORENA istraga → dinamička adaptivna dekompozicija: prvo mapiraj strukturu, pa identifikuj high-impact oblasti, pa prilagodi plan kako zavisnosti izranjaju. A/D (fiksni / multi-pass per-file) su za predvidljive, strukturirane zadatke i pate od attention dilution, a ne adaptiraju se. B (single-pass ceo codebase) pati od attention dilution. Uskladi obrazac dekompozicije sa PRIRODOM zadatka. Provenance: Lesson 1.6.",
+    "glossary_refs": [
+      "dynamic adaptive decomposition",
+      "fixed sequential pipeline",
+      "task decomposition",
+      "attention dilution"
+    ],
+    "pattern_refs": [
+      "match-decomposition-to-task-nature"
+    ],
+    "tags": [
+      "task-decomposition",
+      "dynamic-adaptive",
+      "orchestration"
+    ]
   }
 ]

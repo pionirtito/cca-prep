@@ -1,1 +1,218 @@
-[]
+[
+  {
+    "id": "d4-q001",
+    "source_id": "q-4-1-001",
+    "domain": 4,
+    "subdomain": "4.1",
+    "question": "Your CI/CD code review pipeline has a 40% false positive rate on 'documentation mismatch' findings, causing developers to ignore ALL review categories. What is the most effective fix?",
+    "options": {
+      "A": "Add 'only report high-confidence documentation issues' to the system prompt",
+      "B": "Temporarily disable the documentation mismatch category while refining its prompts with explicit criteria and code examples",
+      "C": "Increase the model temperature to get more varied results and filter outliers",
+      "D": "Add a second model pass to verify each finding before reporting"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Vague confidence instructions do not improve precision. The model has no concrete criteria for what 'high-confidence' means.",
+      "B": "Correct. This restores trust in other categories immediately while you iterate on the problematic category with specific criteria.",
+      "C": "Incorrect. Temperature affects randomness, not precision. This would likely increase false positives.",
+      "D": "Incorrect. A second pass without better criteria will have the same false positive problem. Fix the criteria first."
+    },
+    "claude_notes": "40% lažnih pozitiva na jednoj kategoriji ruši poverenje u SVE kategorije (developeri ignorišu ceo review). Ispravka (B): privremeno isključi problematičnu kategoriju da odmah vratiš poverenje, pa je dorađuj sa eksplicitnim kriterijumima i primerima koda. A ('samo high-confidence') je vag — model nema konkretne kriterijume. C (viša temperatura) povećava nasumičnost, verovatno i lažne pozitive. D (drugi prolaz bez boljih kriterijuma) ima isti problem. Reši uzrok (kriterijume), ne simptom; vrati poverenje odmah. Provenance: Lesson 4.1 Explicit criteria.",
+    "glossary_refs": [
+      "false positive",
+      "explicit criteria",
+      "severity criteria",
+      "confidence calibration",
+      "system prompt"
+    ],
+    "pattern_refs": [
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "false-positives",
+      "explicit-criteria",
+      "trust"
+    ]
+  },
+  {
+    "id": "d4-q002",
+    "source_id": "q-4-4-005",
+    "domain": 4,
+    "subdomain": "4.4",
+    "question": "The moderation system validates that every classification includes a 'reasoning' field explaining the decision. When validation fails (empty reasoning), the system retries. For most posts, the retry succeeds after feeding back the error 'reasoning field was empty — provide a brief justification for the classification.' However, for posts in unfamiliar languages, retries consistently fail. What should the system do?",
+    "options": {
+      "A": "Increase the retry count from 1 to 5 for unfamiliar language posts since the model may succeed with more attempts",
+      "B": "Apply the retry boundary principle: retry format errors (empty reasoning on posts the model can analyse) but route capability failures (unfamiliar languages) to human review instead of retrying",
+      "C": "Add the unfamiliar language to the system prompt as a supported language to encourage the model to try harder",
+      "D": "Remove the reasoning validation requirement for posts in unfamiliar languages"
+    },
+    "correct": "B",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. More retries are ineffective when the model lacks the capability to analyse content in that language. The failure is not a transient format issue — the model genuinely cannot provide reasoning for content it cannot understand.",
+      "B": "Correct. The retry boundary distinguishes between fixable format issues and unfixable capability gaps. Empty reasoning on analysable posts is a format error that retries with error feedback can fix. Unfamiliar languages represent absent capability — no amount of retrying will create language understanding. Route these to human review.",
+      "C": "Incorrect. Listing an unsupported language in the prompt does not give the model language understanding. This may actually worsen the problem by encouraging fabricated analysis of content the model cannot read.",
+      "D": "Incorrect. Removing the validation requirement means these posts would receive classifications without any justification, which undermines auditability. The correct approach is human review, not lower standards."
+    },
+    "claude_notes": "Retry boundary razdvaja POPRAVLJIVE format-greške od NEPOPRAVLJIVIH praznina u sposobnosti. Prazan 'reasoning' na tekstu koji model RAZUME = format greška, retry sa feedbackom je popravi. Nepoznat jezik = odsustvo sposobnosti — nikakav retry ne stvara razumevanje jezika → rutiraj na ljudsku proveru (B). A (5 retrija) ne pomaže bez sposobnosti. C (dodaj jezik u prompt kao podržan) ne daje razumevanje i podstiče izmišljanje analize. D (ukloni reasoning zahtev) ruši auditabilnost. Korisnikov odgovor (C) je tipična zamka 'nateraj model da se trudi više'. Provenance: Lesson 4.3 Retry boundary.",
+    "glossary_refs": [
+      "retry boundary",
+      "retry-with-feedback",
+      "human-in-the-loop"
+    ],
+    "pattern_refs": [
+      "retry-format-errors-not-capability-gaps"
+    ],
+    "tags": [
+      "retry-boundary",
+      "validation",
+      "human-in-the-loop"
+    ]
+  },
+  {
+    "id": "d4-q003",
+    "source_id": "q-4-5-004",
+    "domain": 4,
+    "subdomain": "4.5",
+    "question": "Your CI/CD pipeline processes code reviews using the Message Batches API. After a batch completes, you need to match each review result back to the corresponding pull request. What is the correct mechanism for correlating batch results with their original requests?",
+    "options": {
+      "A": "Parse the review content to identify which pull request it refers to based on file names mentioned in the review",
+      "B": "Rely on the batch API returning results in the same order they were submitted",
+      "C": "Use the custom_id field in each batch request to store the pull request identifier, then match results by custom_id",
+      "D": "Submit each pull request as a separate batch of one item to maintain correlation through the batch ID"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Content parsing is fragile and error-prone. The Batches API provides a built-in mechanism for result correlation.",
+      "B": "Incorrect. Batch results are not guaranteed to return in submission order. The custom_id field is the correct correlation mechanism.",
+      "C": "Correct. The custom_id field exists specifically for correlating batch request/response pairs. Setting it to the pull request identifier provides reliable, direct correlation without relying on result ordering or content parsing.",
+      "D": "Incorrect. Submitting individual batches defeats the purpose of batch processing and does not leverage the custom_id mechanism designed for exactly this use case."
+    },
+    "claude_notes": "Message Batches API ne garantuje redosled rezultata; za korelaciju koristi custom_id — upiši PR identifikator u custom_id svake stavke i mapiraj rezultate po njemu (C). A (parsiraj sadržaj review-a po imenima fajlova) je krhko. B (oslon se na redosled) pada — redosled nije garantovan. D (svaki PR kao batch od jedne stavke) poništava smisao batch-a i ne koristi custom_id. custom_id postoji baš za uparivanje zahtev↔odgovor. Provenance: Lesson 4.5 custom_id matching.",
+    "glossary_refs": [
+      "custom_id",
+      "Message Batches API"
+    ],
+    "pattern_refs": [],
+    "tags": [
+      "batch-api",
+      "custom_id",
+      "correlation"
+    ]
+  },
+  {
+    "id": "d4-q004",
+    "source_id": "q-4-6-001",
+    "domain": 4,
+    "subdomain": "4.6",
+    "question": "A PR modifying 14 files receives inconsistent review: detailed feedback on some files, superficial comments on others, and contradictory findings (flagging a pattern in one file while approving identical code elsewhere). What is the best restructuring?",
+    "options": {
+      "A": "Switch to a higher-tier model with a larger context window",
+      "B": "Run three independent passes on the full PR and only flag issues found in at least two passes",
+      "C": "Split into per-file local analysis passes plus a separate cross-file integration pass",
+      "D": "Require developers to split large PRs into smaller submissions of 3-4 files"
+    },
+    "correct": "C",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Larger context windows do not solve attention quality issues. The problem is attention dilution, not context size.",
+      "B": "Incorrect. This suppresses real bug detection by requiring consensus on issues that may only be caught intermittently.",
+      "C": "Correct. Per-file analysis ensures consistent depth. The integration pass catches cross-file data flow issues. This directly addresses attention dilution.",
+      "D": "Incorrect. This shifts burden to developers without improving the review system itself."
+    },
+    "claude_notes": "Nekonzistentna dubina + kontradiktorni nalazi (isti obrazac flagovan u jednom fajlu, odobren u drugom) = attention dilution preko mnogo fajlova. Ispravka (C): per-file lokalni prolazi (svaki fajl dobija doslednu pažnju) + zaseban cross-file integration prolaz (hvata međufajl probleme). B (3 prolaza, flaguj samo što se javi u ≥2) GUŠI realne bagove koji se hvataju povremeno — korisnikova zamka. A (veći model/kontekst) ne rešava kvalitet pažnje. D (developeri dele PR) prebacuje teret, ne popravlja sistem. Chunk-local pa integrate-global. Provenance: Lesson 4.6 Multi-pass review.",
+    "glossary_refs": [
+      "multi-pass review",
+      "attention dilution",
+      "context window"
+    ],
+    "pattern_refs": [
+      "chunk-local-then-integrate-global"
+    ],
+    "tags": [
+      "multi-pass",
+      "attention-dilution",
+      "code-review"
+    ]
+  },
+  {
+    "id": "d4-q005",
+    "source_id": "q-4-6-004",
+    "domain": 4,
+    "subdomain": "4.6",
+    "question": "Your CI/CD code review system analyses pull requests averaging 8-12 files. Reviews are thorough on the first few files but become increasingly superficial on later files, sometimes missing obvious issues. What architectural change best addresses this pattern?",
+    "options": {
+      "A": "Randomise the file order before each review so different files get thorough treatment",
+      "B": "Increase the model's context window to give it more space to analyse all files",
+      "C": "Split the review into per-file analysis passes where each file gets dedicated attention, followed by a cross-file integration pass for inter-file concerns",
+      "D": "Add a second full-PR review pass and merge findings from both passes"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Randomising order means different files get superficial treatment each time, but does not ensure all files receive thorough review. The root cause — attention dilution — remains.",
+      "B": "Incorrect. Attention dilution is not a context window size problem. The model has enough space but distributes attention unevenly across many files.",
+      "C": "Correct. Per-file analysis ensures each file receives consistent, thorough attention. The cross-file integration pass then catches issues that span multiple files, such as inconsistent interfaces or data flow problems. This directly solves attention dilution.",
+      "D": "Incorrect. A second pass on the full PR suffers from the same attention dilution. Both passes will likely be thorough on early files and superficial on later ones."
+    },
+    "claude_notes": "Review temeljan na prvih par fajlova, sve površniji kasnije = attention dilution (NE veličina konteksta). Ispravka (C): podeli na per-file prolaze + cross-file integration prolaz. B (veći kontekst) ne pomaže — prostor postoji, pažnja se neravnomerno raspoređuje. A (nasumičan redosled) samo premešta koji fajlovi su zapostavljeni. D (drugi pun prolaz) pati od iste dilucije. Provenance: Lesson 4.6 (zašto kontekst ne rešava).",
+    "glossary_refs": [
+      "multi-pass review",
+      "attention dilution",
+      "context window"
+    ],
+    "pattern_refs": [
+      "chunk-local-then-integrate-global"
+    ],
+    "tags": [
+      "multi-pass",
+      "attention-dilution",
+      "code-review"
+    ]
+  },
+  {
+    "id": "d4-q006",
+    "source_id": "q-4-6-006",
+    "domain": 4,
+    "subdomain": "4.6",
+    "question": "The moderation team asks a single Claude session to classify a post, then immediately asks the same session to independently review its own classification for quality assurance. The 'review' agrees with the original classification 98% of the time, including cases that human auditors later identify as errors. Why is this self-review ineffective?",
+    "options": {
+      "A": "The model needs a stronger review prompt with explicit instructions to look for errors in the original classification",
+      "B": "The same session retains the reasoning context from the original classification — the model is anchored to its own reasoning and cannot independently re-evaluate the content. Use a separate agent instance with no access to the original classification for genuine independent review",
+      "C": "The model's temperature is too low, producing deterministic agreement — increase temperature for the review pass",
+      "D": "Self-review is effective but the 98% agreement rate simply reflects high initial accuracy — the 2% disagreement is the expected error rate"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Stronger instructions do not overcome the fundamental limitation. The same session retains the reasoning context from the original classification, biasing the review toward agreement.",
+      "B": "Correct. Self-review within the same session is fundamentally limited because the model's conversation context includes the original reasoning. It will naturally be anchored to its prior conclusions. An independent instance with no access to the original decision evaluates the content fresh, providing genuine quality assurance.",
+      "C": "Incorrect. Temperature affects sampling randomness, not reasoning independence. Higher temperature may occasionally produce different outputs but does not create genuine independent review. The model is still anchored to its own prior reasoning in the same session.",
+      "D": "Incorrect. Human auditors found errors in cases where the self-review agreed, proving the 98% agreement does not reflect accuracy. The self-review is confirming errors, not catching them, due to same-session reasoning bias."
+    },
+    "claude_notes": "Self-review u ISTOJ sesiji je strukturno ograničen: kontekst sadrži originalni reasoning, model je usidren za sopstvene zaključke (98% slaganja, uključujući greške koje ljudi kasnije nađu). Ispravka (B): zasebna instanca BEZ pristupa originalnoj klasifikaciji procenjuje sadržaj iz nule. A (jači review prompt) ne pobeđuje strukturno ograničenje. C (viša temperatura) menja nasumičnost, ne nezavisnost rezonovanja. D ('98% = visoka tačnost') opovrgnuto: revizor potvrđuje greške, ne hvata ih. Provenance: Lesson 4.6 Self-review limitation.",
+    "glossary_refs": [
+      "self-review bias",
+      "independent review instance",
+      "context isolation",
+      "temperature"
+    ],
+    "pattern_refs": [
+      "independent-review-needs-fresh-instance"
+    ],
+    "tags": [
+      "self-review",
+      "isolation",
+      "output-validation"
+    ]
+  }
+]

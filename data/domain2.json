@@ -1163,5 +1163,202 @@
       "tool-selection",
       "subdomain-2.5"
     ]
+  },
+  {
+    "id": "d2-q029",
+    "source_id": "q-2-1-010",
+    "domain": 2,
+    "subdomain": "2.1",
+    "question": "The data platform's query_snowflake tool has a description that reads: 'Queries Snowflake data warehouse. Accepts SQL.' The agent correctly uses the tool but frequently sends queries using PostgreSQL-specific syntax (e.g. ILIKE, string_agg) that Snowflake rejects. What is the most effective fix?",
+    "options": {
+      "A": "Add a SQL syntax validation layer in front of the MCP tool that rejects non-Snowflake syntax before execution.",
+      "B": "Expand the tool description to specify that the tool accepts Snowflake SQL dialect, include examples of supported functions (e.g. LISTAGG instead of string_agg, ILIKE is supported), and note dialect differences from PostgreSQL.",
+      "C": "Add a system prompt instruction listing all Snowflake-specific SQL functions the agent should use.",
+      "D": "Have the MCP server automatically translate PostgreSQL syntax to Snowflake syntax before executing the query."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. A validation layer adds infrastructure complexity and maintenance burden. The root cause is that the tool description does not specify which SQL dialect to use. Fixing the description is the proportionate first step.",
+      "B": "Correct. The description says 'Accepts SQL' without specifying the dialect. The agent defaults to PostgreSQL syntax because it has no guidance on dialect differences. Adding dialect-specific examples and boundary conditions in the description directly resolves the misrouting.",
+      "C": "Incorrect. A system prompt instruction is brittle and consumes context tokens for every turn, even when the Snowflake tool is not being used. The tool description is the correct place for tool-specific dialect guidance.",
+      "D": "Incorrect. Auto-translation is fragile and cannot handle all dialect differences. It masks the problem rather than fixing it and introduces a complex transformation layer prone to edge cases."
+    },
+    "claude_notes": "Opis 'Accepts SQL' ne kaže KOJI dijalekt, pa model podrazumeva PostgreSQL (ILIKE, string_agg). Ispravka (B): proširi OPIS alata — navedi Snowflake dijalekt, primere funkcija (LISTAGG umesto string_agg), razlike od PostgreSQL-a. Ponašanje i granice alata idu u OPIS. A (validation layer) i D (auto-translacija) dodaju infrastrukturu i maskiraju uzrok. C (system prompt sa svim funkcijama) je krhko i troši tokene svaki turn čak i kad se alat ne koristi. Reši uzrok, ne simptom. Provenance: Lesson 2.1.",
+    "glossary_refs": [
+      "tool description",
+      "tool boundaries",
+      "MCP server",
+      "system prompt"
+    ],
+    "pattern_refs": [
+      "tool-description-defines-boundaries",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-description",
+      "mcp",
+      "dialect"
+    ]
+  },
+  {
+    "id": "d2-q030",
+    "source_id": "q-2-2-006",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "A `search_papers` MCP tool has three failure patterns: (1) the upstream academic API returns HTTP 503 during peak hours, (2) users request papers from a restricted journal the system has no licence for, and (3) the agent submits a malformed DOI like 'doi-1234' that fails the input regex. The team wants structured error metadata so agents can handle each case differently. Which `errorCategory` and `isRetryable` combination is correct for all three?",
+    "options": {
+      "A": "All three should be errorCategory: 'transient', isRetryable: true, since they all prevent the tool from completing its task.",
+      "B": "HTTP 503: transient/retryable; restricted journal: business/not retryable; malformed DOI: validation/retryable.",
+      "C": "HTTP 503: transient/retryable; restricted journal: transient/retryable; malformed DOI: transient/retryable.",
+      "D": "HTTP 503: validation/retryable; restricted journal: business/not retryable; malformed DOI: business/not retryable."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Lumping every failure into 'transient' is the canonical anti-pattern. The restricted journal case is a business error (licence policy); the agent must escalate, not retry. The malformed DOI is validation; the agent must repair the input format first.",
+      "B": "Correct. HTTP 503 is a temporary upstream outage (transient, will likely resolve on retry). Restricted journal is a policy limitation (business, will never resolve on retry — escalate or offer an alternative source). Malformed DOI is validation; the agent must repair the input and then retry.",
+      "C": "Incorrect. The restricted journal error is not transient — the system lacks a licence, and no amount of retrying will grant access. A malformed DOI is validation, not transient; the agent must repair the input rather than blindly retry the same value.",
+      "D": "Incorrect. HTTP 503 is transient (a temporary upstream outage), not validation — nothing is wrong with the request input. A malformed DOI is validation (fix input and retry), not business — business errors represent policy or rule violations, not input format problems."
+    },
+    "claude_notes": "Kategoriju greške vezuj za TRAJNOST otkaza, ne za 'sve je sprečilo zadatak'. HTTP 503 = transient (privremeni upstream ispad, retry pomaže). Restricted journal = business (licenca/politika, retry NIKAD ne pomaže — eskaliraj). Malformed DOI = validation (popravi ulaz pa retry). A (sve 'transient') je kanonski anti-patern. C i D mešaju kategorije (npr. 503 kao validation, DOI kao business). Tip greške mora biti TAČAN i GRANULARAN da agent izabere strategiju oporavka. Provenance: Lesson 2.2 Four error categories.",
+    "glossary_refs": [
+      "errorCategory",
+      "isRetryable",
+      "transient error",
+      "validation error",
+      "business error",
+      "error category taxonomy",
+      "structured error response",
+      "terminal error"
+    ],
+    "pattern_refs": [
+      "errors-must-be-typed-for-recovery",
+      "error-type-must-be-accurate-not-just-present"
+    ],
+    "tags": [
+      "error-handling",
+      "error-categories",
+      "mcp"
+    ]
+  },
+  {
+    "id": "d2-q031",
+    "source_id": "q-2-3-007",
+    "domain": 2,
+    "subdomain": "2.3",
+    "question": "An enterprise data platform agent has 22 tools available, including query tools for Snowflake, PostgreSQL, and third-party APIs, plus data transformation, visualisation, export, and administrative tools. The team notices the agent frequently selects the wrong query tool — choosing the Snowflake tool for data that lives in PostgreSQL. What is the most effective architectural fix?",
+    "options": {
+      "A": "Improve the descriptions of all 22 tools to include explicit boundaries and data source mappings.",
+      "B": "Split the agent into role-specific agents — a query agent with 4-5 data source tools, a transformation agent, and an export agent — each scoped to its specialisation.",
+      "C": "Add a pre-processing step that analyses the user query to determine which data source is needed, then use tool_choice forced selection to call the correct query tool.",
+      "D": "Consolidate all query tools into a single universal_query tool that internally routes to the correct data source based on the query syntax."
+    },
+    "correct": "B",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Better descriptions help with tool differentiation but do not address the fundamental problem: 22 tools exceed the optimal range of 4-5 per agent. Decision complexity with this many tools degrades selection reliability regardless of description quality.",
+      "B": "Correct. Tool overload at 22 tools degrades selection reliability. Splitting into role-specific agents with 4-5 tools each reduces decision complexity and scopes each agent to its specialisation. The query agent can focus on selecting the right data source without being distracted by transformation or export tools.",
+      "C": "Incorrect. Forced tool selection based on a pre-processing step is over-engineered and brittle. It bypasses the LLM's ability to reason about which tool to use and breaks when queries span multiple data sources.",
+      "D": "Incorrect. A universal query tool hides the data source distinction from the agent. When the agent needs to reason about which data source contains the relevant data, it loses the ability to make that decision explicitly."
+    },
+    "claude_notes": "22 alata >> optimalnih 4-5 po agentu; složenost izbora ruši pouzdanost biranja alata bez obzira na kvalitet opisa. Ispravka (B): podeli na role-specific agente (query agent sa 4-5 izvora, transformation, export) — svaki skoupovan na svoju specijalnost. A (bolji opisi svih 22) ne rešava preopterećenje. C (pre-processing + forsiran tool_choice) je over-engineered i puca kad upit pokriva više izvora. D (jedan universal_query) sakriva razliku izvora pa agent gubi mogućnost da svesno bira. Preopterećen agent se DEKOMPONUJE, ne skalira. Provenance: Lesson 2.3.",
+    "glossary_refs": [
+      "tool distribution",
+      "scoped tool",
+      "cognitive overload",
+      "specialization",
+      "separation of concerns",
+      "subagent",
+      "tool_choice"
+    ],
+    "pattern_refs": [
+      "decompose-overloaded-agent-not-scale-it",
+      "distribute-tools-to-specialized-subagents"
+    ],
+    "tags": [
+      "tool-overload",
+      "role-scoping",
+      "multi-agent"
+    ]
+  },
+  {
+    "id": "d2-q032",
+    "source_id": "q-2-4-006",
+    "domain": 2,
+    "subdomain": "2.4",
+    "question": "An MCP server exposes a `query_database` tool for Snowflake. Agents ignore it and run SQL via the built-in Bash tool against the Snowflake CLI, even though the MCP tool returns structured results with column types and pagination that Bash does not. What is the most likely cause and fix?",
+    "options": {
+      "A": "The MCP server is not properly connected. Restart the MCP server and verify the connection with a test query.",
+      "B": "The query_database tool has a sparse description that does not explain its capabilities, so the agent defaults to the familiar Bash tool. Enhance the MCP tool description to detail its structured output, pagination, and advantages over raw CLI queries.",
+      "C": "Disable the Bash tool entirely so the agent is forced to use the MCP tool for all operations.",
+      "D": "Add a system prompt instruction telling the agent to always use query_database instead of Bash for SQL queries."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. If the server were disconnected, the tool would not appear in the available tools list at all. The agent is choosing not to use it, which is a description problem, not a connectivity problem.",
+      "B": "Correct. When MCP tool descriptions are sparse, agents prefer familiar built-in tools like Bash. Enhancing the description to explain capabilities — structured results, column types, pagination — gives the agent enough information to prefer the MCP tool for database queries.",
+      "C": "Incorrect. Disabling Bash removes a critical general-purpose tool needed for many operations beyond database queries. The fix should make the MCP tool more attractive for its specific use case, not remove other tools.",
+      "D": "Incorrect. Whilst a system prompt instruction could work as a short-term fix, it is brittle and does not scale. The root cause is the sparse description. Enhancing the description is the sustainable fix that works across all agents and contexts."
+    },
+    "claude_notes": "Kad je MCP opis OSKUDAN, agent bira poznati built-in (Bash). Ispravka (B): obogati opis query_database — strukturirani rezultati, tipovi kolona, paginacija, prednosti nad sirovim CLI. A (server nije povezan) pada: tada se alat ne bi ni pojavio u listi; agent ga BIRA da ne koristi = problem opisa. C (ugasi Bash) uklanja kritičan opšti alat. D (system prompt 'uvek query_database') je krhko i ne skalira. Učini alat privlačnijim kroz opis — reši uzrok. Provenance: Lesson 2.4.",
+    "glossary_refs": [
+      "tool description",
+      "tool discovery",
+      "Bash",
+      "MCP server",
+      "built-in tools"
+    ],
+    "pattern_refs": [
+      "tool-description-defines-boundaries",
+      "fix-root-cause-not-symptom"
+    ],
+    "tags": [
+      "tool-description",
+      "mcp",
+      "tool-selection"
+    ]
+  },
+  {
+    "id": "d2-q033",
+    "source_id": "q-2-5-008",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "A developer is investigating a data inconsistency in the platform codebase. They need to find all files that reference a specific Snowflake table name 'fact_revenue_daily' and then check the directory structure for related migration files. Which tool sequence is correct?",
+    "options": {
+      "A": "Glob for '**/*fact_revenue_daily*' to find references, then Glob for '**/migrations/**' to find migration files.",
+      "B": "Read all SQL files in the project to search for the table name, then Read all migration files.",
+      "C": "Grep for 'fact_revenue_daily' to find all content references, then Glob for '**/migrations/*.sql' to find migration files by path pattern.",
+      "D": "Grep for 'fact_revenue_daily' for both steps — first to find references, then to find migration files containing the table."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Glob matches file paths by name, not file contents. It would find files named after the table (unlikely) but miss all files that reference the table name in their code.",
+      "B": "Incorrect. Reading all files upfront is a context-budget anti-pattern. It wastes tokens on irrelevant files and is exactly the approach the exam penalises.",
+      "C": "Correct. Grep searches file contents — correct for finding code that references the table name. Glob matches file paths — correct for finding migration files by directory pattern. This is the optimal two-step sequence using each tool for its strength.",
+      "D": "Incorrect. Using Grep for both steps would find migration files that mention the table, but would miss migration files related to the table that do not contain its name (e.g. schema migrations, index changes). Glob is the correct tool for path-based file discovery."
+    },
+    "claude_notes": "Grep pretražuje SADRŽAJ fajlova; Glob poklapa PUTANJE/imena. Traženje referenci na 'fact_revenue_daily' = Grep; pronalazak migracionih fajlova po obrascu putanje = Glob ('**/migrations/*.sql'). A (Glob za oba) promašuje fajlove koji pominju tabelu u kodu. B (Read svih SQL fajlova) je context-budget anti-patern. D (Grep za oba) promašuje migracije koje se tiču tabele ali je ne pominju imenom. Discovery po imenu → Glob, po sadržaju → Grep. Provenance: Lesson 2.5.",
+    "glossary_refs": [
+      "Grep",
+      "Glob",
+      "Read",
+      "built-in tools"
+    ],
+    "pattern_refs": [
+      "discovery-by-name-glob-by-content-grep"
+    ],
+    "tags": [
+      "grep-vs-glob",
+      "built-in-tools",
+      "search"
+    ]
   }
 ]

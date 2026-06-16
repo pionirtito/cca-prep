@@ -1,1 +1,191 @@
-[]
+[
+  {
+    "id": "d5-q001",
+    "source_id": "q-5-1-007",
+    "domain": 5,
+    "subdomain": "5.1",
+    "question": "An agent receives 200 rows of Snowflake financial data and places it mid-prompt, between system instructions and the user's follow-up question. Asked to identify the row with the highest margin, the agent picks the 45th row (margin 32%) over the 142nd row (margin 47%). What cognitive bias is affecting the agent?",
+    "options": {
+      "A": "Recency bias — the agent prioritises data appearing near the end of the context window.",
+      "B": "The lost-in-the-middle effect — the agent attends more to data at the beginning and end of the result set, missing the highest-margin row buried in the middle.",
+      "C": "Token limit truncation — the result set exceeds the context window and rows beyond the 100th are silently dropped.",
+      "D": "Anchoring bias — the agent fixates on the first high-margin row it encounters and stops scanning the rest."
+    },
+    "correct": "B",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Incorrect. Recency bias would favour rows near the end of the data, not the 45th row. The 45th row is in the early portion of the result set, which is consistent with the lost-in-the-middle effect, not recency bias.",
+      "B": "Correct. The lost-in-the-middle effect causes LLMs to attend disproportionately to content at the start and end of long sequences, with reduced attention to material in the middle. Row 142 (the correct answer) sits deep in the middle of the 200-row result set, making it prone to being overlooked.",
+      "C": "Incorrect. If rows were truncated, the agent would not have access to row 142 at all and would report the highest margin from the visible rows. The agent identified a specific wrong row (45th), indicating all data is present but attention is uneven.",
+      "D": "Incorrect. Anchoring bias is a human cognitive bias, not a well-documented LLM failure mode for structured data scanning. The observed behaviour — accurate recall at the start and end, poor recall in the middle — is the hallmark of the lost-in-the-middle effect."
+    },
+    "claude_notes": "Tačan red (142.) je duboko u SREDINI 200-redne tabele, a model bira 45. (pri početku) = lost-in-the-middle: LLM nesrazmerno pazi na početak i kraj duge sekvence, slabije na sredinu. A (recency bias) bi favorizovao KRAJ, ne 45. red. C (truncation) pada: tada red 142 ne bi ni postojao, a model je naveo konkretan pogrešan red — svi podaci su prisutni, pažnja je neravnomerna. D (anchoring) je ljudski bias, ne dokumentovan LLM režim otkaza za skeniranje strukturiranih podataka. Razlikuj LITM od recency/truncation/anchoring. Provenance: Lesson 5.1.",
+    "glossary_refs": [
+      "lost-in-the-middle effect",
+      "context window",
+      "attention dilution"
+    ],
+    "pattern_refs": [
+      "diagnose-litm-vs-recency-vs-truncation"
+    ],
+    "tags": [
+      "lost-in-the-middle",
+      "context-window",
+      "bias"
+    ]
+  },
+  {
+    "id": "d5-q002",
+    "source_id": "q-5-3-001",
+    "domain": 5,
+    "subdomain": "5.3",
+    "question": "A web search subagent in a multi-agent research system times out while researching a complex topic. You need to design how this failure information flows back to the coordinator. Which approach best enables intelligent recovery?",
+    "options": {
+      "A": "Return structured error context including failure type, attempted query, partial results, and potential alternative approaches",
+      "B": "Implement automatic retry with exponential backoff, returning a generic 'search unavailable' status only after all retries are exhausted",
+      "C": "Catch the timeout and return an empty result set marked as successful",
+      "D": "Propagate the timeout exception to a top-level handler that terminates the entire research workflow"
+    },
+    "correct": "A",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Correct. This gives the coordinator everything it needs to decide: retry with modified query, try an alternative approach, or proceed with partial results.",
+      "B": "Incorrect. The generic status hides valuable context from the coordinator, preventing informed recovery decisions.",
+      "C": "Incorrect. Silent suppression prevents any recovery. The coordinator believes the search succeeded and found nothing, so it will not attempt alternatives.",
+      "D": "Incorrect. Workflow termination wastes partial results from other subagents that may have completed successfully."
+    },
+    "claude_notes": "Za inteligentan oporavak, otkaz mora da nosi STRUKTURIRANI kontekst: tip greške, pokušani upit, parcijalni rezultati, moguće alternative (A) — koordinator tada bira: retry sa izmenjenim upitom, alternativni pristup, ili nastavi sa parcijalnim. C (prazan rezultat kao uspeh) = silent suppression, blokira svaki oporavak. D (terminiraj ceo workflow) baca parcijalne rezultate drugih subagenata. B (retry pa generičko 'search unavailable') sakriva kontekst koji koordinatoru treba za odluku — korisnikova zamka. Provenance: Lesson 5.3 Structured error context.",
+    "glossary_refs": [
+      "structured error response",
+      "error propagation",
+      "silent suppression",
+      "partial success",
+      "graceful degradation"
+    ],
+    "pattern_refs": [
+      "propagate-structured-error-not-silent-suppress"
+    ],
+    "tags": [
+      "error-propagation",
+      "structured-error-context",
+      "recovery"
+    ]
+  },
+  {
+    "id": "d5-q003",
+    "source_id": "q-5-3-005",
+    "domain": 5,
+    "subdomain": "5.3",
+    "question": "A multi-agent system has subagents for web search, academic database, and industry reports. The academic database subagent hits a 403 Forbidden on a specific journal, catches the error, and returns an empty result set marked as successful. The coordinator produces a final report with no academic sources. What is the critical failure in this design?",
+    "options": {
+      "A": "The coordinator should validate that all subagents return non-empty results before producing the final report.",
+      "B": "The subagent silently suppressed the access failure by returning empty results as success, preventing the coordinator from attempting recovery or noting the gap in coverage.",
+      "C": "The subagent should have retried the request with exponential backoff, as 403 errors are often transient.",
+      "D": "The entire workflow should have been terminated when the academic database subagent encountered the 403 error."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Requiring non-empty results from all subagents would cause the workflow to fail when a subagent legitimately finds no matching data. The issue is that the error was suppressed, not that the coordinator failed to validate result volume.",
+      "B": "Correct. Silent suppression — returning empty results marked as success — is the worst error propagation anti-pattern. The coordinator believes the academic search succeeded and found nothing, so it produces a report without academic sources and without noting the coverage gap. The subagent should have returned structured error context with the failure type, what was attempted, and potential alternatives.",
+      "C": "Incorrect. 403 Forbidden is a permission error, not a transient error. Retrying will not resolve it — the subagent lacks the required access credentials. The correct response is to propagate the error with its type so the coordinator knows the failure is not retryable.",
+      "D": "Incorrect. Workflow termination on a single subagent failure wastes partial results from the web search and industry reports subagents that may have completed successfully. The coordinator should proceed with available results and annotate the coverage gap."
+    },
+    "claude_notes": "Najgori anti-patern propagacije greške: subagent uhvati 403 i vrati PRAZAN rezultat označen kao USPEH (B) — koordinator misli da je pretraga uspela i ništa nije našla, pa pravi izveštaj bez akademskih izvora i bez napomene o rupi u pokrivenosti. Trebalo je vratiti strukturiran error kontekst (tip otkaza, šta je pokušano, alternative). D (terminiraj workflow) baca uspešne parcijalne rezultate. A (zahtevaj ne-prazne rezultate od svih) pada kad subagent legitimno ne nađe ništa. C (retry sa backoff) ne pomaže — 403 je dozvola, ne transient. Provenance: Lesson 5.3 Silent suppression.",
+    "glossary_refs": [
+      "silent suppression",
+      "error propagation",
+      "structured error response",
+      "empty result",
+      "coverage annotation",
+      "transient error",
+      "partial success"
+    ],
+    "pattern_refs": [
+      "propagate-structured-error-not-silent-suppress"
+    ],
+    "tags": [
+      "error-propagation",
+      "silent-suppression",
+      "multi-agent"
+    ]
+  },
+  {
+    "id": "d5-q004",
+    "source_id": "q-5-6-002",
+    "domain": 5,
+    "subdomain": "5.6",
+    "question": "A multi-agent research system has three subagents (financial filings, news, technical white papers) and a synthesis agent. Each subagent returns properly attributed findings, but the final synthesised report has no source attribution: stakeholders cannot trace which claim came from which source. Which fix addresses the root cause?",
+    "options": {
+      "A": "Append a bibliography section at the end of the report listing all sources each subagent consulted",
+      "B": "Have each subagent include source URLs as inline hyperlinks in their prose output so the synthesis agent can preserve them",
+      "C": "Require subagents to output structured claim-source mappings (claim, source URL, document name, excerpt, publication date) and instruct the synthesis agent to preserve and merge these mappings through the synthesis process",
+      "D": "Store all subagent outputs in a database and have the synthesis agent reference database entries by ID instead of incorporating content directly"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. A bibliography lists sources but does not map specific claims to specific sources. Stakeholders need to know which claim came from which document, not just which documents were consulted overall. This is document-level attribution, not claim-level provenance.",
+      "B": "Incorrect. Inline hyperlinks in prose are fragile — the synthesis agent will rewrite, merge, and compress prose during summarisation, stripping or disconnecting links from their associated claims. Attribution must be in structured data, not embedded in prose that gets rewritten.",
+      "C": "Correct. Structured claim-source mappings survive synthesis because they are data structures, not prose that gets rewritten. The synthesis agent can merge mappings from multiple subagents while preserving the link between each claim and its source. This also enables content-appropriate rendering: financial data as tables, news as prose, technical findings as lists — each with attribution intact.",
+      "D": "Incorrect. This adds infrastructure complexity without solving the synthesis problem. The synthesis agent still needs to merge and present findings coherently. Database references do not prevent attribution loss during the summarisation and rewriting that synthesis inherently requires."
+    },
+    "claude_notes": "Atribucija mora biti STRUKTURNI PODATAK, ne proza — proza se prepisuje/sažima u sintezi i veza tvrdnja↔izvor se gubi. Ispravka (C): subagenti vraćaju strukturirane claim-source mape (tvrdnja, URL, ime dokumenta, citat, datum), a synthesis agent ih čuva i spaja kroz sintezu. B (inline hyperlinkovi u prozi) su krhki — sinteza ih strip-uje. A (bibliografija na kraju) je atribucija na nivou DOKUMENTA, ne tvrdnje. D (baza + reference po ID) dodaje infrastrukturu a ne sprečava gubitak atribucije pri prepisivanju. Strukturu prenosi između agenata. Provenance: Lesson 5.6 Claim-source mappings.",
+    "glossary_refs": [
+      "claim-source mapping",
+      "attribution (provenance)",
+      "synthesizer agent",
+      "structured output",
+      "subagent"
+    ],
+    "pattern_refs": [
+      "preserve-provenance-dont-collapse-sources",
+      "structured-data-between-agents"
+    ],
+    "tags": [
+      "provenance",
+      "attribution",
+      "synthesis"
+    ]
+  },
+  {
+    "id": "d5-q005",
+    "source_id": "q-5-6-004",
+    "domain": 5,
+    "subdomain": "5.6",
+    "question": "A multi-agent research system finds conflicting data on a pharmaceutical compound's efficacy. A 2022 peer-reviewed clinical trial reports 78% efficacy, while a 2024 preprint reports 45% efficacy with a larger sample size. The synthesis agent must produce a recommendation for a medical advisory board. Which approach correctly handles the conflicting sources?",
+    "options": {
+      "A": "Use the 2024 preprint as it has a larger sample size and is more recent, noting it supersedes the 2022 study",
+      "B": "Average the two values (61.5%) and present it as the best estimate with a note about variance between studies",
+      "C": "Present both findings with full provenance: source identity, publication date, peer-review status, sample size, methodology, and any methodological differences that may explain the discrepancy. Let the advisory board weigh the evidence",
+      "D": "Exclude both findings and report that no reliable consensus exists, recommending further research before any conclusions"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Incorrect. Recency and sample size alone do not determine reliability. The preprint has not undergone peer review, and simply picking one source discards valuable context that the advisory board needs for informed decision-making.",
+      "B": "Incorrect. Averaging conflicting scientific results is methodologically invalid. The studies may have different populations, methodologies, or endpoints. The average has no scientific meaning and obscures the actual disagreement.",
+      "C": "Correct. For a medical advisory board, preserving full provenance is critical. The board needs to weigh peer-review status, sample size, methodology differences, and temporal context. Annotating both sources with complete metadata enables informed human judgment on conflicting scientific evidence.",
+      "D": "Incorrect. Excluding available evidence is unhelpful. The advisory board can make informed decisions with properly attributed conflicting data. Withholding findings because they conflict reduces the board's ability to assess the situation."
+    },
+    "claude_notes": "Kod konfliktnih izvora za medicinski odbor: sačuvaj PUNU provenienciju oba nalaza (identitet izvora, datum, peer-review status, veličina uzorka, metodologija, razlike koje objašnjavaju neslaganje) i pusti odbor da odmeri (C). A (uzmi noviji preprint) — recentnost/uzorak sami ne određuju pouzdanost, a preprint nije recenziran. B (proseči na 61.5%) je metodološki besmisleno — različite populacije/metodologije/endpointi. D (izbaci oba) uskraćuje odboru dostupne dokaze. Konflikt ne kolabiraj — prikaži ga sa proveniencijom. Provenance: Lesson 5.6 Conflict handling.",
+    "glossary_refs": [
+      "attribution (provenance)",
+      "synthesizer agent",
+      "human-in-the-loop"
+    ],
+    "pattern_refs": [
+      "preserve-provenance-dont-collapse-sources"
+    ],
+    "tags": [
+      "provenance",
+      "conflict-handling",
+      "synthesis"
+    ]
+  }
+]

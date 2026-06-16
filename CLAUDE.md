@@ -36,6 +36,7 @@ CLAUDE.md                         # ovaj fajl
 ```json
 {
   "id": "d{DOMEN}-q{BROJ}",        // npr "d1-q014"; broj je zero-padded na 3 cifre
+  "source_id": "q-2-2-006",         // OPCIONO — stabilni id pitanja sa izvornog kviza (claudecertificationguide.com); preživljava mešanje opcija, koristi za dedup
   "domain": 1,                      // 1-5
   "subdomain": "1.3",              // iz exam guide-a, ako je poznat; inace ""
   "question": "tekst pitanja",
