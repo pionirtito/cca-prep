@@ -1,6 +1,7 @@
 [
   {
     "id": "d1-q001",
+    "source_id": "ace-q54",
     "domain": 1,
     "subdomain": "1.1",
     "question": "You are implementing an agentic loop. Claude returns a response and your code must decide whether to continue the loop or stop. Which signal is the correct, reliable basis for this decision?",
@@ -19,7 +20,7 @@
       "C": "Incorrect. A fixed iteration cap is an anti-pattern as the primary stopping mechanism. It may cut off a task mid-way or run unnecessarily. A cap is acceptable only as a safety backstop, not the main control.",
       "D": "Incorrect. Presence of assistant text does not indicate completion; the model often emits text alongside tool_use, so this would terminate the loop prematurely."
     },
-    "claude_notes": "Ključ: stop_reason je STRUKTURIRANO polje koje API vraća - ne pogađaš iz teksta. 'tool_use' = Claude traži alat, nastavi petlju i vrati mu rezultat. 'end_turn' = gotovo. Iteration cap (C) sme samo kao sigurnosna kočnica, NIKAD kao glavni mehanizam zaustavljanja.",
+    "claude_notes": "Ključ: stop_reason je STRUKTURIRANO polje koje API vraća - ne pogađaš iz teksta. 'tool_use' = Claude traži alat, nastavi petlju i vrati mu rezultat. 'end_turn' = gotovo. Iteration cap (C) sme samo kao sigurnosna kočnica, NIKAD kao glavni mehanizam zaustavljanja. (Isto pitanje i u zvaničnom Anthropic practice ispitu — Customer Support scenario, Q54.)",
     "glossary_refs": [
       "agentic loop",
       "stop_reason",
@@ -1549,6 +1550,462 @@
       "task-decomposition",
       "dynamic-adaptive",
       "orchestration"
+    ]
+  },
+  {
+    "id": "d1-q041",
+    "source_id": "ace-q05",
+    "domain": 1,
+    "subdomain": "",
+    "question": "A pull request modifies 14 files across the stock tracking module. Your single-pass review analyzing all files together produces inconsistent results: detailed feedback for some files but superficial comments for others, obvious bugs missed, and contradictory feedback—flagging a pattern as problematic in one file while approving identical code elsewhere in the same PR. How should you restructure the review?",
+    "options": {
+      "A": "Require developers to split large PRs into smaller submissions of 3-4 files before the automated review runs.",
+      "B": "Run three independent review passes on the full PR and only flag issues that appear in at least two of the three runs.",
+      "C": "Switch to a higher-tier model with a larger context window to give all 14 files adequate attention in one pass.",
+      "D": "Split into focused passes: analyze each file individually for local issues, then run a separate integration-focused pass examining cross-file data flow."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Requiring developers to break up PRs shifts the burden to the development workflow without actually improving the review system's analytical approach. This is a process workaround rather than a technical solution, and logically related changes across files may still need to be reviewed together for coherence.",
+      "B": "Running three full passes and only flagging issues found in at least two runs would actually suppress real bugs that are only intermittently detected, reducing recall. This consensus approach treats the symptom of inconsistency by filtering out results rather than addressing the underlying cause of uneven attention.",
+      "C": "Simply using a larger context window does not solve the core problem of attention quality degradation; the \"lost in the middle\" phenomenon means models still struggle to give uniform attention across large inputs. The inconsistencies and contradictions observed are symptoms of attention dilution, not insufficient context capacity.",
+      "D": "Splitting the review into focused per-file passes directly addresses the root cause of attention dilution, ensuring consistent depth and catching local issues reliably. A separate integration-focused pass then handles cross-file concerns like data flow dependencies, covering both dimensions of review quality."
+    },
+    "claude_notes": "Nedoslednost na 14 fajlova = attention dilution (lost-in-the-middle), ne manjak konteksta. Lek: per-fajl prolazi (lokalno) + zaseban integration prolaz (cross-file) = map-reduce. C (veći prozor) ne leči dilution; B (consensus) guši retke ali stvarne bagove. Vidi [[chunk-local-then-integrate-global]].",
+    "glossary_refs": [
+      "attention dilution",
+      "lost-in-the-middle effect",
+      "multi-pass review",
+      "map-reduce"
+    ],
+    "tags": [
+      "ci-cd",
+      "practice-exam",
+      "attention-dilution",
+      "multi-pass-review"
+    ],
+    "pattern_refs": [
+      "chunk-local-then-integrate-global"
+    ]
+  },
+  {
+    "id": "d1-q042",
+    "source_id": "ace-q17",
+    "domain": 1,
+    "subdomain": "",
+    "question": "The web search and document analysis agents have both completed their tasks and returned findings to the coordinator. What is the appropriate next step for producing an integrated research output?",
+    "options": {
+      "A": "The coordinator concatenates the raw outputs from both agents and returns them as the final result",
+      "B": "The coordinator passes both sets of findings to the synthesis agent for unified integration",
+      "C": "The document analysis agent requests the web search results and merges them internally",
+      "D": "Each agent directly sends its findings to the report generation agent, bypassing the coordinator"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Simply concatenating raw outputs from both agents does not constitute meaningful integration, as it would produce an incoherent result lacking synthesis or unified analysis. The coordinator should leverage a specialized synthesis agent to produce a coherent, integrated research output.",
+      "B": "This is correct because the orchestrator-workers pattern requires the coordinator to maintain centralized control by collecting results from subagents and routing them to the appropriate next component—in this case, the synthesis agent, which is specifically designed to unify and integrate findings into a coherent output.",
+      "C": "Having agents communicate directly with the report generation agent bypasses the coordinator, violating the centralized control principle of the orchestrator-workers pattern. This creates architectural problems by introducing unmanaged peer-to-peer communication and removing the coordinator's ability to oversee the workflow.",
+      "D": "Having one worker agent request results from another and merge them internally introduces peer-to-peer communication that breaks the centralized coordination pattern. The coordinator, not individual agents, should be responsible for collecting and routing all intermediate results through the workflow."
+    },
+    "claude_notes": "Orchestrator-Worker: koordinator skuplja rezultate i rutira ih namenskom synthesis agentu (ne sirova konkatenacija A, ne peer-to-peer C/D). Vidi [[coordinator-gates-not-peer-to-peer]].",
+    "glossary_refs": [
+      "Orchestrator-Worker pattern",
+      "coordinator",
+      "synthesizer agent",
+      "peer-to-peer agent communication"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "orchestration",
+      "synthesis"
+    ],
+    "pattern_refs": [
+      "coordinator-gates-not-peer-to-peer",
+      "structured-handoff-not-raw-dump"
+    ]
+  },
+  {
+    "id": "d1-q043",
+    "source_id": "ace-q20",
+    "domain": 1,
+    "subdomain": "",
+    "question": "A colleague suggests having the document analysis agent send its output directly to the synthesis agent instead of routing through the coordinator. What is the main advantage of keeping the coordinator as the central hub for all subagent communication?",
+    "options": {
+      "A": "The coordinator can observe all interactions, handle errors consistently, and decide what information each subagent should receive",
+      "B": "Subagents operate with isolated memory, and direct communication would require complex serialization that only the coordinator can perform",
+      "C": "The coordinator batches multiple subagent requests together, reducing the total number of API calls and overall latency",
+      "D": "Routing through the coordinator enables automatic retry logic that direct agent-to-agent calls cannot support"
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "This is correct. The coordinator pattern provides centralized visibility into all interactions, consistent error handling across the system, and fine-grained control over what information each subagent receives, which are the primary advantages of hub-and-spoke communication.",
+      "B": "This is incorrect. Serialization of data between components is not unique to coordinators—any component can serialize and pass data, so direct communication between subagents would not face a special serialization barrier that only a coordinator can overcome.",
+      "C": "This is incorrect. Routing all communication through a coordinator actually adds overhead and an extra hop rather than reducing API calls or latency. Batching is not the primary rationale for the coordinator pattern.",
+      "D": "This is incorrect. Automatic retry logic can be implemented at any level of the system, not exclusively within a coordinator. This creates a false dichotomy by implying that direct agent-to-agent calls inherently cannot support retries."
+    },
+    "claude_notes": "Glavna prednost hub-and-spoke koordinatora: centralizovana vidljivost svih interakcija, dosledan error handling, kontrola šta koji subagent dobija. B/C/D nude lažne razloge (serijalizacija nije ekskluzivna, koordinator dodaje hop ne smanjuje, retry može bilo gde). Vidi [[coordinator-gates-not-peer-to-peer]].",
+    "glossary_refs": [
+      "coordinator",
+      "hub-and-spoke",
+      "separation of concerns"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "orchestration",
+      "hub-and-spoke"
+    ],
+    "pattern_refs": [
+      "coordinator-gates-not-peer-to-peer"
+    ]
+  },
+  {
+    "id": "d1-q044",
+    "source_id": "ace-q23",
+    "domain": 1,
+    "subdomain": "",
+    "question": "During testing, combined outputs from the web search agent (85K tokens including page content) and the document analysis agent (70K tokens including reasoning chains) total 155K tokens, but the synthesis agent performs optimally with inputs under 50K tokens. What's the most effective solution?",
+    "options": {
+      "A": "Have the synthesis agent process findings in sequential batches, maintaining running state between calls",
+      "B": "Modify upstream agents to return structured data (key facts, citations, relevance scores) instead of verbose content and reasoning",
+      "C": "Add an intermediate summarization agent that condenses findings before passing to synthesis",
+      "D": "Store findings in a vector database and give the synthesis agent retrieval tools to query during its work"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Processing findings in sequential batches degrades synthesis quality because the agent cannot see all findings simultaneously to identify cross-source patterns, contradictions, and connections. Maintaining running state between calls also adds complexity and risks compounding information loss across batches.",
+      "B": "Modifying upstream agents to return structured data (key facts, citations, relevance scores) addresses the root cause by reducing token volume at the source while preserving essential information. This eliminates verbose page content and reasoning chains that inflate token counts without adding value for the synthesis step.",
+      "C": "Adding an intermediate summarization agent introduces additional latency, cost, and risk of information loss, while the summarization agent itself must still process the full 155K tokens. This treats the symptom rather than the root cause of upstream agents producing unnecessarily verbose output.",
+      "D": "Using a vector database with retrieval tools is over-engineered for this scenario, as synthesis requires comprehensive coverage of all known findings rather than selective query-based retrieval. This approach risks missing important information that doesn't match the synthesis agent's queries and adds unnecessary architectural complexity."
+    },
+    "claude_notes": "Reši UZROK na izvoru: upstream agenti vraćaju STRUKTURISANE podatke (ključne činjenice, citate, relevance scores) umesto verbose sadržaja/reasoning-a → manje tokena, očuvana suština. C dodaje agenta koji i dalje mora da proguta 155K; D (RAG) je over-engineering jer sinteza traži potpunu pokrivenost. Vidi [[structured-data-between-agents]].",
+    "glossary_refs": [
+      "context window",
+      "structured output",
+      "semantic retrieval (memory)",
+      "tool result trimming"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "context-management",
+      "structured-data"
+    ],
+    "pattern_refs": [
+      "structured-data-between-agents",
+      "fix-root-cause-not-symptom"
+    ]
+  },
+  {
+    "id": "d1-q045",
+    "source_id": "ace-q25",
+    "domain": 1,
+    "subdomain": "",
+    "question": "The document analysis agent discovers that two credible sources contain directly conflicting statistics on a key metric: one government report states 40% growth while an industry analysis states 12% growth. Both sources appear legitimate and the discrepancy could significantly affect the research conclusions. What's the most effective way for the document analysis agent to handle this?",
+    "options": {
+      "A": "Complete the document analysis with both figures included, explicitly annotate the conflict with source attribution, and let the coordinator decide how to reconcile before passing to synthesis.",
+      "B": "Halt analysis and escalate to the coordinator immediately, asking it to determine which source is authoritative before the agent continues processing remaining documents.",
+      "C": "Include both figures in the analysis output without flagging them as conflicting, allowing the synthesis agent to determine which to use based on the broader context.",
+      "D": "Apply source credibility heuristics to select the most likely accurate figure, complete the analysis using that value, and include a footnote mentioning the discrepancy."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "This is the most effective approach because it respects separation of concerns: the document analysis agent completes its primary task without blocking, preserves both conflicting data points with explicit source attribution, and appropriately defers the reconciliation decision to the coordinator, which has the broader context needed to resolve the conflict.",
+      "B": "Halting analysis and escalating immediately creates unnecessary workflow blocking, preventing the agent from completing its core document analysis task. The agent should finish processing all documents and flag the conflict rather than stopping work to wait for a coordinator decision.",
+      "C": "Including both figures without flagging the conflict risks the discrepancy being overlooked by downstream agents, and it inappropriately delegates the reconciliation decision to the synthesis agent rather than the coordinator. Explicit conflict annotation is essential to ensure significant data discrepancies are properly addressed in the workflow.",
+      "D": "Having the document analysis agent apply credibility heuristics to select one figure oversteps its role, as it lacks the broader context needed to make authoritative credibility judgments. This approach also risks losing important information by relegating the discrepancy to a footnote rather than treating it as a significant finding requiring reconciliation."
+    },
+    "claude_notes": "Separation of concerns: analitički agent ZAVRŠI svoj posao bez blokiranja, sačuva OBE vrednosti sa atribucijom izvora i eksplicitno označi konflikt, a pomirenje prepusti koordinatoru (širi kontekst). B blokira; C ne flaguje (konflikt se gubi) i delegira pogrešnom akteru; D agent presuđuje van svoje uloge. Vidi [[preserve-provenance-dont-collapse-sources]].",
+    "glossary_refs": [
+      "attribution (provenance)",
+      "separation of concerns",
+      "claim-source mapping",
+      "coordinator"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "provenance",
+      "conflict-handling"
+    ],
+    "pattern_refs": [
+      "preserve-provenance-dont-collapse-sources"
+    ]
+  },
+  {
+    "id": "d1-q046",
+    "source_id": "ace-q27",
+    "domain": 1,
+    "subdomain": "",
+    "question": "When researching a broad topic, you observe that the web search agent and document analysis agent are both investigating the same subtopics, resulting in significant overlap in their findings. Token usage has nearly doubled without proportionally increasing the breadth or depth of research coverage. What's the most effective way to address this?",
+    "options": {
+      "A": "Implement a shared state mechanism where agents log their current focus area, allowing other agents to dynamically avoid duplicating work in progress",
+      "B": "Convert to sequential execution where document analysis runs only after web search completes, using the web search findings as context to avoid duplication",
+      "C": "Allow both agents to complete their parallel work, then have the coordinator deduplicate overlapping findings before passing to the synthesis agent",
+      "D": "Have the coordinator explicitly partition the research space before delegation, assigning distinct subtopics or source types to each agent"
+    },
+    "correct": "D",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "While a shared state mechanism could theoretically reduce overlap, it introduces unnecessary complexity, potential race conditions, and still allows some duplicated work before agents detect each other's focus areas. Proactive partitioning at the coordinator level is simpler and more reliable than reactive dynamic coordination between agents.",
+      "B": "Converting to sequential execution unnecessarily sacrifices the performance benefits of parallelism when the same deduplication goal can be achieved through upfront task partitioning. This approach also increases total execution time without offering meaningful advantages over proactive partitioning of the research space.",
+      "C": "Deduplicating findings after both agents complete their work fails to address the core problem of wasted tokens, since both agents still perform redundant research in parallel. This approach only cleans up the output without reducing the unnecessary resource consumption that was identified as the concern.",
+      "D": "Having the coordinator explicitly partition the research space before delegation is the most effective approach because it addresses the root cause—unclear task boundaries—before any work begins. This preserves the benefits of parallel execution while preventing duplicated effort and wasted tokens."
+    },
+    "claude_notes": "Koren je nejasna podela posla. Koordinator UNAPRED particioniše prostor istraživanja (distinktni podtopici/izvori po agentu) → čuva paralelizam, sprečava preklapanje na izvoru. C dedup posle (tokeni već potrošeni); B sekvencijalno žrtvuje paralelizam; A shared state = race conditions. (Korisnik je izabrao B.) Vidi [[partition-research-space-upfront]].",
+    "glossary_refs": [
+      "research space partitioning",
+      "coordinator",
+      "task decomposition",
+      "parallel tool use"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "orchestration",
+      "partitioning"
+    ],
+    "pattern_refs": [
+      "partition-research-space-upfront"
+    ]
+  },
+  {
+    "id": "d1-q047",
+    "source_id": "ace-q30",
+    "domain": 1,
+    "subdomain": "",
+    "question": "After running the system on the topic \"impact of AI on creative industries,\" you observe that each subagent completes successfully: the web search agent finds relevant articles, the document analysis agent summarizes papers correctly, and the synthesis agent produces coherent output. However, the final reports cover only visual arts, completely missing music, writing, and film production. When you examine the coordinator's logs, you see it decomposed the topic into three subtasks: \"AI in digital art creation,\" \"AI in graphic design,\" and \"AI in photography.\" What is the most likely root cause?",
+    "options": {
+      "A": "The synthesis agent lacks instructions for identifying coverage gaps in the findings it receives from other agents.",
+      "B": "The document analysis agent is filtering out sources related to non-visual creative industries due to overly restrictive relevance criteria.",
+      "C": "The coordinator agent's task decomposition is too narrow, resulting in subagent assignments that don't cover all relevant domains of the topic.",
+      "D": "The web search agent's queries are not comprehensive enough and need to be expanded to cover more creative industry sectors."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "While the synthesis agent could theoretically flag coverage gaps, it can only work with the findings it receives. The root problem is upstream—the coordinator never assigned subtasks for music, writing, or film, so there were no findings about those domains to flag as missing.",
+      "B": "The coordinator's logs directly reveal it decomposed the broad topic into only three visual arts subtasks (digital art, graphic design, photography), completely omitting music, writing, and film. Since the subagents all executed their assigned tasks correctly, the narrow decomposition by the coordinator is clearly the root cause of the missing coverage.",
+      "C": "The web search agent correctly found relevant articles for the subtasks it was assigned. The problem is not with the search queries but with the fact that the coordinator never assigned subtasks covering music, writing, or film production in the first place.",
+      "D": "There is no evidence that the document analysis agent filtered out non-visual sources. The missing coverage is explained entirely by the coordinator's narrow task decomposition, which never directed any subagent to research non-visual creative industries."
+    },
+    "claude_notes": "Logovi pokazuju da je koordinator dekomponovao temu na samo 3 vizuelna podtopika — subagenti su tačno izvršili ŠTA im je dodeljeno. Koren je UZVODNO: preuska dekompozicija koordinatora. A/B/D krive ispravne downstream agente. NB: tačan odgovor je C (PDF 'Overall' greškom pominje B — opcije su izmešane; sadržajno je dekompozicija koordinatora).",
+    "glossary_refs": [
+      "task decomposition",
+      "coordinator",
+      "map-reduce"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "task-decomposition",
+      "root-cause"
+    ],
+    "pattern_refs": [
+      "match-decomposition-to-task-nature"
+    ]
+  },
+  {
+    "id": "d1-q048",
+    "source_id": "ace-q46",
+    "domain": 1,
+    "subdomain": "",
+    "question": "Production metrics show your agent averages 4+ API round-trips per resolution. Analysis reveals Claude frequently requests get_customer and lookup_order in separate sequential turns even when both are needed upfront. What's the most effective way to reduce round-trips?",
+    "options": {
+      "A": "Implement speculative execution that automatically calls likely-needed tools alongside any requested tool, returning all results regardless of what was requested.",
+      "B": "Prompt Claude to batch tool requests per turn, and return all tool results together before the next API call.",
+      "C": "Create composite tools like get_customer_with_orders that bundle common lookup combinations into single calls.",
+      "D": "Increase max_tokens to give Claude more space to plan ahead and naturally batch its tool requests."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Speculatively executing tools that weren't explicitly requested wastes resources on unneeded calls, introduces unnecessary complexity, and may return irrelevant or confusing results that don't align with Claude's actual reasoning process.",
+      "B": "Prompting Claude to batch related tool requests in a single turn, and returning all results together before the next API call, leverages Claude's native ability to request multiple tools simultaneously. This is the most effective approach because it directly addresses the sequential calling pattern with minimal architectural changes.",
+      "C": "Creating composite tools reduces flexibility and increases maintenance burden by requiring new bundled tools for every common combination, without addressing the root cause—which is that Claude already supports requesting multiple tools per turn and simply needs to be prompted to do so.",
+      "D": "Increasing max_tokens only affects the maximum length of Claude's text output and does not influence whether Claude batches multiple tool requests in a single turn, so this change would have no meaningful impact on reducing round-trips."
+    },
+    "claude_notes": "Claude izvorno može da traži VIŠE alata u jednom potezu (parallel tool use) — samo ga promptom navedi da grupiše zahteve, pa vrati sve rezultate zajedno. A (spekulativno izvršavanje) troši na nepotrebne pozive; C (composite tool) smanjuje fleksibilnost; D (max_tokens) ne utiče na batching. Vidi [[batch-parallel-tool-results-one-user-message]].",
+    "glossary_refs": [
+      "parallel tool use",
+      "tool_result",
+      "max_tokens",
+      "composite tool"
+    ],
+    "tags": [
+      "customer-support",
+      "practice-exam",
+      "parallel-tool-use",
+      "round-trips"
+    ],
+    "pattern_refs": [
+      "batch-parallel-tool-results-one-user-message"
+    ]
+  },
+  {
+    "id": "d1-q049",
+    "source_id": "ace-q47",
+    "domain": 1,
+    "subdomain": "",
+    "question": "Production logs reveal that the agent misinterprets data from your MCP tools: Unix timestamps from get_customer, ISO 8601 dates from lookup_order, and numeric status codes (1=pending, 2=shipped). Some tools are third-party MCP servers you cannot modify. What's the most maintainable approach to normalize data formats?",
+    "options": {
+      "A": "Modify tools you control to return human-readable formats; create wrapper tools for third-party tools",
+      "B": "Use a PostToolUse hook to intercept tool results and apply formatting transformations before agent processing",
+      "C": "Create a normalize_data tool that the agent calls after each data retrieval to transform values",
+      "D": "Add detailed format documentation to your system prompt explaining each tool's data conventions"
+    },
+    "correct": "B",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Modifying tools you control while wrapping third-party tools creates two different normalization strategies, resulting in an inconsistent and harder-to-maintain architecture. This dual approach increases complexity and makes it difficult to ensure uniform data formatting across all tools.",
+      "B": "Using a PostToolUse hook provides a centralized, deterministic point to intercept and normalize all tool outputs—including those from third-party MCP servers—before the agent processes them. This is the most maintainable approach because it applies transformations uniformly via code rather than relying on LLM interpretation or agent behavior.",
+      "C": "Requiring the agent to call a separate normalization tool after every data retrieval doubles API calls and depends on the agent reliably remembering to invoke it each time. This approach is fragile because agents can forget or skip steps, making it unsuitable for deterministic data transformations.",
+      "D": "Adding format documentation to the system prompt relies on the LLM to probabilistically interpret and convert data formats correctly, which is unreliable for deterministic transformations. This approach is also fragile, as the agent may still misinterpret formats despite the documentation, especially under complex reasoning scenarios."
+    },
+    "claude_notes": "PostToolUse hook = jedna centralizovana, DETERMINISTIČKA tačka koja normalizuje SVE tool izlaze (uklj. third-party koje ne možeš da menjaš) pre nego što ih agent obradi. A (dvojni pristup) nekonzistentan; C (normalize_data tool) duplira pozive + oslanja se na model da ga pozove; D (dokumentacija u promptu) je probabilistička. (Korisnik je izabrao D.) Vidi [[match-hook-to-job]].",
+    "glossary_refs": [
+      "PostToolUse hook",
+      "data normalization",
+      "unified schema",
+      "MCP server"
+    ],
+    "tags": [
+      "customer-support",
+      "practice-exam",
+      "hooks",
+      "normalization"
+    ],
+    "pattern_refs": [
+      "match-hook-to-job",
+      "deterministic-needs-hook-not-prompt"
+    ]
+  },
+  {
+    "id": "d1-q050",
+    "source_id": "ace-q58",
+    "domain": 1,
+    "subdomain": "",
+    "question": "Production data shows that in 12% of cases, your agent skips get_customer entirely and calls lookup_order using only the customer's stated name, occasionally leading to misidentified accounts and incorrect refunds. What change would most effectively address this reliability issue?",
+    "options": {
+      "A": "Enhance the system prompt to state that customer verification via get_customer is mandatory before any order operations.",
+      "B": "Add a programmatic prerequisite that blocks lookup_order and process_refund calls until get_customer has returned a verified customer ID.",
+      "C": "Add few-shot examples showing the agent always calling get_customer first, even when customers volunteer order details.",
+      "D": "Implement a routing classifier that analyzes each request and enables only the subset of tools appropriate for that request type."
+    },
+    "correct": "B",
+    "my_answer": "A",
+    "status": "wrong",
+    "explanations": {
+      "A": "Enhancing the system prompt to mandate customer verification relies on the LLM consistently following instructions, which is inherently probabilistic. Since 12% of cases already show the agent skipping this step, prompt-based guidance alone is insufficient for preventing errors with financial consequences.",
+      "B": "Adding a programmatic prerequisite that blocks downstream tools until `get_customer` returns a verified customer ID provides a deterministic guarantee that the required sequence is followed. This is the most effective approach because it removes the possibility of the agent skipping verification, regardless of LLM behavior.",
+      "C": "Adding few-shot examples demonstrating the correct tool-calling sequence can improve compliance but still depends on the LLM generalizing from those examples. This approach cannot guarantee deterministic adherence, making it unreliable for a critical business process where mistakes lead to incorrect refunds.",
+      "D": "Implementing a routing classifier to enable only relevant tool subsets addresses which tools are available per request type, not the ordering in which tools must be called. The core issue is enforcing a required sequence (verification before order lookup), which tool-subset selection does not solve."
+    },
+    "claude_notes": "Kritičan redosled (verifikacija pre refund-a) sa finansijskim posledicama → programski prerequisite/gate koji BLOKIRA downstream alate dok get_customer ne vrati verifikovan ID (determinističko). A/C se oslanjaju na probabilistički LLM (12% već preskače); D adresira DOSTUPNOST alata, ne REDOSLED. (Korisnik je izabrao A.) Vidi [[deterministic-needs-hook-not-prompt]].",
+    "glossary_refs": [
+      "deterministic enforcement",
+      "confirmation token (two-tool binding)",
+      "tool_choice",
+      "PreToolCall hook"
+    ],
+    "tags": [
+      "customer-support",
+      "practice-exam",
+      "deterministic-enforcement",
+      "tool-sequence"
+    ],
+    "pattern_refs": [
+      "deterministic-needs-hook-not-prompt"
+    ]
+  },
+  {
+    "id": "d1-q051",
+    "source_id": "ace-q59",
+    "domain": 1,
+    "subdomain": "",
+    "question": "After calling get_customer and lookup_order, the agent has retrieved all available system data but faces uncertainty. Which situation represents the most appropriate trigger for calling escalate_to_human?",
+    "options": {
+      "A": "The customer claims they never received their order, but tracking shows it was delivered and signed for at their address three days ago. The agent should escalate because presenting contradictory evidence might damage the customer relationship.",
+      "B": "The customer requests a price match against a competitor. Your policies allow adjustments for price drops on your own site within 14 days but are silent on competitor pricing. The agent should escalate for policy interpretation.",
+      "C": "The customer wants to cancel an order that shipped yesterday, with delivery scheduled for tomorrow. The agent should escalate because the customer might change their mind once they receive the package.",
+      "D": "The customer's message mentions both a billing question and a product return. The agent should escalate so a human can coordinate handling both issues in a single interaction."
+    },
+    "correct": "B",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "While the situation involves contradictory information, the agent has factual tracking data to share with the customer per standard procedure; escalating to avoid presenting evidence out of concern for relationship damage reflects emotional avoidance rather than an operational need for human intervention.",
+      "B": "This represents a genuine policy gap where the company's guidelines cover own-site price drops but are silent on competitor price matching, meaning the agent cannot fabricate a policy and must escalate for human judgment on how to interpret or extend existing rules.",
+      "C": "Escalating based on speculation that the customer might change their mind after receiving the package is not a valid trigger; the agent should address the customer's current, clearly stated request rather than deferring action based on hypothetical future intent.",
+      "D": "Handling multiple issues such as a billing question and a product return does not require escalation, as the agent can address each topic sequentially within the same interaction using available tools and policies."
+    },
+    "claude_notes": "Validan trigger za eskalaciju = GENUINE policy gap: politika pokriva sniženja na sopstvenom sajtu ali ćuti o competitor price match → agent ne sme da izmišlja politiku, traži ljudsku procenu. A ima činjenički tracking za podelu (emotivno izbegavanje); C spekulacija o budućoj nameri; D više pitanja se rešava sekvencijalno. (Korisnik je izabrao C.) Vidi [[escalate-only-on-genuine-policy-gap]].",
+    "glossary_refs": [
+      "escalation trigger",
+      "human-in-the-loop",
+      "unreliable escalation signal"
+    ],
+    "tags": [
+      "customer-support",
+      "practice-exam",
+      "escalation",
+      "policy-gap"
+    ],
+    "pattern_refs": [
+      "escalate-only-on-genuine-policy-gap"
+    ]
+  },
+  {
+    "id": "d1-q052",
+    "source_id": "ace-q60",
+    "domain": 1,
+    "subdomain": "",
+    "question": "Production logs show that for simple requests like \"refund order #1234\", your agent succeeds in 3-4 tool calls with 91% resolution rate. However, for complex requests like \"I've been charged twice, my discount didn't apply, and I want to cancel\", the agent averages 12+ tool calls with only 54% resolution—often investigating concerns sequentially and gathering redundant customer data for each one. What's the most effective change to improve complex request handling?",
+    "options": {
+      "A": "Add explicit verification gates between steps requiring the agent to checkpoint after resolving each concern before moving to the next.",
+      "B": "Decompose the request into distinct concerns, then investigate each in parallel using shared customer context before synthesizing a resolution.",
+      "C": "Add few-shot examples demonstrating ideal tool call sequences for various multi-part billing scenarios to your system prompt.",
+      "D": "Reduce the number of available tools by consolidating get_customer, lookup_order, and billing-related lookups into a single investigate_issue tool."
+    },
+    "correct": "B",
+    "my_answer": "A",
+    "status": "wrong",
+    "explanations": {
+      "A": "Adding verification gates between sequential steps would actually worsen the problem by reinforcing the sequential processing pattern and adding overhead, rather than addressing the root cause of redundant data gathering and serial investigation.",
+      "B": "Decomposing the request into distinct concerns and investigating them in parallel with shared customer context directly addresses both core issues: it eliminates redundant data fetching by reusing context across concerns and reduces total tool calls by parallelizing investigations before synthesizing a unified resolution.",
+      "C": "While few-shot examples might marginally improve tool call sequences for known scenarios, they don't systematically solve the structural problems of redundant context gathering or sequential investigation, and they won't generalize well to novel multi-part request combinations.",
+      "D": "Consolidating multiple tools into a single investigation tool obscures useful functional distinctions and doesn't address the underlying workflow pattern problem of sequential processing and redundant data gathering across concerns."
+    },
+    "claude_notes": "Dekomponuj zahtev na distinktne brige, istraži ih PARALELNO uz DELJEN customer kontekst, pa sintetizuj rešenje → uklanja redundantno dohvatanje i smanjuje broj poziva. A (gejtovi) pojačava sekvencijalnost; C (few-shot) ne rešava strukturni problem; D (jedan alat) skriva korisne distinkcije. (Korisnik je izabrao A.) Vidi [[multi-concern-parallel-tracks-then-synthesize]].",
+    "glossary_refs": [
+      "multi-concern decomposition",
+      "parallel tool use",
+      "context passing",
+      "task decomposition"
+    ],
+    "tags": [
+      "customer-support",
+      "practice-exam",
+      "multi-concern",
+      "parallelization"
+    ],
+    "pattern_refs": [
+      "multi-concern-parallel-tracks-then-synthesize"
     ]
   }
 ]

@@ -13,7 +13,10 @@
       "d1-q028",
       "d2-q008",
       "d3-q003",
-      "d1-q039"
+      "d1-q039",
+      "d1-q049",
+      "d1-q050",
+      "d3-q022"
     ]
   },
   {
@@ -64,7 +67,8 @@
     "seen_in": [
       "d1-q003",
       "d1-q035",
-      "d1-q040"
+      "d1-q040",
+      "d1-q047"
     ]
   },
   {
@@ -75,7 +79,8 @@
     "lesson_en": "When a question asks to GUARANTEE / 'always' a model behavior, the answer is a structured parameter in the API request, not a prompt instruction. To force a tool call that is tool_choice ('any' = must use some tool, 'tool'+name = must use that one). Traps: temperature controls output randomness, NOT output type (text vs tool_use); a prompt instruction is probabilistic (the model 'usually' complies); and watch for options inventing a nonexistent 'native feature'. Same deterministic root as deterministic-needs-hook-not-prompt.",
     "seen_in": [
       "d1-q004",
-      "d1-q034"
+      "d1-q034",
+      "d3-q007"
     ]
   },
   {
@@ -88,7 +93,8 @@
       "d1-q005",
       "d1-q024",
       "d1-q026",
-      "d5-q004"
+      "d5-q004",
+      "d1-q044"
     ]
   },
   {
@@ -111,7 +117,13 @@
       "d2-q024",
       "d2-q029",
       "d2-q032",
-      "d4-q001"
+      "d4-q001",
+      "d1-q044",
+      "d2-q034",
+      "d2-q035",
+      "d4-q008",
+      "d4-q011",
+      "d4-q014"
     ]
   },
   {
@@ -152,7 +164,8 @@
       "d1-q032",
       "d2-q002",
       "d2-q003",
-      "d2-q010"
+      "d2-q010",
+      "d3-q008"
     ]
   },
   {
@@ -166,7 +179,8 @@
       "d1-q009",
       "d1-q023",
       "d1-q028",
-      "d3-q003"
+      "d3-q003",
+      "d1-q049"
     ]
   },
   {
@@ -189,7 +203,9 @@
     "seen_in": [
       "d1-q011",
       "d1-q024",
-      "d1-q036"
+      "d1-q036",
+      "d1-q042",
+      "d1-q043"
     ]
   },
   {
@@ -202,7 +218,8 @@
       "d1-q012",
       "d1-q024",
       "d1-q026",
-      "d1-q038"
+      "d1-q038",
+      "d1-q042"
     ]
   },
   {
@@ -225,7 +242,8 @@
     "seen_in": [
       "d1-q014",
       "d4-q005",
-      "d4-q004"
+      "d4-q004",
+      "d1-q041"
     ]
   },
   {
@@ -247,7 +265,8 @@
     "seen_in": [
       "d1-q017",
       "d1-q029",
-      "d2-q001"
+      "d2-q001",
+      "d2-q036"
     ]
   },
   {
@@ -267,7 +286,8 @@
     "lesson_sr": "Messages API zahteva STROGU naizmeničnost user/assistant role-ova - nema dve uzastopne poruke istog role-a. U agentic petlji: tool_use blokovi su u ASSISTANT poruci; pripadajući tool_result blokovi u SLEDEĆOJ USER poruci, upareni preko tool_use_id. Kad asistent emituje VIŠE tool_use blokova u jednom potezu (parallel tool use), svi tool_result-i moraju nazad ZAJEDNO u JEDNU user poruku (više blokova u jednoj poruci) - NE u više zasebnih user poruka (to su uzastopne user poruke -> krši alternaciju). Zamke: tool_result u SYSTEM poruci (pogrešan sloj - system je za instrukcije, postavlja se jednom; rezultati idu u user); izmišljena ASSISTANT 'potvrda' između rezultata (protokol to ne traži; poremetilo bi uparivanje); disable_parallel_tool_use (parallel JE podržan - problem je PAKOVANJE rezultata, ne paralelizam). Sibling [[preserve-reasoning-in-history]] (oba o ispravnom konstruisanju messages niza u agentic petlji - taj čuva reasoning blokove, ovaj pravilno pakuje tool_result-e).",
     "lesson_en": "The Messages API requires STRICT user/assistant role alternation - no two consecutive same-role messages. In the agentic loop: tool_use blocks live in the ASSISTANT message; the corresponding tool_result blocks live in the NEXT USER message, paired by tool_use_id. When the assistant emits MULTIPLE tool_use blocks in one turn (parallel tool use), all tool_results must be returned TOGETHER in ONE user message (multiple blocks in one message) - NOT as several separate user messages (those are consecutive user messages -> breaks alternation). Traps: putting tool_result in a SYSTEM message (wrong layer - system is for instructions, set once; results go in user); inventing an ASSISTANT 'acknowledgment' between results (the protocol does not require it; it would break the pairing); disable_parallel_tool_use (parallel IS supported - the flaw is the PACKAGING of results, not parallelism). Sibling of preserve-reasoning-in-history (both about constructing the messages array correctly in the agentic loop - that one preserves reasoning blocks, this one packs tool_results correctly).",
     "seen_in": [
-      "d1-q019"
+      "d1-q019",
+      "d1-q048"
     ]
   },
   {
@@ -277,7 +297,11 @@
     "lesson_sr": "Kad više nezavisnih istraga/grana dele zajednički početni setup ali bi međusobno ZAGADILE kontekst (irelevantni podaci jedne istrage cure u drugu i zbunjuju model = context pollution), lek je FORKOVATI sesiju POSLE zajedničkog koraka u izolovane niti: svaka grana NASLEDI kopiju zajedničkog stanja (npr. početni logovi), pa dalje ima SOPSTVENI context window -> sum jedne istrage ne curi u drugu, a deljeni setup se ne gubi. Zamke: brisanje konteksta (ClearContext) = DESTRUKTIVNO, gubi i zajednički setup koji svima treba; strukturni JSON/atribucija u JEDNOJ niti = kontekst i dalje zagađen (atribucija != izolacija); paralelni Task pozivi/zasebni subagenti = TAKOĐE izoluju ALI to je SPAWNING subagenata, ne fork-based session (kad pitanje IMENUJE fork, koristi fork; i subagentima bi trebalo eksplicitno proslediti setup [[subagent-stateless-coordinator-passes-context]], dok grana nasleđuje automatski). Fork je ovde TAČAN (apstraktna session-state izolacija, kao d1-q016) - za razliku od [[human-handoff-synthesize-not-share-session]] (d1-q018) gde je fork pogrešan jer je predaja IZMEĐU LJUDI; kontekst (apstraktni primitiv vs ljudska saradnja) odlučuje. META-pouka: kad pitanje IMENUJE konkretan mehanizam, biraj opciju koja koristi BAŠ taj, ne alternativu koja samo 'takođe radi'.",
     "lesson_en": "When several independent investigations/branches share a common initial setup but would POLLUTE each other's context (irrelevant data from one bleeding into another and confusing the model = context pollution), the fix is to FORK the session AFTER the shared step into isolated threads: each branch INHERITS a copy of the shared state (e.g. the initial logs), then has its OWN context window -> one investigation's noise does not leak into the other, and the shared setup is not lost. Traps: clearing context (ClearContext) = DESTRUCTIVE, also loses the shared setup both need; structured JSON/attribution in a SINGLE thread = context still polluted (attribution != isolation); parallel Task calls/separate subagents = also isolate BUT that is subagent SPAWNING, not fork-based session (when the question NAMES fork, use fork; subagents would also need the setup explicitly passed [[subagent-stateless-coordinator-passes-context]], whereas a fork inherits it). Fork is CORRECT here (abstract session-state isolation, like d1-q016) - unlike human-handoff-synthesize-not-share-session (d1-q018) where fork is wrong because it is a handoff BETWEEN HUMANS; context (abstract primitive vs human collaboration) decides. META-lesson: when a question NAMES a specific mechanism, pick the option that uses THAT mechanism, not an alternative that merely 'also works'.",
     "seen_in": [
-      "d1-q020"
+      "d1-q020",
+      "d3-q013",
+      "d3-q014",
+      "d3-q021",
+      "d3-q022"
     ]
   },
   {
@@ -394,7 +418,8 @@
     "lesson_en": "System prompt wording can unintentionally steer tool selection - keyword-sensitive phrases ('Execute...') prime tools that share that word in their name (execute_live_trade), so the model picks the wrong tool SYSTEMATICALLY (not randomly). This is NOT a temperature issue (stochastic - but the behavior is tied to wording, not randomness), nor a naming fix toward matching words (that increases ambiguity), nor merely a missing negative constraint (a band-aid). The fix: clear structured prompts (XML tags), precise differentiating tool descriptions, explicit guidance on when to use each tool - REVISE the prompt, don't align tools to a flawed prompt. Relate to fix-root-cause-not-symptom.",
     "seen_in": [
       "d2-q005",
-      "d2-q022"
+      "d2-q022",
+      "d2-q040"
     ]
   },
   {
@@ -414,7 +439,8 @@
     "lesson_sr": "Kad agent ima ČESTU SITNU potrebu van svog domena (npr. Writer treba da proveri datum) a trenutni put je skup round-trip kroz Coordinatora (3-4 turn-a, latencija), NE sipaj mu pun skup alata specijaliste (over-provisioning → decision complexity, context bloat, rizik zloupotrebe; prompt-restrikcija je krhka vs pravo tool scoping), NE forsiraj tool_choice:{\"type\":\"any\"} (forsira poziv i kad ne treba, a ne DAJE sposobnost ako alata nema), i NE spajaj agente u monolit (bloated agent, gubi separation of concerns, diže cognitive load, mnogo nerelevantnih alata na prostim zadacima). Reši: daj JEDAN uzak, namenski (scoped) alat baš za tu high-frequency, low-complexity potrebu → rešava lokalno, smanjuje latenciju; kompleksno istraživanje i dalje deleguj specijalisti. Veži sa [[distribute-tools-to-specialized-subagents]].",
     "lesson_en": "When an agent has a HIGH-FREQUENCY MINOR need outside its domain (e.g. a Writer needing to verify a date) and the current path is an expensive round-trip via the Coordinator (3-4 turns, latency), do NOT dump the specialist's full tool suite on it (over-provisioning → decision complexity, context bloat, misuse risk; prompt restriction is fragile vs proper tool scoping), do NOT force tool_choice:{\"type\":\"any\"} (forces a call even when unneeded and does NOT grant capability if the tool is absent), and do NOT merge agents into a monolith (bloated agent, loses separation of concerns, raises cognitive load, many irrelevant tools on simple tasks). Fix: give ONE narrow, purpose-built (scoped) tool for exactly that high-frequency, low-complexity need → resolves locally, cuts latency; complex research is still delegated to the specialist. Relate to distribute-tools-to-specialized-subagents.",
     "seen_in": [
-      "d2-q007"
+      "d2-q007",
+      "d2-q036"
     ]
   },
   {
@@ -480,7 +506,8 @@
       "d2-q013",
       "d2-q019",
       "d2-q021",
-      "d2-q024"
+      "d2-q024",
+      "d2-q034"
     ]
   },
   {
@@ -507,7 +534,8 @@
       "d2-q016",
       "d2-q023",
       "d2-q025",
-      "d2-q030"
+      "d2-q030",
+      "d2-q037"
     ]
   },
   {
@@ -528,7 +556,8 @@
     "lesson_sr": "Moćniji/„flagship\" mehanizam nije automatski tačan odgovor. PTC (Claude piše i izvršava kôd u sandbox-u) je po Anthropic docs JAK izbor za fan-out preko mnogo stavki i velike rezultate, a SLAB za mali broj poziva sa malim odgovorima (overhead container-a/skripte premašuje uštedu). Za jednu malu strukturnu izmenu (jedno polje u JSON-u) jq preko Bash-a je jednostavniji, strukturno svestan i jednako token-efikasan (izlaz ne ulazi u kontekst). Pravilo: izaberi najlakši alat koji posao radi robusno; ne biraj alat po buzzword-u. Veza: [[parse-format-dont-text-match]] (oba kandidata strukturno svesna; bira se po težini), [[scoped-tool-for-high-frequency-need-route-complex]].",
     "lesson_en": "A more powerful / flagship mechanism is not automatically the right answer. PTC (Claude writes and runs code in a sandbox) is, per Anthropic docs, a STRONG fit for fan-out across many items and large results, but a WEAK fit for a small number of tool calls with small responses — container/script overhead exceeds the savings. For a single small structured edit (one field in JSON), jq via Bash is simpler, structurally aware, and equally token-efficient (its output never enters context). Rule: pick the lightest tool that does the job robustly; don't choose a tool by buzzword.",
     "seen_in": [
-      "d2-q018"
+      "d2-q018",
+      "d2-q039"
     ]
   },
   {
@@ -540,7 +569,10 @@
     "seen_in": [
       "d2-q019",
       "d2-q029",
-      "d2-q032"
+      "d2-q032",
+      "d2-q035",
+      "d2-q041",
+      "d2-q042"
     ]
   },
   {
@@ -550,7 +582,8 @@
     "lesson_sr": "Kad MCP/batch alat obrađuje više NEZAVISNIH stavki i neke uspeju a neke padnu, vrati DELIMIČAN USPEH: isError:false + uspešne rezultate + strukturiranu metapodatkovnu sekciju koja precizno opisuje šta je palo (partial_success:true, failed_items:['Doc3']). Tako agent dobija i upotrebljive podatke (nastavlja tok) i mašinski čitljiv signal greške (sam odlučuje: preskoči, prijavi, traži popravku). NE tretiraj batch kao atomic/sve-ili-ništa — odbacivanje uspešnih rezultata zbog jednog pada je bačen rad; atomičnost je za prave transakcije sa međuzavisnim koracima, ne za nezavisne stavke. NE proglašavaj ceo poziv neuspehom + isRetryable:true — blokira upotrebljive rezultate beskorisnim retry-jem, a oštećen fajl je TERMINALNA (non-transient) greška koju retry ne rešava. NE haluciniraj rezultat za palu stavku da niz ima očekivanu dužinu — fabrikacija je štetan anti-pattern. Veži sa [[error-type-must-be-accurate-not-just-present]] (isRetryable:true na non-transient grešci je netačan flag) i [[mcp-error-needs-iserror-not-empty-success]] (isError mora tačno odražavati stvarni ishod).",
     "lesson_en": "When an MCP/batch tool processes multiple INDEPENDENT items and some succeed while others fail, return PARTIAL SUCCESS: isError:false + the successful results + a structured metadata section precisely describing what failed (partial_success:true, failed_items:['Doc3']). This gives the agent both usable data (to continue) and a machine-readable failure signal (to decide: skip, report, request remediation). DO NOT treat the batch as atomic/all-or-nothing — discarding successful results over one failure wastes completed work; atomicity is for true transactions with interdependent steps, not independent items. DO NOT declare the whole call a failure + isRetryable:true — it blocks usable results with a useless retry, and a corrupted file is a TERMINAL (non-transient) error retries cannot fix. DO NOT hallucinate a result for the failed item to pad the array length — fabrication is a harmful anti-pattern. Relate to error-type-must-be-accurate-not-just-present (isRetryable:true on a non-transient error is an inaccurate flag) and mcp-error-needs-iserror-not-empty-success (isError must accurately reflect the real outcome).",
     "seen_in": [
-      "d2-q025"
+      "d2-q025",
+      "d5-q011"
     ]
   },
   {
@@ -582,7 +615,8 @@
     "lesson_sr": "Kad upit ima više analitičkih DIMENZIJA nad istim subjektima (npr. uticaj na sredinu + isplativost za 2 vozila), dekomponuj po dimenziji u paralelne staze — svaka staza obrađuje sve subjekte istom metodologijom — pa sintetizuj. Podela po SUBJEKTU rizikuje nekonzistentnu metodologiju i neuporedivo poređenje. Dinamička adaptivna dekompozicija je za otvorene istrage, ne za jasno strukturisan upit.",
     "lesson_en": "When a query has multiple analytical DIMENSIONS over the same subjects (e.g. environmental impact + cost across two vehicles), decompose by dimension into parallel tracks — each track covers all subjects with one consistent methodology — then synthesize. Splitting by SUBJECT risks inconsistent methodology and a non-comparable result. Dynamic adaptive decomposition is for open-ended investigations, not a clearly structured query.",
     "seen_in": [
-      "d1-q035"
+      "d1-q035",
+      "d1-q052"
     ]
   },
   {
@@ -596,7 +630,8 @@
       "d3-q004",
       "d3-q005",
       "d3-q006",
-      "d4-q006"
+      "d4-q006",
+      "d3-q009"
     ]
   },
   {
@@ -607,7 +642,11 @@
     "lesson_en": "File-type/location-specific conventions belong in .claude/rules/ with a glob `paths` frontmatter — they load automatically only when a matching file is edited, regardless of directory, with no maintenance. Root CLAUDE.md loads in EVERY session (wastes tokens when irrelevant); per-directory CLAUDE.md misses scattered files; a `**/*` glob defeats conditional loading; a skill activates on-demand, whereas rules should shape every matching edit.",
     "seen_in": [
       "d3-q001",
-      "d3-q002"
+      "d3-q002",
+      "d3-q010",
+      "d3-q011",
+      "d3-q012",
+      "d3-q018"
     ]
   },
   {
@@ -628,7 +667,10 @@
     "lesson_en": "On failure a subagent must return STRUCTURED error context (failure type, what was attempted, partial results, alternatives) so the coordinator can decide intelligently (retry, alternative, proceed-with-partial + gap annotation). The worst anti-pattern is silent suppression — empty result marked as success — because the coordinator thinks it succeeded and never attempts recovery. A generic message ('unavailable') or terminating the whole workflow also lose context/partial results.",
     "seen_in": [
       "d5-q002",
-      "d5-q003"
+      "d5-q003",
+      "d5-q009",
+      "d5-q010",
+      "d5-q012"
     ]
   },
   {
@@ -639,7 +681,8 @@
     "lesson_en": "Attribution and conflicts must survive synthesis as STRUCTURED DATA (claim-source maps: claim, source, date, excerpt), because prose/inline links get rewritten and the claim↔source link is lost. Present conflicting sources with full provenance and let a human weigh them — don't average, don't pick one, don't drop them. A bibliography is document-level attribution, not claim-level.",
     "seen_in": [
       "d5-q004",
-      "d5-q005"
+      "d5-q005",
+      "d1-q045"
     ]
   },
   {
@@ -649,7 +692,112 @@
     "lesson_sr": "Kad model promaši tačan podatak u dugačkom ulazu, dijagnozu vodi po POZICIJI promašaja: tačan podatak duboko u SREDINI a izabran pri početku/kraju = lost-in-the-middle (slabija pažnja na sredinu). Favorizovanje KRAJA = recency. Da podatak fali sasvim = truncation (ne bi ni postojao). Anchoring je ljudski bias, ne dokumentovan LLM režim za skeniranje strukturiranih podataka.",
     "lesson_en": "When a model misses the right datum in a long input, diagnose by the POSITION of the miss: correct datum deep in the MIDDLE while it picks one near the start/end = lost-in-the-middle (reduced mid-sequence attention). Favoring the END = recency. The datum missing entirely = truncation (it wouldn't exist). Anchoring is a human bias, not a documented LLM failure mode for scanning structured data.",
     "seen_in": [
-      "d5-q001"
+      "d5-q001",
+      "d5-q008"
+    ]
+  },
+  {
+    "id": "concrete-examples-beat-abstract-instructions",
+    "title": "Konkretni primeri pobeđuju apstraktne instrukcije",
+    "domain": 4,
+    "lesson_sr": "Kad model daje NEDOSLEDAN/varijabilan izlaz a instrukcije (čak i detaljnije/preciznije) ne pomažu, lek su KONKRETNI few-shot primeri željenog izlaza/ponašanja, ne još reči. Proza je dvosmislena i model je tumači različito svaki put; primeri pokazuju tačan obrazac i eliminišu dvosmislenost. Posebno za edge-case rezonovanje: ciljaj primere na BAŠ problematične/dvosmislene slučajeve sa eksplicitnim rezonovanjem (zašto baš ovaj izbor), ne na lake slučajeve i ne grupisano po kategoriji. Zamka: 'ponovi/preciziraj instrukcije' je isti kanal koji je već pao. Srodno [[guarantee-with-api-param-not-prompt]] (kad treba GARANCIJA, ide još dalje — API/strukturni mehanizam).",
+    "lesson_en": "When a model produces INCONSISTENT/variable output and instructions (even more detailed/precise ones) don't help, the fix is CONCRETE few-shot examples of the desired output/behavior, not more words. Prose is ambiguous and the model reinterprets it each time; examples show the exact pattern and remove ambiguity. Especially for edge-case reasoning: target examples at the specific problematic/ambiguous cases with explicit reasoning (why this choice), not at easy cases and not grouped by category. Trap: 'refine/repeat the instructions' is the same channel that already failed. Related to guarantee-with-api-param-not-prompt (when a GUARANTEE is needed, go further — an API/structured mechanism).",
+    "seen_in": [
+      "d4-q007",
+      "d4-q010",
+      "d4-q016",
+      "d4-q017",
+      "d4-q018",
+      "d4-q020"
+    ]
+  },
+  {
+    "id": "give-model-context-to-avoid-blind-duplication",
+    "title": "Model rezonuje samo nad kontekstom — daj mu šta već postoji",
+    "domain": 5,
+    "lesson_sr": "LLM može da rezonuje ISKLJUČIVO nad onim što mu je u kontekstu. Da bi izbegao redundantne/duplirane predloge (npr. ponovni nalazi na već popravljenom kodu, predlozi testova koji već postoje), UBACI postojeće stanje u kontekst (prethodni nalazi, postojeći test fajl) i traži samo novo/još nerešeno. Post-processing filter po stringu/keyword-u je krhak (LLM tekst varira; ne razlikuje semantički ekvivalentno; ne zna da li je suštinski rešeno). Smanjivanje broja predloga ne daje informaciju o tome šta već postoji.",
+    "lesson_en": "An LLM can reason ONLY over what is in its context. To avoid redundant/duplicate suggestions (e.g. re-flagging already-fixed code, suggesting tests that already exist), INJECT the existing state into context (prior findings, the existing test file) and ask only for what's new/still-unaddressed. A string/keyword post-processing filter is brittle (LLM wording varies; misses semantic equivalents; can't tell if something is truly resolved). Reducing the count of suggestions gives no information about what already exists.",
+    "seen_in": [
+      "d5-q006",
+      "d5-q007"
+    ]
+  },
+  {
+    "id": "batch-api-latency-tolerant-not-blocking",
+    "title": "Message Batches: za latency-tolerant zakazane poslove, ne za blokirajuće/iterativne",
+    "domain": 4,
+    "lesson_sr": "Message Batches API daje ~50% uštede ali je ASINHRON (do 24h, bez garantovanog SLA). Pravilo: usklađuj API sa zahtevom za latencijom — zakazani/latency-tolerant poslovi (noćni reporti, nedeljni auditi, generisanje testova) → batch; blokirajući/interaktivni (pre-merge hook, korisnik čeka) → sinhrono. Dve zamke: (1) 'batch za sve' obara blokirajuće tokove; (2) batch NE može iterativnu tool-calling petlju — async fire-and-forget ne dozvoljava izvršavanje alata USRED zahteva i vraćanje rezultata da model nastavi. Zablude koje treba odbaciti: 'batch ne podržava tool definicije' (podržava) i 'nema korelaciju rezultata' (ima — custom_id).",
+    "lesson_en": "The Message Batches API gives ~50% savings but is ASYNCHRONOUS (up to 24h, no guaranteed SLA). Rule: match the API to the latency requirement — scheduled/latency-tolerant jobs (overnight reports, weekly audits, test generation) → batch; blocking/interactive (pre-merge hook, user waiting) → synchronous. Two traps: (1) 'batch for everything' breaks blocking flows; (2) batch CANNOT do an iterative tool-calling loop — the async fire-and-forget model can't execute a tool MID-request and return results for the model to continue. Misconceptions to reject: 'batch doesn't support tool definitions' (it does) and 'no result correlation' (it has custom_id).",
+    "seen_in": [
+      "d4-q009",
+      "d4-q012",
+      "d4-q013",
+      "d4-q015"
+    ]
+  },
+  {
+    "id": "partition-research-space-upfront",
+    "title": "Koordinator UNAPRED particioniše prostor, ne dedup posle",
+    "domain": 1,
+    "lesson_sr": "Kad paralelni subagenti rade preklapajući posao (dvostruki tokeni bez više pokrivenosti), koren je nejasna podela. Lek: koordinator UNAPRED particioniše prostor (distinktni podtopici/izvori po agentu) PRE delegiranja — čuva paralelizam, sprečava preklapanje na izvoru. Zamke: dedup POSLE (tokeni već potrošeni); sekvencijalno izvršavanje (žrtvuje paralelizam); shared-state 'log fokusa' (race conditions, reaktivno, krhko). Proaktivna podela > reaktivna koordinacija. Srodno [[coordinator-gates-not-peer-to-peer]] i [[match-decomposition-to-task-nature]].",
+    "lesson_en": "When parallel subagents do overlapping work (double tokens, no extra coverage), the root cause is unclear division. Fix: the coordinator PARTITIONS the space UPFRONT (distinct subtopics/source types per agent) BEFORE delegating — preserving parallelism while preventing overlap at the source. Traps: dedup AFTER (tokens already spent); sequential execution (sacrifices parallelism); shared-state 'focus logging' (race conditions, reactive, brittle). Proactive partitioning > reactive coordination. Related to coordinator-gates-not-peer-to-peer and match-decomposition-to-task-nature.",
+    "seen_in": [
+      "d1-q046"
+    ]
+  },
+  {
+    "id": "evaluator-optimizer-self-critique",
+    "title": "Nedosledan kvalitet → self-critique (evaluator-optimizer) korak",
+    "domain": 4,
+    "lesson_sr": "Kad je izlaz tehnički tačan ali NEDOSLEDNO kompletan, a rupe VARIRAJU od slučaja do slučaja, dodaj self-critique korak (evaluator-optimizer): model oceni svoj NACRT prema eksplicitnim kriterijumima (pokriva li zahtev, ima li relevantan kontekst/timeline/sledeće korake) PRE nego što ga isporuči. Few-shot primeri pokrivaju KONZISTENTNE obrasce, ali ne raznolike, slučaj-specifične rupe. Jači model ne menja PROCES; korisnička 'da li je sve OK?' potvrda prebacuje teret na korisnika. Srodno [[concrete-examples-beat-abstract-instructions]] (taj za konzistentne obrasce; ovaj za varijabilne rupe).",
+    "lesson_en": "When output is technically correct but INCONSISTENTLY complete, with gaps that VARY case to case, add a self-critique step (evaluator-optimizer): the model evaluates its DRAFT against explicit criteria (does it address the concern, include relevant context/timeline/next steps) BEFORE delivering it. Few-shot examples cover CONSISTENT patterns but not diverse, case-specific gaps. A stronger model doesn't change the PROCESS; a customer 'is this OK?' confirmation shifts the burden onto the user. Related to concrete-examples-beat-abstract-instructions (that one for consistent patterns; this one for variable gaps).",
+    "seen_in": [
+      "d4-q019"
+    ]
+  },
+  {
+    "id": "escalate-only-on-genuine-policy-gap",
+    "title": "Eskaliraj na čoveka samo kod stvarne rupe u politici, sa jasnim kriterijumima",
+    "domain": 1,
+    "lesson_sr": "Eskalacija ka čoveku je za situacije koje agent objektivno NE MOŽE da reši dostupnim podacima/politikama — pre svega GENUINE policy gap (politika ćuti o slučaju, agent ne sme da je izmišlja). Nije valjan trigger: deljenje neugodne ali ČINJENIČNE informacije (emotivno izbegavanje), SPEKULACIJA o budućoj nameri korisnika, ni više-tema zahtev (rešava se sekvencijalno). Za lošu kalibraciju eskalacije (eskalira lako, sam pokušava teško) prvi i srazmeran lek su EKSPLICITNI kriterijumi eskalacije + few-shot kada eskalirati vs rešiti sam — ne sentiment analiza (meri frustraciju, ne složenost), ne LLM self-confidence (loše kalibrisan), ne zaseban klasifikator (over-engineering). Srodno [[concrete-examples-beat-abstract-instructions]].",
+    "lesson_en": "Human escalation is for situations the agent objectively CANNOT resolve with available data/policies — above all a GENUINE policy gap (policy is silent on the case; the agent must not fabricate one). Not valid triggers: sharing an uncomfortable but FACTUAL piece of information (emotional avoidance), SPECULATION about the user's future intent, or a multi-topic request (handled sequentially). For miscalibrated escalation (escalates easy cases, attempts hard ones) the first, proportionate fix is EXPLICIT escalation criteria + few-shot of when to escalate vs resolve — not sentiment analysis (measures frustration, not complexity), not LLM self-confidence (poorly calibrated), not a separate classifier (over-engineering). Related to concrete-examples-beat-abstract-instructions.",
+    "seen_in": [
+      "d1-q051",
+      "d4-q020"
+    ]
+  },
+  {
+    "id": "plan-mode-for-complex-or-ambiguous-tasks",
+    "title": "Plan mode za kompleksne/dvosmislene zadatke (istraži pre izmena)",
+    "domain": 3,
+    "lesson_sr": "Kad je zadatak već poznato KOMPLEKSAN (velike izmene, arhitektonske odluke, zavisnosti) ILI DVOSMISLEN (više validnih pristupa, nejasni zahtevi), uđi u plan mode: istraži codebase, razumej zavisnosti/trade-off-ove i predloži pristup PRE izmena. Direktno izvršavanje uz pretpostavke vodi skupom rework-u (auth/error patterns se bitno razlikuju; granice servisa traže razumevanje grafa zavisnosti). 'Pređi na plan mode samo ako iskrsne kompleksnost' ignoriše da je kompleksnost već u zahtevu.",
+    "lesson_en": "When a task is already known to be COMPLEX (large-scale changes, architectural decisions, dependencies) OR AMBIGUOUS (multiple valid approaches, unclear requirements), enter plan mode: explore the codebase, understand dependencies/trade-offs, and propose an approach BEFORE making changes. Direct execution on assumptions leads to costly rework (auth/error patterns differ significantly; service boundaries need the dependency graph). 'Switch to plan mode only if complexity arises' ignores that the complexity is already in the requirements.",
+    "seen_in": [
+      "d3-q016",
+      "d3-q019"
+    ]
+  },
+  {
+    "id": "team-config-in-project-scope-not-user-scope",
+    "title": "Tim-deljena konfiguracija ide u projektni (verzionisan) scope, ne user scope",
+    "domain": 3,
+    "lesson_sr": "Sve što ceo tim treba da dobije automatski (smernice, custom komande/skill-ovi, MCP serveri) ide u PROJEKTNI, verzionisan scope: .claude/CLAUDE.md, .claude/commands/, .claude/skills/, .mcp.json (uz ${ENV_VAR} za tajne, bez commit-a kredencijala). User scope (~/.claude/...) je ličan i ne deli se — ako smernica živi tamo, novi članovi je nemaju. PRECEDENCE: projektni skill/komanda zasenčuje lični istog imena → za ličnu varijantu koristi DRUGO ime. Claude Code NE kešira CLAUDE.md kroz sesije i NE gradi per-user 'naučene' preference (čita iznova svake sesije).",
+    "lesson_en": "Anything the whole team must receive automatically (guidelines, custom commands/skills, MCP servers) goes in the PROJECT, version-controlled scope: .claude/CLAUDE.md, .claude/commands/, .claude/skills/, .mcp.json (with ${ENV_VAR} for secrets, no committed credentials). User scope (~/.claude/...) is personal and not shared — if a guideline lives there, new members won't get it. PRECEDENCE: a project skill/command shadows a personal one of the same name → use a DIFFERENT name for a personal variant. Claude Code does NOT cache CLAUDE.md across sessions and does NOT build per-user 'learned' preferences (it reads fresh each session).",
+    "seen_in": [
+      "d2-q038",
+      "d3-q015",
+      "d3-q017",
+      "d3-q020"
+    ]
+  },
+  {
+    "id": "extract-facts-to-persistent-block",
+    "title": "Sažimanje je lossy za precizne detalje → izvuci činjenice u trajan blok",
+    "domain": 5,
+    "lesson_sr": "Progressive summarization je suštinski LOSSY za precizne podatke (iznosi, procenti, datumi, brojevi porudžbina) — model ih kasnije izmišlja jer su sažeti u maglovito 'pričali smo o ceni'. Ne možeš se 'isprompt-ovati' iz toga (LLM ne čuva pouzdano detalje pod pritiskom konteksta) niti samo podizati prag (samo odlaže). Lek: izvuci transakcione činjenice u TRAJAN, strukturisan 'case facts' blok koji je u SVAKOM promptu, IZVAN sažete istorije. Eksterni retrieval okidan 'kao što rekoh' frazama je krhak (detekcija reference nepouzdana; pada kad model proaktivno koristi pogrešnu vrednost).",
+    "lesson_en": "Progressive summarization is inherently LOSSY for precise data (amounts, percentages, dates, order numbers) — the model later fabricates them because they got condensed into a vague 'discussed pricing'. You can't 'prompt your way out' (LLMs don't reliably preserve details under context pressure) nor merely raise the threshold (only delays it). Fix: extract transactional facts into a PERSISTENT, structured 'case facts' block present in EVERY prompt, OUTSIDE the summarized history. External retrieval triggered by 'as I mentioned' phrases is brittle (reference detection is unreliable; fails when the model proactively uses a wrong value).",
+    "seen_in": [
+      "d5-q013"
     ]
   }
 ]

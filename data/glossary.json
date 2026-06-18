@@ -7,7 +7,8 @@
     "seen_in": [
       "d1-q001",
       "d1-q030",
-      "d2-q009"
+      "d2-q009",
+      "d4-q015"
     ]
   },
   {
@@ -33,7 +34,8 @@
       "d1-q015",
       "d1-q019",
       "d1-q021",
-      "d1-q030"
+      "d1-q030",
+      "d4-q015"
     ]
   },
   {
@@ -59,7 +61,9 @@
       "d1-q023",
       "d1-q027",
       "d1-q028",
-      "d3-q003"
+      "d3-q003",
+      "d1-q050",
+      "d4-q012"
     ]
   },
   {
@@ -74,7 +78,8 @@
       "d1-q023",
       "d1-q027",
       "d1-q028",
-      "d3-q003"
+      "d3-q003",
+      "d1-q049"
     ]
   },
   {
@@ -114,7 +119,8 @@
       "d1-q002",
       "d1-q008",
       "d3-q003",
-      "d1-q039"
+      "d1-q039",
+      "d1-q050"
     ]
   },
   {
@@ -127,7 +133,10 @@
       "d1-q013",
       "d1-q014",
       "d1-q035",
-      "d1-q040"
+      "d1-q040",
+      "d1-q046",
+      "d1-q047",
+      "d1-q052"
     ]
   },
   {
@@ -166,7 +175,8 @@
       "d2-q009",
       "d2-q013",
       "d2-q021",
-      "d2-q031"
+      "d2-q031",
+      "d1-q050"
     ]
   },
   {
@@ -190,7 +200,8 @@
       "d1-q005",
       "d1-q007",
       "d1-q010",
-      "d1-q038"
+      "d1-q038",
+      "d1-q052"
     ]
   },
   {
@@ -205,7 +216,11 @@
       "d1-q034",
       "d3-q005",
       "d1-q038",
-      "d5-q004"
+      "d5-q004",
+      "d1-q044",
+      "d3-q007",
+      "d4-q007",
+      "d4-q016"
     ]
   },
   {
@@ -251,7 +266,9 @@
     "sr": "Interno rezonovanje modela, ispisano kao text blok pre nego što deluje (npr. pre tool_use bloka). To je logički most od zahteva do akcije; čuvanje u istoriji razgovora održava rezonovanje koherentnim kroz više koraka.",
     "domain": 1,
     "seen_in": [
-      "d1-q006"
+      "d1-q006",
+      "d4-q017",
+      "d4-q018"
     ]
   },
   {
@@ -269,7 +286,8 @@
     "sr": "Niz messages koji se šalje modelu pri svakom zahtevu. Model je stateless: zna samo ono što je prisutno u ovoj istoriji. Sve što je izbačeno ili izostavljeno za model ne postoji i ne može biti regenerisano.",
     "domain": 1,
     "seen_in": [
-      "d1-q006"
+      "d1-q006",
+      "d5-q006"
     ]
   },
   {
@@ -318,7 +336,10 @@
     "domain": 1,
     "seen_in": [
       "d1-q009",
-      "d5-q002"
+      "d5-q002",
+      "d5-q009",
+      "d5-q010",
+      "d5-q011"
     ]
   },
   {
@@ -333,7 +354,11 @@
       "d3-q004",
       "d4-q006",
       "d1-q036",
-      "d1-q037"
+      "d1-q037",
+      "d3-q009",
+      "d3-q013",
+      "d3-q014",
+      "d3-q021"
     ]
   },
   {
@@ -353,7 +378,8 @@
     "seen_in": [
       "d1-q011",
       "d1-q033",
-      "d1-q036"
+      "d1-q036",
+      "d1-q043"
     ]
   },
   {
@@ -367,7 +393,10 @@
       "d2-q008",
       "d2-q031",
       "d1-q036",
-      "d1-q039"
+      "d1-q039",
+      "d1-q043",
+      "d1-q045",
+      "d2-q036"
     ]
   },
   {
@@ -391,7 +420,10 @@
       "d2-q009",
       "d4-q002",
       "d1-q037",
-      "d5-q005"
+      "d5-q005",
+      "d1-q051",
+      "d2-q039",
+      "d4-q020"
     ]
   },
   {
@@ -415,7 +447,9 @@
       "d4-q004",
       "d1-q035",
       "d1-q040",
-      "d5-q001"
+      "d5-q001",
+      "d1-q041",
+      "d5-q008"
     ]
   },
   {
@@ -424,7 +458,9 @@
     "sr": "Obrazac dekompozicije: 'map' = lokalni prolazi po nezavisnim chunk-ovima; 'reduce' (integration/synthesis pass) = rezonuje nad IZLAZIMA/sažecima chunk-ova da izvede globalne zaključke. Chunking sam (map bez reduce) hvata lokalne probleme ali promašuje cross-chunk/globalne; reduce premošćuje context gap. Više paralelizma NIJE lek - integration korak jeste.",
     "domain": 1,
     "seen_in": [
-      "d1-q014"
+      "d1-q014",
+      "d1-q041",
+      "d1-q047"
     ]
   },
   {
@@ -463,7 +499,13 @@
     "seen_in": [
       "d1-q017",
       "d1-q029",
-      "d2-q001"
+      "d2-q001",
+      "d2-q035",
+      "d2-q036",
+      "d2-q040",
+      "d2-q041",
+      "d2-q042",
+      "d4-q017"
     ]
   },
   {
@@ -483,7 +525,8 @@
     "seen_in": [
       "d1-q019",
       "d1-q021",
-      "d1-q032"
+      "d1-q032",
+      "d1-q048"
     ]
   },
   {
@@ -502,7 +545,10 @@
     "sr": "Anthropic modeli mogu emitovati VIŠE tool_use blokova u jednom assistant potezu (više alata odjednom). Svi rezultati se vraćaju zajedno u jednoj user poruci. Podržano po defaultu; opcija disable_parallel_tool_use forsira jedan-po-jedan, ali nije potrebna samo zato što je pozvano više alata - rezultati se prosto grupišu.",
     "domain": 1,
     "seen_in": [
-      "d1-q019"
+      "d1-q019",
+      "d1-q046",
+      "d1-q048",
+      "d1-q052"
     ]
   },
   {
@@ -521,7 +567,8 @@
     "sr": "Nakupljanje IRELEVANTNIH ili zastarelih podataka u context window-u koji kvare naredno rezonovanje (npr. mrežni logovi iz neuspešne DDoS istrage zbunjuju kasniju DB istragu). Razlika od attention dilution (tamo: previše sadržaja/volumen; ovde: irelevantan sadržaj curi i kontaminira). Lek: forkovati u izolovane niti posle zajedničkog setupa, da svaka linija rada ima čist, nezavisan kontekst.",
     "domain": 1,
     "seen_in": [
-      "d1-q020"
+      "d1-q020",
+      "d3-q014"
     ]
   },
   {
@@ -580,7 +627,8 @@
       "d1-q035",
       "d1-q038",
       "d5-q005",
-      "d5-q004"
+      "d5-q004",
+      "d1-q042"
     ]
   },
   {
@@ -599,7 +647,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q024",
-      "d1-q036"
+      "d1-q036",
+      "d1-q042"
     ]
   },
   {
@@ -609,7 +658,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q025",
-      "d1-q039"
+      "d1-q039",
+      "d3-q022"
     ]
   },
   {
@@ -634,7 +684,12 @@
       "d1-q035",
       "d1-q038",
       "d1-q036",
-      "d1-q039"
+      "d1-q039",
+      "d1-q042",
+      "d1-q043",
+      "d1-q045",
+      "d1-q046",
+      "d1-q047"
     ]
   },
   {
@@ -645,7 +700,8 @@
     "seen_in": [
       "d1-q026",
       "d5-q005",
-      "d5-q004"
+      "d5-q004",
+      "d1-q045"
     ]
   },
   {
@@ -674,7 +730,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q028",
-      "d3-q003"
+      "d3-q003",
+      "d1-q049"
     ]
   },
   {
@@ -683,7 +740,8 @@
     "sr": "Dogovoreni ciljni oblik u koji se sve varijante mapiraju (npr. {'status':'SUCCESS'}). Uklanja dvosmislenost: različiti legacy kodovi (0, 200, OK) postaju ista normalizovana struktura koju model pouzdano čita.",
     "domain": 1,
     "seen_in": [
-      "d1-q028"
+      "d1-q028",
+      "d1-q049"
     ]
   },
   {
@@ -725,7 +783,8 @@
     "seen_in": [
       "d2-q002",
       "d2-q003",
-      "d2-q011"
+      "d2-q011",
+      "d2-q038"
     ]
   },
   {
@@ -737,7 +796,9 @@
       "d2-q002",
       "d2-q006",
       "d2-q029",
-      "d2-q032"
+      "d2-q032",
+      "d1-q049",
+      "d2-q038"
     ]
   },
   {
@@ -747,7 +808,8 @@
     "domain": 2,
     "seen_in": [
       "d2-q002",
-      "d2-q011"
+      "d2-q011",
+      "d2-q038"
     ]
   },
   {
@@ -794,7 +856,8 @@
       "d2-q025",
       "d2-q030",
       "d5-q003",
-      "d5-q002"
+      "d5-q002",
+      "d5-q009"
     ]
   },
   {
@@ -803,7 +866,8 @@
     "sr": "Rezultat koji javlja 'ničeg nema' iako nešto zapravo postoji. U agentskom toolingu nastaje kad se neuspeo poziv maskira kao uspešan prazan rezultat - model zaključi 'čisto' dok je stvarni neuspeh (npr. istekli kredencijali) ostao neprimećen. Posebno opasno u security/detekciji pretnji.",
     "domain": 2,
     "seen_in": [
-      "d2-q003"
+      "d2-q003",
+      "d4-q014"
     ]
   },
   {
@@ -821,7 +885,8 @@
     "sr": "Primeri ispravnih poziva alata uključeni u definiciju alata. Vode model ka pravilnom korišćenju i očekivanom formatu ulaza, smanjuju loše formirane ili halucinirane parametre - deo dizajna pouzdanog tool interfejsa.",
     "domain": 2,
     "seen_in": [
-      "d2-q004"
+      "d2-q004",
+      "d2-q042"
     ]
   },
   {
@@ -835,7 +900,11 @@
       "d2-q019",
       "d2-q022",
       "d2-q029",
-      "d2-q032"
+      "d2-q032",
+      "d2-q035",
+      "d2-q041",
+      "d2-q042",
+      "d4-q017"
     ]
   },
   {
@@ -859,7 +928,8 @@
     "domain": 2,
     "seen_in": [
       "d2-q005",
-      "d2-q022"
+      "d2-q022",
+      "d2-q040"
     ]
   },
   {
@@ -868,7 +938,9 @@
     "sr": "Kad formulacija prompta poveže reč sa alatom i izazove pogrešan izbor alata - formulacija system prompta praktično pregazi opise alata. Misrouting je sistematski (vezan za formulaciju), ne nasumičan.",
     "domain": 2,
     "seen_in": [
-      "d2-q005"
+      "d2-q005",
+      "d2-q035",
+      "d2-q040"
     ]
   },
   {
@@ -927,7 +999,9 @@
       "d2-q021",
       "d2-q031",
       "d1-q036",
-      "d1-q039"
+      "d1-q039",
+      "d2-q034",
+      "d2-q036"
     ]
   },
   {
@@ -954,7 +1028,8 @@
     "sr": "Multi-agent arhitektura u kojoj orkestrator deli složen zadatak specijalizovanim worker agentima. Oslanja se na specijalizaciju umesto jednog monolitnog agenta; spajanje worker-a u jedan agent briše te benefite.",
     "domain": 2,
     "seen_in": [
-      "d2-q008"
+      "d2-q008",
+      "d1-q042"
     ]
   },
   {
@@ -1050,7 +1125,12 @@
       "d2-q011",
       "d4-q005",
       "d4-q004",
-      "d5-q001"
+      "d5-q001",
+      "d1-q044",
+      "d3-q021",
+      "d5-q006",
+      "d5-q007",
+      "d5-q008"
     ]
   },
   {
@@ -1141,7 +1221,10 @@
       "d2-q015",
       "d2-q016",
       "d2-q030",
-      "d5-q003"
+      "d5-q003",
+      "d2-q037",
+      "d5-q010",
+      "d5-q012"
     ]
   },
   {
@@ -1152,7 +1235,8 @@
     "seen_in": [
       "d2-q014",
       "d2-q015",
-      "d2-q030"
+      "d2-q030",
+      "d5-q012"
     ]
   },
   {
@@ -1175,7 +1259,8 @@
     "seen_in": [
       "d2-q016",
       "d2-q023",
-      "d2-q030"
+      "d2-q030",
+      "d2-q037"
     ]
   },
   {
@@ -1242,7 +1327,11 @@
     "domain": 2,
     "seen_in": [
       "d2-q019",
-      "d2-q029"
+      "d2-q029",
+      "d2-q034",
+      "d2-q035",
+      "d2-q041",
+      "d2-q042"
     ]
   },
   {
@@ -1260,7 +1349,9 @@
     "sr": "Bezbednosni princip: svakoj komponenti daj samo minimalnu sposobnost koja joj treba za zadatak i ništa više. Primenjeno na alate, zameni generički moćan alat (execute_system_command) uskim namenskim (check_server_ping koji prima samo IP/hostname), tako da zloupotreba postaje strukturno nemoguća, a ne samo policirana.",
     "domain": 2,
     "seen_in": [
-      "d2-q021"
+      "d2-q021",
+      "d2-q034",
+      "d2-q036"
     ]
   },
   {
@@ -1278,7 +1369,8 @@
     "sr": "Claude-ov redosled prednosti izvora instrukcija: sistemski prompt po pravilu ima veću težinu od opisa alata. Zbog toga ne možeš pouzdano naterati opis alata da pregazi pravilo iz sistemskog prompta — konflikt rešavaj na izvoru veće prednosti (sistemski prompt).",
     "domain": 2,
     "seen_in": [
-      "d2-q022"
+      "d2-q022",
+      "d3-q020"
     ]
   },
   {
@@ -1288,7 +1380,9 @@
     "domain": 2,
     "seen_in": [
       "d2-q023",
-      "d5-q003"
+      "d5-q003",
+      "d2-q037",
+      "d2-q039"
     ]
   },
   {
@@ -1317,7 +1411,9 @@
     "seen_in": [
       "d2-q025",
       "d5-q003",
-      "d5-q002"
+      "d5-q002",
+      "d5-q009",
+      "d5-q011"
     ]
   },
   {
@@ -1364,7 +1460,8 @@
       "d2-q005",
       "d2-q022",
       "d2-q029",
-      "d4-q001"
+      "d4-q001",
+      "d2-q040"
     ]
   },
   {
@@ -1372,7 +1469,9 @@
     "en": "The request field setting the maximum number of tokens in the response. It is also a 'stop_reason' value: when the limit is hit the response is truncated and you may need to raise the limit.",
     "sr": "Polje u zahtevu koje postavlja gornju granicu broja tokena u odgovoru. Ujedno je i vrednost 'stop_reason'-a: kada se granica dostigne, odgovor je odsečen (truncated) i možda treba podići limit. Razlikuj od 'end_turn' (model sam završio) — 'max_tokens' znači da je nasilno presečen.",
     "domain": 1,
-    "seen_in": []
+    "seen_in": [
+      "d1-q048"
+    ]
   },
   {
     "term": "stateless API",
@@ -1388,7 +1487,9 @@
     "domain": 4,
     "seen_in": [
       "d1-q034",
-      "d2-q024"
+      "d2-q024",
+      "d3-q007",
+      "d4-q016"
     ]
   },
   {
@@ -1424,7 +1525,9 @@
     "en": "A pattern where the agent (or a dedicated stage) critiques its own draft against concrete criteria before delivering it (self-critique), catching gaps like missing policy context or next steps without human oversight.",
     "sr": "Obrazac u kome agent (ili namenska faza) ocenjuje sopstveni nacrt po konkretnim kriterijumima pre isporuke — self-critique. Hvata propuste (npr. nedostaje kontekst politike, rokovi, sledeći koraci) bez ljudskog nadzora. Koristan kad je rešenje tačno ali objašnjenje nedosledno.",
     "domain": 1,
-    "seen_in": []
+    "seen_in": [
+      "d4-q019"
+    ]
   },
   {
     "term": "iterative refinement loop",
@@ -1432,7 +1535,9 @@
     "sr": "Petlja u multi-agent sistemu u kojoj koordinator proceni sintezu i, po potrebi, vraća zadatke subagentima na još jedan prolaz (re-routing) — dok se ne zadovolje kriterijumi kvaliteta, umesto da prihvati prvu sintezu. Koordinator piše ciljeve i kriterijume kvaliteta, ne korak-po-korak instrukcije.",
     "domain": 1,
     "seen_in": [
-      "d1-q033"
+      "d1-q033",
+      "d4-q016",
+      "d4-q019"
     ]
   },
   {
@@ -1440,14 +1545,18 @@
     "en": "The coordinator explicitly partitions the research space (distinct subtopics or source types) BEFORE delegating, so parallel subagents don't investigate the same things and waste tokens on duplicated coverage.",
     "sr": "Koordinator unapred (PRE delegiranja) eksplicitno deli prostor istraživanja — različite poddomene ili tipove izvora — među subagentima, da paralelni subagenti ne istražuju isto i ne troše tokene na duplo pokrivanje. Rešava uzrok (nejasne granice zadatka) pre nego što posao počne; čuva paralelizam.",
     "domain": 1,
-    "seen_in": []
+    "seen_in": [
+      "d1-q046"
+    ]
   },
   {
     "term": "composite tool",
     "en": "A tool that bundles a common combination of calls into one (e.g. 'get_customer_with_orders') to reduce agent loops; the opposite design move from splitting into single-purpose tools.",
     "sr": "Alat koji spaja čestu kombinaciju poziva u jedan (npr. 'get_customer_with_orders') da smanji broj petlji agenta. Suprotan potez od cepanja na single-purpose alate — koristan kad se dva poziva gotovo uvek traže zajedno. Ne preterivati: preširok alat vraća previše nebitnih polja.",
     "domain": 2,
-    "seen_in": []
+    "seen_in": [
+      "d1-q048"
+    ]
   },
   {
     "term": "error propagation",
@@ -1457,7 +1566,11 @@
     "seen_in": [
       "d1-q011",
       "d5-q003",
-      "d5-q002"
+      "d5-q002",
+      "d2-q037",
+      "d5-q009",
+      "d5-q010",
+      "d5-q012"
     ]
   },
   {
@@ -1465,7 +1578,9 @@
     "en": "Handling errors at the lowest level capable of resolving them: a subagent does 1-2 local retries for transient failures and only propagates to the coordinator what it cannot resolve, including attempted steps and partial results. Avoids infinite retries inside a subagent.",
     "sr": "Rešavanje greške na najnižem nivou koji to može: subagent sam uradi 1–2 lokalna retry-ja za prolazne greške, a koordinatoru prosledi SAMO ono što ne može da reši — uz pokušane korake i parcijalne rezultate. Smanjuje opterećenje koordinatora; izbegava beskonačne retry-je unutar subagenta (latencija i traćenje resursa).",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d5-q010"
+    ]
   },
   {
     "term": "coverage annotation",
@@ -1473,7 +1588,8 @@
     "sr": "Označavanje u finalnoj sintezi šta je dobro pokriveno a gde su rupe (npr. „Muzika — DELIMIČNO POKRIVENO: tajmaut search agenta“). Oblik graceful degradation: čuva vrednost završenog posla i istovremeno prenosi neizvesnost, da se odluke donose informisano umesto da se ceo izveštaj odbaci.",
     "domain": 5,
     "seen_in": [
-      "d5-q003"
+      "d5-q003",
+      "d5-q011"
     ]
   },
   {
@@ -1484,7 +1600,9 @@
     "seen_in": [
       "d2-q023",
       "d5-q003",
-      "d5-q002"
+      "d5-q002",
+      "d5-q011",
+      "d5-q012"
     ]
   },
   {
@@ -1509,14 +1627,19 @@
     "en": "Using placeholders like '${GITHUB_TOKEN}' in '.mcp.json' so configuration is committed to version control while the actual secrets are supplied via environment variables and never committed.",
     "sr": "Korišćenje čuvara mesta poput '${GITHUB_TOKEN}' u '.mcp.json': sama konfiguracija ide u verzionisanje (VCS) i deli se timu, a stvarni tokeni/tajne se dovlače iz promenljivih okruženja i NIKAD se ne commit-uju. Idiomatičan način za deljenu MCP konfiguraciju bez curenja tajni.",
     "domain": 2,
-    "seen_in": []
+    "seen_in": [
+      "d2-q038"
+    ]
   },
   {
     "term": "~/.claude.json",
     "en": "The user-level configuration file (in the home directory) for personal or experimental MCP servers. Not shared via version control; contrast with the project-level '.mcp.json'.",
     "sr": "Korisnička konfiguracija (u kućnom direktorijumu) za lične ili eksperimentalne MCP servere. Ne deli se kroz verzionisanje — za lične probe i testiranje. Suprotno projektnom '.mcp.json' koji je deljen i ide u VCS.",
     "domain": 2,
-    "seen_in": []
+    "seen_in": [
+      "d3-q015",
+      "d3-q020"
+    ]
   },
   {
     "term": "CLAUDE.md",
@@ -1526,7 +1649,13 @@
     "seen_in": [
       "d3-q002",
       "d3-q003",
-      "d3-q001"
+      "d3-q001",
+      "d3-q010",
+      "d3-q011",
+      "d3-q012",
+      "d3-q017",
+      "d3-q018",
+      "d3-q020"
     ]
   },
   {
@@ -1535,7 +1664,9 @@
     "sr": "Tri nivoa učitavanja CLAUDE.md: korisnički '~/.claude/CLAUDE.md' (lični, nije u VCS-u), projektni '.claude/CLAUDE.md' ili root 'CLAUDE.md' (deli se kroz VCS) i po-direktorijumski fajlovi. Česta greška: projektna uputstva stavljena na korisnički nivo — pa ih novi član tima nikad ne dobije. Rešenje: premesti na projektni nivo.",
     "domain": 3,
     "seen_in": [
-      "d3-q002"
+      "d3-q002",
+      "d3-q010",
+      "d3-q020"
     ]
   },
   {
@@ -1543,7 +1674,9 @@
     "en": "Syntax in CLAUDE.md that references external files (e.g. '@./standards/coding-style.md') to keep configuration modular. No space after '@'; relative paths resolve against the importing file; max nesting depth is 5.",
     "sr": "Sintaksa u CLAUDE.md koja uvozi spoljne fajlove (npr. '@./standards/coding-style.md') radi modularnosti konfiguracije. Bez razmaka posle '@'; relativne putanje se računaju u odnosu na fajl koji uvozi; maksimalna dubina ugnježdavanja je 5. Izbegava dupliranje — svaki paket uključi samo relevantne standarde.",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q011"
+    ]
   },
   {
     "term": ".claude/rules/",
@@ -1552,7 +1685,11 @@
     "domain": 3,
     "seen_in": [
       "d3-q002",
-      "d3-q001"
+      "d3-q001",
+      "d3-q010",
+      "d3-q011",
+      "d3-q012",
+      "d3-q018"
     ]
   },
   {
@@ -1562,7 +1699,8 @@
     "domain": 3,
     "seen_in": [
       "d3-q002",
-      "d3-q001"
+      "d3-q001",
+      "d3-q012"
     ]
   },
   {
@@ -1570,7 +1708,11 @@
     "en": "A reusable prompt template invoked via '/name'. Project commands live in '.claude/commands/' (shared via VCS, available to everyone who clones the repo); user commands live in '~/.claude/commands/' (personal). In current Claude Code, commands are unified with Skills.",
     "sr": "Ponovo upotrebljiv šablon prompta koji se poziva sa '/ime'. Projektne komande su u '.claude/commands/' (dele se kroz VCS, dostupne svakom ko klonira repo); korisničke su u '~/.claude/commands/' (lične). U aktuelnom Claude Code-u komande su objedinjene sa Skill-ovima — oba formata prave '/ime' komandu.",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q015",
+      "d3-q017",
+      "d3-q018"
+    ]
   },
   {
     "term": "Skill (SKILL.md)",
@@ -1578,7 +1720,14 @@
     "sr": "Napredna komanda na zahtev, konfigurisana kroz SKILL.md frontmatter u '.claude/skills/'. Poziva se za specifičan zadatak (pregled, analiza, generisanje). Skill za rad na zahtev; CLAUDE.md za uvek-učitane standarde. Lične varijante mogu u '~/.claude/skills/' pod drugim imenom da ne utiču na tim.",
     "domain": 3,
     "seen_in": [
-      "d3-q001"
+      "d3-q001",
+      "d3-q011",
+      "d3-q013",
+      "d3-q014",
+      "d3-q015",
+      "d3-q017",
+      "d3-q018",
+      "d3-q022"
     ]
   },
   {
@@ -1586,28 +1735,39 @@
     "en": "A SKILL.md frontmatter setting that runs the skill in an isolated subagent context, so its verbose output does not pollute the main session and Claude does not lose track of the original task.",
     "sr": "Podešavanje u SKILL.md frontmatter-u koje vrti skill u izolovanom subagent kontekstu — verbozni izlaz NE zagađuje glavnu sesiju i Claude ne gubi prvobitni zadatak. Rešenje kad posle skill-a sa puno izlaza model postane manje fokusiran ili „zaboravi“ na šta se radilo.",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q013",
+      "d3-q014",
+      "d3-q022"
+    ]
   },
   {
     "term": "argument-hint",
     "en": "A SKILL.md frontmatter field that prompts for a required argument when the skill is invoked without one — preventing problems like poorly named output files from missing arguments.",
     "sr": "Polje u SKILL.md frontmatter-u koje traži argument kada se skill pozove bez njega. Sprečava probleme poput loše imenovanih izlaznih fajlova kad developer pokrene komandu bez parametra. (Uz 'allowed-tools' za ograničenje alata i 'context: fork' za izolaciju — tri nezavisne kontrole.)",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q022"
+    ]
   },
   {
     "term": "planning mode",
     "en": "A Claude Code mode where the model only investigates (Read, Grep, Glob) and produces a plan for approval, making no changes. Use for large changes, multiple viable approaches, architectural decisions, or unfamiliar codebases. Opposite: direct execution for simple, well-understood changes.",
     "sr": "Režim Claude Code-a u kome model SAMO istražuje (Read, Grep, Glob) i pravi plan za odobrenje, bez ikakvih izmena. Koristi se za velike izmene (desetine fajlova), kad postoji više validnih pristupa, za arhitektonske odluke ili nepoznat kod. Suprotno: direct execution (direktno izvršenje) za jednostavne, jasne izmene sa poznatim stack trace-om.",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q016",
+      "d3-q019"
+    ]
   },
   {
     "term": "Explore subagent",
     "en": "A specialized subagent for exploring a codebase. It isolates verbose discovery output and returns only a summary, preventing context-window exhaustion in multi-phase tasks (discover -> design -> implement).",
     "sr": "Namenski subagent za istraživanje koda. Izoluje verbozni izlaz otkrivanja i vraća SAMO sažetak — sprečava iscrpljivanje kontekstnog prozora u višefaznim zadacima (otkrij → dizajniraj → implementiraj). Glavni kontekst ostaje slobodan za fazu dizajna i konzistentne implementacije.",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q021"
+    ]
   },
   {
     "term": "headless mode (-p / --print)",
@@ -1617,7 +1777,9 @@
     "seen_in": [
       "d3-q006",
       "d3-q005",
-      "d3-q004"
+      "d3-q004",
+      "d3-q007",
+      "d3-q008"
     ]
   },
   {
@@ -1626,7 +1788,8 @@
     "sr": "Zastavice Claude Code CLI-ja '--output-format json' i '--json-schema' koje u CI-ju daju JSON izlaz validiran šemom. Rezultat se onda pouzdano parsira i, npr., objavljuje kao inline PR komentari preko API-ja. Sprovodi strukturu na nivou CLI-ja, umesto da se model moli da prati format.",
     "domain": 3,
     "seen_in": [
-      "d3-q005"
+      "d3-q005",
+      "d3-q007"
     ]
   },
   {
@@ -1634,7 +1797,9 @@
     "en": "A built-in Claude Code command that summarizes prior history to free up the context window during long sessions. Risk: exact numbers, dates, and specific details can be lost during summarization.",
     "sr": "Ugrađena Claude Code komanda koja sažima dotadašnju istoriju da oslobodi kontekstni prozor u dugim sesijama. Rizik: tačni brojevi, datumi i konkretni detalji mogu se izgubiti pri sažimanju (zato kritične činjenice izvuci u poseban blok pre sažimanja). V. progressive summarization.",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q021"
+    ]
   },
   {
     "term": "/memory",
@@ -1648,7 +1813,14 @@
     "en": "Including 2-4 input/output examples in a prompt to demonstrate expected behavior. More reliable than abstract instructions: an example unambiguously shows format and decision logic, the model generalizes the pattern, and hallucinations in extraction drop. Especially effective for ambiguous cases and informal formats.",
     "sr": "Uključivanje 2–4 primera ulaz/izlaz u prompt da se pokaže željeno ponašanje. Pouzdanije od apstraktnih instrukcija („budi precizniji“): primer nedvosmisleno pokazuje format i logiku odlučivanja, model generalizuje obrazac (ne samo ponavlja), a halucinacije pri ekstrakciji opadaju. Posebno moćno za dvosmislene slučajeve i neformalne formate. Konkretizuje ideju iz input_examples.",
     "domain": 4,
-    "seen_in": []
+    "seen_in": [
+      "d4-q007",
+      "d4-q010",
+      "d4-q016",
+      "d4-q017",
+      "d4-q018",
+      "d4-q020"
+    ]
   },
   {
     "term": "prompt chaining",
@@ -1663,7 +1835,11 @@
     "sr": "Zamena maglovitih smernica („budi konzervativan“, „proveri tačnost“) konkretnim kategoričkim kriterijumima (npr. „označi komentar SAMO ako protivreči stvarnom ponašanju koda“). Direktno diže tačnost i smanjuje lažne uzbune. Maglovita uputstva model tumači različito svaki put — eksplicitni kriterijumi uklanjaju tu varijabilnost.",
     "domain": 4,
     "seen_in": [
-      "d4-q001"
+      "d4-q001",
+      "d4-q007",
+      "d4-q010",
+      "d4-q014",
+      "d4-q020"
     ]
   },
   {
@@ -1687,7 +1863,9 @@
     "en": "A pattern that detects internal contradictions by having the model extract both a stated value and an independently computed value; if they differ, a 'conflict_detected' flag lets you handle the discrepancy.",
     "sr": "Obrazac za otkrivanje internih protivrečnosti: model izvuče i navedenu vrednost (stated) i nezavisno izračunatu (calculated); ako se razlikuju, zastavica 'conflict_detected' omogućava da se nesklad obradi. Npr. navedeni total $150 vs izračunati $145 → konflikt detektovan, ne propušta se tiho.",
     "domain": 4,
-    "seen_in": []
+    "seen_in": [
+      "d4-q019"
+    ]
   },
   {
     "term": "Pydantic",
@@ -1702,7 +1880,10 @@
     "sr": "Lažna uzbuna: prijavljen je problem kog nema. Visok udeo lažnih uzbuna ruši poverenje developera — počnu da odbacuju nalaze ne čitajući ih, čime se gubi poverenje i u tačne kategorije. Ublažava se eksplicitnim kriterijumima, few-shot primerima ili privremenim gašenjem „bučnih“ kategorija (npr. stil/imenovanje) uz zadržavanje preciznih (bezbednost/korektnost). Parnjak pojma false negative.",
     "domain": 4,
     "seen_in": [
-      "d4-q001"
+      "d4-q001",
+      "d4-q008",
+      "d4-q011",
+      "d4-q014"
     ]
   },
   {
@@ -1711,7 +1892,9 @@
     "sr": "Eksplicitni nivoi ozbiljnosti (CRITICAL/HIGH/MEDIUM) definisani konkretnim primerima koda za svaki nivo. Daju doslednije ocene nego subjektivna procena (koja iste probleme oceni različito iz puta u put — npr. null pointer čas „critical“ čas „medium“). Primer CRITICAL: NullPointerException pri obradi plaćanja.",
     "domain": 4,
     "seen_in": [
-      "d4-q001"
+      "d4-q001",
+      "d4-q008",
+      "d4-q010"
     ]
   },
   {
@@ -1723,7 +1906,8 @@
       "d3-q006",
       "d3-q004",
       "d4-q006",
-      "d1-q037"
+      "d1-q037",
+      "d3-q009"
     ]
   },
   {
@@ -1732,7 +1916,11 @@
     "sr": "API za slanje serija zahteva na asinhronu obradu: ~50% jeftinije, prozor obrade do 24h bez garancije latencije (SLA), i BEZ multi-turn tool calling-a u jednom zahtevu. Pogodno za neblokirajuće poslove (noćni izveštaji, revizije, masovna obrada dokumenata); nepogodno za blokirajuće (pre-merge provere gde developer čeka) i za iterativni pregled sa pozivima alata (jer ne može da izvrši alat usred zahteva).",
     "domain": 4,
     "seen_in": [
-      "d4-q003"
+      "d4-q003",
+      "d4-q009",
+      "d4-q012",
+      "d4-q013",
+      "d4-q015"
     ]
   },
   {
@@ -1741,7 +1929,9 @@
     "sr": "Polje koje u Message Batch-u vezuje zahtev sa njegovim odgovorom. Omogućava da rezultat povežeš sa izvornim dokumentom i da ponovo pošalješ SAMO pale stavke, bez ponovne obrade uspešnih. Npr. od 100 dokumenata 5 padne (prekoračen kontekst) → po 'custom_id' identifikuješ i pošalješ samo tih 5.",
     "domain": 4,
     "seen_in": [
-      "d4-q003"
+      "d4-q003",
+      "d4-q013",
+      "d4-q015"
     ]
   },
   {
@@ -1750,7 +1940,9 @@
     "sr": "Modeli sa dugim kontekstom pouzdano obrađuju informacije na POČETKU i KRAJU dugog ulaza, a mogu propustiti detalje u SREDINI. Ublažava se stavljanjem ključnih informacija blizu početka ili kraja (primacy/recency efekat) i jasnim naslovima sekcija, da model lakše „navigira“ kroz sredinu. Veći model/kontekst ne rešava problem — pozicija je ta koja vara.",
     "domain": 5,
     "seen_in": [
-      "d5-q001"
+      "d5-q001",
+      "d1-q041",
+      "d5-q008"
     ]
   },
   {
@@ -1758,14 +1950,18 @@
     "en": "Iteratively compressing conversation history to save context. Its key risk: precise numbers, percentages, and dates get condensed into vague phrasing ('about', 'roughly', 'a few'). Mitigate by extracting exact facts into a structured block kept outside the summary.",
     "sr": "Iterativno sažimanje istorije razgovora radi uštede konteksta. Ključni rizik: tačni brojevi, procenti i datumi se sabiju u maglovite izraze („otprilike“, „par“, „nekoliko“). Ublažava se izvlačenjem egzaktnih činjenica u strukturisan blok koji se drži IZVAN sažetka (v. case facts block). Zato '/compact' ume da „pojede“ baš kritične detalje.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d5-q013"
+    ]
   },
   {
     "term": "case facts block",
     "en": "Extracting key transactional facts (amounts, dates, order numbers, customer requests) into a persistent structured block that is included in EVERY prompt, regardless of how the conversation history is summarized — so critical details are never lost to summarization.",
     "sr": "Izvlačenje ključnih transakcionih činjenica (iznosi, datumi, brojevi porudžbina, zahtev kupca) u stalni, strukturisan blok koji ide u SVAKI prompt — bez obzira na to kako je istorija sažeta. Tako se kritični detalji nikad ne izgube pri sažimanju. Rešenje za situaciju kad kupac pomene „onaj popust od 15%“ 20 poteza ranije, a model već ima samo maglovit sažetak.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d5-q013"
+    ]
   },
   {
     "term": "scratchpad file",
@@ -1779,21 +1975,27 @@
     "en": "Using a PostToolUse hook to keep only the relevant fields of a tool result (e.g. 5 of 40+ fields). Conserves context and reduces noise, since accumulated tool outputs otherwise fill the window disproportionately to their relevance.",
     "sr": "Korišćenje PostToolUse hook-a da se od rezultata alata zadrže SAMO relevantna polja (npr. 5 od 40+). Čuva kontekst i smanjuje šum — jer nagomilani izlazi alata inače popune prozor nesrazmerno svojoj važnosti. Ako 'lookup_order' vrati 40 polja a treba ti 5, hook ih iseče pre nego što stignu modelu.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d1-q044"
+    ]
   },
   {
     "term": "context degradation",
     "en": "In long sessions the model starts producing unstable answers and referring to 'typical patterns' instead of the specific classes/files at hand. A signal to '/compact', use a scratchpad, or start a fresh session with a structured summary.",
     "sr": "U dugim sesijama model počne da daje nestabilne odgovore i da priča o „tipičnim obrascima“ umesto o konkretnim klasama/fajlovima iz zadatka. Signal da je vreme za '/compact', scratchpad fajl ili novu sesiju sa strukturisanim sažetkom. Često je pouzdanije početi ispočetka sa „evo kratkog rezimea šta smo našli…“ nego nastaviti sa zastarelim podacima.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d5-q013"
+    ]
   },
   {
     "term": "structured state persistence",
     "en": "Each agent exports its state (status, queries executed, key findings, coverage) to a known location, and the coordinator loads a manifest on resume. Enables crash recovery — work resumes from saved state rather than restarting.",
     "sr": "Svaki agent izvozi svoje stanje (status, izvršeni upiti, ključni nalazi, pokrivenost) na poznatu lokaciju, a koordinator na nastavku učita manifest. Omogućava oporavak posle pada (crash recovery) — posao se nastavlja iz sačuvanog stanja umesto da kreće ispočetka. Npr. manifest: web-search „completed“, doc-analysis „in_progress“.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d5-q013"
+    ]
   },
   {
     "term": "hybrid context strategy",
@@ -1814,7 +2016,9 @@
     "en": "Storing conversation history externally and retrieving relevant exchanges on demand via embeddings/similarity search. The only approach that scales to months of discussion for surfacing specific past conclusions. (Vector-DB implementation itself is out of exam scope, but the concept appears in memory-strategy questions.)",
     "sr": "Čuvanje istorije razgovora spolja i dovlačenje relevantnih razmena na zahtev preko embeddings-a / pretrage po sličnosti. Jedini pristup koji skalira na mesece razgovora kada treba izneti konkretan raniji zaključak (npr. „šta smo zaključili o temi izolacije?“). Sama implementacija vektorske baze je van obima ispita, ali se koncept pojavljuje u pitanjima o strategijama memorije.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d1-q044"
+    ]
   },
   {
     "term": "instruction drift",
@@ -1849,14 +2053,18 @@
     "en": "Handling vague requests by stating reasonable assumptions explicitly and proceeding (inviting corrections), instead of asking 4+ clarifying questions that cause user abandonment. Exception: when stated preferences directly contradict each other, surface the conflict and ask the user to choose.",
     "sr": "Rukovanje nejasnim zahtevima tako što eksplicitno navedeš razumne pretpostavke i nastaviš (uz poziv na ispravku), umesto da postaviš 4+ pitanja zbog kojih korisnik odustaje (visok abandonment). Izuzetak: kad se navedene preference DIREKTNO protivreče (npr. „nizak rizik“ i „maksimalan prinos“), iznesi konflikt i traži od korisnika da izabere — pretpostavka bi mogla biti pogrešna.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d2-q039"
+    ]
   },
   {
     "term": "confirmation token (two-tool binding)",
     "en": "An architectural pattern that makes a dangerous action impossible without a prior preview: 'preview_*' returns a single-use confirmation token, and 'execute_*' requires that token. Enforces the constraint at the code level — stronger than prompt instructions, timing heuristics, or tool annotations.",
     "sr": "Arhitektonski obrazac koji čini opasnu akciju NEMOGUĆOM bez prethodnog pregleda: 'preview_*' vraća jednokratni token potvrde, a 'execute_*' zahteva baš taj token. Sprovodi pravilo na nivou koda — jače od instrukcija u promptu, vremenskih heuristika ili anotacija alata (koje se sve oslanjaju na poslušnost modela). Vezuje izvršenje za konkretan prethodni pregled.",
     "domain": 2,
-    "seen_in": []
+    "seen_in": [
+      "d1-q050"
+    ]
   },
   {
     "term": "escalation trigger",
@@ -1864,7 +2072,9 @@
     "sr": "Pouzdan uslov za predaju čoveku: eksplicitan zahtev za menadžerom, rupa/izuzetak u politici (npr. uparivanje cene konkurencije kad politika ćuti), nemogućnost napretka posle razumnog broja pokušaja, više dvosmislenih poklapanja, ili finansijska operacija iznad praga (po mogućstvu sprovedena kroz hook, ne prompt). Bitno: prvi izraz nezadovoljstva NIJE isto što i zahtev za čovekom.",
     "domain": 5,
     "seen_in": [
-      "d1-q012"
+      "d1-q012",
+      "d1-q051",
+      "d4-q020"
     ]
   },
   {
@@ -1873,7 +2083,10 @@
     "sr": "Za sisteme ekstrakcije/odlučivanja: model daje skor pouzdanosti po polju, a pragovi se kalibrišu na obeleženim (labeled) validacionim setovima. Onda: visoka pouzdanost + stabilna tačnost → automatska obrada; niska pouzdanost ili dvosmislen izvor → ljudski pregled. Samo-ocena pouzdanosti BEZ kalibracije je nepouzdana (model ume da bude samouvereno pogrešan).",
     "domain": 5,
     "seen_in": [
-      "d4-q001"
+      "d4-q001",
+      "d4-q008",
+      "d4-q011",
+      "d4-q020"
     ]
   },
   {
@@ -1888,7 +2101,9 @@
     "en": "Proxies that should NOT trigger escalation because they don't correlate with case complexity: sentiment analysis (mood != complexity), model self-rated confidence 1-10 (the model can be confidently wrong; calibration is poor), and bespoke classifiers (overengineering, may need training data you lack).",
     "sr": "Proksiji koje NE treba koristiti kao okidač eskalacije jer ne koreliraju sa složenošću slučaja: analiza sentimenta (raspoloženje ≠ težina), samo-ocena pouzdanosti modela 1–10 (model ume da bude samouvereno pogrešan; kalibracija je loša) i namenski klasifikatori (overengineering, traže podatke za obuku kojih možda nemaš). Pouzdani okidači su eksplicitni (v. escalation trigger).",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d1-q051"
+    ]
   },
   {
     "term": "VCS",
@@ -1904,7 +2119,10 @@
     "domain": 3,
     "seen_in": [
       "d3-q002",
-      "d3-q001"
+      "d3-q001",
+      "d3-q012",
+      "d3-q013",
+      "d3-q022"
     ]
   },
   {
@@ -1912,7 +2130,9 @@
     "en": "Architectural style that splits an application into small, independently deployable services with clear boundaries (vs. a monolith). On the exam it appears as a scenario marker: restructuring a monolith into microservices means dozens of files and service-boundary decisions — a task with architectural consequences, so use plan mode before letting Claude edit.",
     "sr": "Arhitektonski stil koji deli aplikaciju na male, nezavisno isporučive servise sa jasnim granicama (nasuprot monolitu). Na ispitu se javlja kao marker scenarija: restrukturiranje monolita u mikroservise znači desetine fajlova i odluke o granicama servisa — zadatak sa arhitektonskim posledicama, pa se pre izmena koristi plan mode.",
     "domain": 3,
-    "seen_in": []
+    "seen_in": [
+      "d3-q019"
+    ]
   },
   {
     "term": "TTL",
@@ -1933,7 +2153,10 @@
     "en": "Service Level Agreement — a commitment to a measurable level of service, most often a latency/turnaround guarantee. Exam-relevant via the Message Batches API, which is ~50% cheaper but offers NO latency SLA (processing up to 24h); SLA planning means sizing submission cadence around the guarantee you owe (e.g. 4-hour submission windows to meet a 30-hour SLA given 24-hour batch processing).",
     "sr": "Service Level Agreement (sporazum o nivou usluge) — obaveza na merljiv nivo usluge, najčešće garancija latencije/vremena obrade. Ispitno bitan preko Message Batches API-ja, koji je ~50% jeftiniji ali NEMA garanciju latencije (SLA) (obrada do 24h); planiranje SLA znači podešavanje ritma slanja prema garanciji koju duguješ (npr. prozori slanja od 4h da se ispoštuje SLA od 30h uz 24h batch obrade).",
     "domain": 4,
-    "seen_in": []
+    "seen_in": [
+      "d4-q009",
+      "d4-q013"
+    ]
   },
   {
     "term": "validation error",
@@ -1972,7 +2195,8 @@
     "seen_in": [
       "d1-q037",
       "d3-q004",
-      "d4-q006"
+      "d4-q006",
+      "d3-q009"
     ]
   },
   {
@@ -1991,7 +2215,8 @@
     "domain": 4,
     "seen_in": [
       "d4-q004",
-      "d4-q005"
+      "d4-q005",
+      "d1-q041"
     ]
   },
   {
@@ -2000,7 +2225,9 @@
     "sr": "Podela zadatka po analitičkim DIMENZIJAMA (svaka u paralelnoj stazi nad svim subjektima), a ne po subjektu, uz završnu sintezu — obezbeđuje konzistentnu metodologiju kroz poređenje.",
     "domain": 1,
     "seen_in": [
-      "d1-q035"
+      "d1-q035",
+      "d1-q052",
+      "d4-q018"
     ]
   },
   {
@@ -2009,7 +2236,8 @@
     "sr": "Strukturiran zapis koji svaku tvrdnju vezuje za izvor (id/URL izvora, dokument, citat, datum). Pošto je podatak a ne proza, opstaje kroz sintezu/sažimanje koje bi inače obrisalo inline atribuciju — omogućava provenienciju na nivou tvrdnje, ne samo bibliografiju na nivou dokumenta.",
     "domain": 5,
     "seen_in": [
-      "d5-q004"
+      "d5-q004",
+      "d1-q045"
     ]
   },
   {
@@ -2017,6 +2245,24 @@
     "en": "Re-running existing tests after a change to ensure previously-working behavior has not broken. A 'regression' is a defect where functionality that used to work degrades or breaks after a code change, refactor, or model/prompt update. In agentic and Claude Code workflows it is automated in CI (e.g. via hooks or a -p non-interactive review step) so changes are gated before merge.",
     "sr": "Ponovno pokretanje postojećih testova posle izmene da se proveri da ranije ispravno ponašanje nije pokvareno. „Regresija” je defekt gde funkcionalnost koja je radila počne da otkazuje posle izmene koda, refaktora ili promene modela/prompta. U agentskim i Claude Code tokovima automatizuje se u CI-ju (npr. preko hook-ova ili -p non-interaktivnog review koraka) da se izmene propuste tek kad prođu kapiju.",
     "domain": 3,
+    "seen_in": [
+      "d5-q007"
+    ]
+  },
+  {
+    "term": "primacy effect",
+    "en": "The tendency of an LLM to attend more reliably to information at the BEGINNING of a long context. Exploited by placing a key-findings summary first; the complementary failure mode is the lost-in-the-middle effect.",
+    "sr": "Sklonost LLM-a da pouzdanije obraća pažnju na informacije na POČETKU dugog konteksta. Iskorišćava se stavljanjem sažetka ključnih nalaza na početak; komplementarni problem je lost-in-the-middle efekat.",
+    "domain": 5,
+    "seen_in": [
+      "d5-q008"
+    ]
+  },
+  {
+    "term": "speculative execution",
+    "en": "An anti-pattern in agent design where tools are called preemptively (alongside any requested tool) on the guess they might be needed, returning all results regardless. Wastes resources on unneeded calls and adds complexity; prefer prompting the model to batch the tools it actually needs in one turn.",
+    "sr": "Anti-pattern u dizajnu agenta gde se alati pozivaju preventivno (uz svaki traženi alat) na pretpostavku da bi mogli zatrebati, vraćajući sve rezultate svejedno. Troši resurse na nepotrebne pozive i dodaje složenost; bolje je promptom navesti model da grupiše alate koji stvarno trebaju u jednom potezu.",
+    "domain": 1,
     "seen_in": []
   }
 ]

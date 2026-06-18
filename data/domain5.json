@@ -187,5 +187,305 @@
       "conflict-handling",
       "synthesis"
     ]
+  },
+  {
+    "id": "d5-q006",
+    "source_id": "ace-q06",
+    "domain": 5,
+    "subdomain": "",
+    "question": "After an initial automated review generates 12 findings, a developer pushes new commits to address the issues. When the review runs again, it produces 8 findings—but developers report that 5 duplicate earlier comments on code that was already fixed in the new commits. What's the most effective way to eliminate this redundant feedback while maintaining thorough analysis?",
+    "options": {
+      "A": "Run reviews only on initial PR creation and final pre-merge state, skipping intermediate commits.",
+      "B": "Restrict the review scope to only files modified in the most recent push, excluding files from earlier commits.",
+      "C": "Include prior review findings in context, instructing Claude to only report new or still-unaddressed issues.",
+      "D": "Add a post-processing filter that removes findings matching previous file paths and issue descriptions before posting comments."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Running reviews only at PR creation and final pre-merge state eliminates the continuous feedback loop that makes CI/CD-integrated reviews valuable. This sidesteps the duplication problem rather than solving it, and developers lose the benefit of iterative review feedback during development.",
+      "B": "Restricting the review scope to only recently modified files sacrifices thoroughness, since changes in one file can introduce or affect issues in other files that weren't directly modified. This approach trades analysis quality for deduplication, which is not an ideal tradeoff.",
+      "C": "Including prior review findings in context allows Claude to intelligently distinguish between new issues and those already addressed by recent commits. This approach maintains thorough analysis while leveraging Claude's reasoning ability to avoid redundant feedback on fixed code.",
+      "D": "A post-processing filter based on matching file paths and issue descriptions is brittle because LLM-generated comments vary in wording across runs, making exact matching unreliable. It also cannot semantically determine whether an issue has actually been resolved or merely rephrased differently."
+    },
+    "claude_notes": "LLM rezonuje samo nad onim što mu je u kontekstu — daj mu prethodne nalaze pa nek prijavi samo nove/još nerešene. D (string-matching filter) je krhak (LLM tekst varira; ne zna da li je suštinski rešeno). Vidi [[give-model-context-to-avoid-blind-duplication]].",
+    "glossary_refs": [
+      "context window",
+      "conversation history"
+    ],
+    "tags": [
+      "ci-cd",
+      "practice-exam",
+      "context-management",
+      "deduplication"
+    ],
+    "pattern_refs": [
+      "give-model-context-to-avoid-blind-duplication"
+    ]
+  },
+  {
+    "id": "d5-q007",
+    "source_id": "ace-q13",
+    "domain": 5,
+    "subdomain": "",
+    "question": "Your automated review generates test case suggestions for each PR. When reviewing a PR that adds course completion tracking, Claude suggests 10 test cases but developer feedback indicates 6 duplicate scenarios already covered in the existing test suite. What change would most effectively reduce duplicate suggestions?",
+    "options": {
+      "A": "Reduce requested suggestions from 10 to 5, assuming Claude will prioritize the most valuable cases first",
+      "B": "Implement post-processing that filters suggestions whose descriptions match keywords from existing test names",
+      "C": "Include the existing test file in the context so Claude can identify what scenarios are already covered",
+      "D": "Add instructions directing Claude to focus exclusively on edge cases and error conditions rather than successful paths"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Simply reducing the number of requested suggestions does not give Claude any information about which scenarios are already covered, so it has no basis to prioritize non-duplicate cases. This approach incorrectly assumes that fewer suggestions will naturally be more unique, when in reality the most obvious suggestions are likely the ones already in the test suite.",
+      "B": "Using keyword matching to filter suggestions is a brittle approach that would miss semantically equivalent tests described with different wording or terminology. This post-processing workaround addresses symptoms rather than the root cause and would be unreliable in practice.",
+      "C": "Including the existing test file in the context directly addresses the root cause of duplication: Claude can only avoid suggesting already-covered scenarios if it knows what tests already exist. This gives Claude the information needed to reason about which suggestions would be genuinely new and valuable.",
+      "D": "Restricting suggestions to only edge cases and error conditions does not solve the duplication problem, since existing tests may already cover those edge cases and error conditions. Without knowledge of the existing test suite, Claude would still have no way to avoid suggesting scenarios that are already tested."
+    },
+    "claude_notes": "Claude rezonuje samo nad onim što mu je u kontekstu — da ne predlaže duplikate, daj mu postojeći test fajl. B (keyword filter) promašuje semantički ekvivalentne testove; A/D ne daju informaciju o tome šta već postoji. Vidi [[give-model-context-to-avoid-blind-duplication]].",
+    "glossary_refs": [
+      "context window",
+      "regression testing"
+    ],
+    "tags": [
+      "ci-cd",
+      "practice-exam",
+      "context-management",
+      "test-generation"
+    ],
+    "pattern_refs": [
+      "give-model-context-to-avoid-blind-duplication"
+    ]
+  },
+  {
+    "id": "d5-q008",
+    "source_id": "ace-q21",
+    "domain": 5,
+    "subdomain": "",
+    "question": "Production monitoring reveals inconsistent synthesis quality. When aggregated results total ~75K tokens, the synthesis agent reliably cites information from the first 15K tokens (web search headlines and snippets) and the final 10K tokens (document analysis conclusions), but frequently omits critical findings that appear in the middle 50K tokens—even when those findings directly address the research question. How should you restructure the aggregated input?",
+    "options": {
+      "A": "Place a key findings summary at the beginning of the aggregated input and organize detailed results with explicit section headers for easier navigation.",
+      "B": "Implement rotation that alternates which subagent's results appear first across different research tasks, ensuring both sources receive primacy positioning equally over time.",
+      "C": "Summarize all subagent outputs to under 20K tokens total before aggregation, ensuring content stays within the model's reliable processing range.",
+      "D": "Stream subagent results to the synthesis agent incrementally, processing web search results first to completion before introducing document analysis findings."
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "Placing a key findings summary at the beginning leverages the primacy effect, ensuring critical information occupies the most reliably attended position. Adding explicit section headers throughout the aggregated input helps the model navigate and attend to middle-section content, directly mitigating the 'lost in the middle' phenomenon.",
+      "B": "Rotating which subagent's results appear first only redistributes which findings get lost across different tasks rather than solving the core problem. This approach treats fairness between sources rather than ensuring reliable quality for any individual synthesis task.",
+      "C": "Aggressively summarizing all outputs to under 20K tokens risks discarding critical detailed findings during the compression process. While shorter context would avoid the lost-in-the-middle effect, the information loss from summarization could be worse than the original problem.",
+      "D": "Streaming results sequentially and processing them one at a time prevents the synthesis agent from performing holistic cross-source analysis. This approach fragments the synthesis task rather than addressing the attention distribution issue within a single comprehensive context."
+    },
+    "claude_notes": "Simptom je lost-in-the-middle: dobra pažnja na početku/kraju, srednjih 50K se gubi. Lek: ključni sažetak na POČETAK (primacy) + eksplicitni section headeri za navigaciju. C (agresivno sažimanje) gubi detalje; D (streaming) lomi holističku sintezu. Vidi [[diagnose-litm-vs-recency-vs-truncation]].",
+    "glossary_refs": [
+      "lost-in-the-middle effect",
+      "primacy effect",
+      "attention dilution",
+      "context window"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "lost-in-the-middle",
+      "context-management"
+    ],
+    "pattern_refs": [
+      "diagnose-litm-vs-recency-vs-truncation"
+    ]
+  },
+  {
+    "id": "d5-q009",
+    "source_id": "ace-q22",
+    "domain": 5,
+    "subdomain": "",
+    "question": "The web search subagent times out while researching a complex topic. You need to design how this failure information flows back to the coordinator agent. Which error propagation approach best enables intelligent recovery?",
+    "options": {
+      "A": "Catch the timeout within the subagent and return an empty result set marked as successful.",
+      "B": "Propagate the timeout exception directly to a top-level handler that terminates the entire research workflow.",
+      "C": "Implement automatic retry logic with exponential backoff within the subagent, returning a generic \"search unavailable\" status only after all retries are exhausted.",
+      "D": "Return structured error context to the coordinator including the failure type, the attempted query, any partial results, and potential alternative approaches."
+    },
+    "correct": "D",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Catching the timeout and returning an empty result set marked as successful suppresses the error entirely, preventing the coordinator from knowing a failure occurred. This risks producing incomplete or misleading research outputs because the coordinator cannot trigger any recovery strategy for a problem it doesn't know exists.",
+      "B": "Propagating the timeout exception directly to a top-level handler that terminates the entire workflow is an unnecessarily drastic response, as the coordinator could potentially recover through alternative strategies like modifying the query or using cached/partial results. This approach sacrifices resilience by treating a single subagent failure as a fatal workflow error.",
+      "C": "While automatic retries with exponential backoff can be useful, returning only a generic \"search unavailable\" status after exhausting retries hides valuable context from the coordinator, preventing it from making informed recovery decisions such as modifying the query or trying alternative research approaches. The coordinator needs detailed failure information to orchestrate intelligent recovery, not just a binary success/failure status.",
+      "D": "Returning structured error context—including the failure type, attempted query, partial results, and alternative approaches—gives the coordinator all the information it needs to make intelligent recovery decisions, such as retrying with a modified query or proceeding with partial results. This is the best approach because it preserves maximum context for informed decision-making at the coordination level."
+    },
+    "claude_notes": "Strukturisan error kontekst (tip greške, pokušani upit, parcijalni rezultati, alternative) daje koordinatoru sve za inteligentan oporavak. A maskira grešku kao uspeh; B obara ceo workflow; C krije kontekst iza generičkog statusa. (Korisnik je izabrao C.) Vidi [[propagate-structured-error-not-silent-suppress]].",
+    "glossary_refs": [
+      "error propagation",
+      "structured error response",
+      "graceful degradation",
+      "partial success"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "error-propagation",
+      "reliability"
+    ],
+    "pattern_refs": [
+      "propagate-structured-error-not-silent-suppress"
+    ]
+  },
+  {
+    "id": "d5-q010",
+    "source_id": "ace-q26",
+    "domain": 5,
+    "subdomain": "",
+    "question": "The document analysis subagent frequently encounters failures when processing PDF files—some have corrupted sections causing parsing exceptions, others are password-protected, and occasionally the parsing library times out on large files. Currently, any exception immediately terminates the subagent and returns an error to the coordinator, which must decide whether to retry, skip the document, or fail the entire research task. This is causing excessive coordinator involvement in routine error handling. What's the most effective architectural improvement?",
+    "options": {
+      "A": "Configure the subagent to always return partial results with success status, embedding error details in metadata. The coordinator treats all responses as successful and filters problematic items during synthesis.",
+      "B": "Have the subagent implement local recovery for transient failures and only propagate errors it cannot resolve to the coordinator, including what was attempted and any partial results obtained.",
+      "C": "Have the coordinator validate all documents before dispatching to the subagent, rejecting documents likely to cause failures to ensure the subagent only receives processable files.",
+      "D": "Create a dedicated error-handling agent that monitors all subagent failures via a shared queue and makes recovery decisions independently, dispatching retry commands directly to subagents."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Masking errors as success and embedding error details in metadata hides real problems from the coordinator rather than solving them. This approach risks silent data quality issues during synthesis and removes the coordinator's ability to make informed decisions about genuinely unresolvable failures.",
+      "B": "Implementing local recovery for transient failures within the subagent follows the principle of handling errors at the lowest level capable of resolving them. This reduces excessive coordinator involvement while still escalating truly unresolvable issues with full context, including what recovery was attempted and any partial results obtained.",
+      "C": "Pre-validating all documents at the coordinator level increases the coordinator's burden rather than reducing it, and shifts routine error-handling responsibilities upward. Additionally, pre-validation cannot reliably predict all failure modes such as timeouts on large files or subtle corruption detected only during full parsing.",
+      "D": "Introducing a dedicated error-handling agent adds unnecessary architectural complexity, an additional coordination layer, and a shared queue dependency. This approach distributes error-handling logic across multiple components rather than resolving failures at the most appropriate level—the subagent itself."
+    },
+    "claude_notes": "Rukuj greškom na NAJNIŽEM nivou koji ume da je reši: subagent lokalno oporavlja tranzijentne greške (retry/skip) i eskalira SAMO nerešivo, sa kontekstom (šta je pokušano, parcijalni rezultat). A maskira grešku kao uspeh; C diže teret na koordinatora; D dodaje suvišan sloj. Vidi [[propagate-structured-error-not-silent-suppress]].",
+    "glossary_refs": [
+      "local recovery",
+      "transient error",
+      "graceful degradation",
+      "error propagation"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "error-handling",
+      "local-recovery"
+    ],
+    "pattern_refs": [
+      "propagate-structured-error-not-silent-suppress"
+    ]
+  },
+  {
+    "id": "d5-q011",
+    "source_id": "ace-q28",
+    "domain": 5,
+    "subdomain": "",
+    "question": "The web search subagent returns results for only 3 of 5 requested source categories (competitor websites and industry reports succeeded, but news archives and social media feeds timed out). The document analysis subagent successfully processed all provided documents. The synthesis subagent must now produce a findings summary from this mixed-quality input. What's the most effective error propagation strategy?",
+    "options": {
+      "A": "Have the synthesis subagent return an error to the coordinator indicating incomplete upstream data, triggering a full retry or task failure.",
+      "B": "Have the synthesis subagent request the coordinator retry the timed-out sources with extended timeouts before proceeding, ensuring complete data coverage before synthesis begins.",
+      "C": "Structure the synthesis output with coverage annotations indicating which findings are well-supported versus which topic areas have gaps due to unavailable sources.",
+      "D": "Proceed with synthesis using only the successful sources, generating output without indicating which data was unavailable."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Treating partial success as total failure by returning an error wastes all the successfully completed work from both the web search and document analysis subagents. This approach provides no value when partial results with appropriate caveats would still be useful to stakeholders.",
+      "B": "Having the synthesis subagent direct the coordinator to retry timed-out sources violates separation of concerns, as subagents should not dictate coordinator retry logic. Additionally, this approach assumes retries will succeed and unnecessarily delays producing useful output from the data already available.",
+      "C": "Structuring the output with coverage annotations embodies graceful degradation with transparency, allowing downstream consumers and end users to understand which findings are well-supported and which topic areas have gaps. This approach preserves the value of completed work while propagating uncertainty information so informed decisions can be made about confidence levels.",
+      "D": "Proceeding with synthesis without indicating which data sources were unavailable hides critical information from downstream consumers, potentially producing misleading research reports. Users would have no way to know that certain topic areas lack coverage, undermining the trustworthiness of the findings."
+    },
+    "claude_notes": "Graceful degradation SA transparentnošću: sintetizuj iz dostupnog ALI anotiraj pokrivenost (šta je dobro potkrepljeno, gde su rupe zbog nedostupnih izvora). A baca uspešan rad; B krši separation of concerns; D tiho krije rupe (obmanjujući izveštaj). Vidi [[partial-success-return-results-plus-failure-metadata]].",
+    "glossary_refs": [
+      "graceful degradation",
+      "coverage annotation",
+      "partial success",
+      "silent suppression"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "graceful-degradation",
+      "coverage"
+    ],
+    "pattern_refs": [
+      "partial-success-return-results-plus-failure-metadata"
+    ]
+  },
+  {
+    "id": "d5-q012",
+    "source_id": "ace-q29",
+    "domain": 5,
+    "subdomain": "",
+    "question": "The document analysis subagent encounters a corrupted PDF file it cannot parse. When designing the system's error handling, what is the most effective way to handle this failure?",
+    "options": {
+      "A": "Silently skip the corrupted document and continue processing other files to avoid interrupting the workflow.",
+      "B": "Throw an exception that terminates the entire research workflow.",
+      "C": "Automatically retry parsing the document three times with exponential backoff before reporting failure.",
+      "D": "Return the error with context to the coordinator agent, letting it decide how to proceed."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Silently skipping the corrupted document hides critical information from the coordinator and the user, potentially undermining the completeness and accuracy of the final research output without anyone being aware of the gap.",
+      "B": "Terminating the entire research workflow due to a single corrupted file is a disproportionate response that sacrifices all progress and prevents the system from processing the remaining valid documents.",
+      "C": "Retrying with exponential backoff is a strategy suited for transient failures such as network timeouts, but file corruption is a permanent condition that will not resolve on its own, making repeated attempts wasteful and ineffective.",
+      "D": "Returning the error with context to the coordinator agent is the most effective approach because it enables the coordinator to make an informed decision—such as skipping the file, trying an alternative parsing method, or notifying the user—while maintaining visibility into the failure."
+    },
+    "claude_notes": "Vrati grešku SA kontekstom koordinatoru da on odluči (skip / alternativa / obavesti korisnika). A tiho preskače (rupa nevidljiva); B obara ceo workflow zbog jednog fajla; C retry je za TRANZIJENTNE greške, a korupcija je trajna. Vidi [[propagate-structured-error-not-silent-suppress]].",
+    "glossary_refs": [
+      "error propagation",
+      "silent suppression",
+      "transient error",
+      "terminal error"
+    ],
+    "tags": [
+      "multi-agent-research",
+      "practice-exam",
+      "error-handling",
+      "corrupted-input"
+    ],
+    "pattern_refs": [
+      "propagate-structured-error-not-silent-suppress"
+    ]
+  },
+  {
+    "id": "d5-q013",
+    "source_id": "ace-q50",
+    "domain": 5,
+    "subdomain": "",
+    "question": "Your support agent uses progressive summarization—when context reaches 70% capacity, older turns are summarized while recent ones remain verbatim. Production logs reveal a pattern: customers reference specific amounts (\"the 15% discount I mentioned\"), but the agent responds with incorrect values. Investigation shows these details were stated 20+ turns ago and got condensed into vague summaries like \"discussed promotional pricing.\" What's the most effective fix?",
+    "options": {
+      "A": "Revise the summarization prompt to explicitly preserve all numerical values, percentages, dates, and customer-stated expectations verbatim.",
+      "B": "Store full conversation history externally and implement retrieval to search it when the agent detects reference phrases like \"as I mentioned.\"",
+      "C": "Extract transactional facts (amounts, dates, order numbers) into a persistent \"case facts\" block included in each prompt, outside the summarized history.",
+      "D": "Increase the summarization threshold from 70% to 85% capacity so conversations have more room before summarization triggers."
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Revising the summarization prompt to preserve numerical values sounds reasonable but is unreliable in practice—LLMs don't consistently follow such preservation instructions under context pressure, meaning summarization will still be lossy for precise details. You cannot reliably \"prompt your way out\" of the fundamental information loss that summarization introduces.",
+      "B": "Storing full history externally with retrieval triggered by reference phrases is over-engineered and fragile, since detecting when a customer is referencing earlier details is unreliable. It also fails when the agent proactively uses incorrect values without the customer explicitly referencing prior statements.",
+      "C": "Extracting transactional facts (amounts, dates, order numbers) into a persistent \"case facts\" block addresses the root cause: summarization is inherently lossy for precise details. By preserving critical information in a structured block outside the summarized history, these facts remain reliably available in every prompt regardless of how many turns are summarized.",
+      "D": "Raising the summarization threshold from 70% to 85% only delays when summarization occurs rather than solving the underlying problem. Longer conversations will eventually trigger summarization and lose the same critical details, making this a temporary workaround rather than a fix."
+    },
+    "claude_notes": "Sažimanje je suštinski lossy za precizne detalje — ne možeš se 'isprompt-ovati' iz toga. Izvuci transakcione činjenice (iznosi, datumi, brojevi) u trajan 'case facts' blok IZVAN sažete istorije (uvek dostupne). A (prompt da čuva brojeve) nepouzdano; B (eksterni retrieval) krhko; D (prag 85%) samo odlaže. Vidi [[extract-facts-to-persistent-block]].",
+    "glossary_refs": [
+      "progressive summarization",
+      "case facts block",
+      "context degradation",
+      "structured state persistence"
+    ],
+    "tags": [
+      "customer-support",
+      "practice-exam",
+      "summarization",
+      "case-facts"
+    ],
+    "pattern_refs": [
+      "extract-facts-to-persistent-block"
+    ]
   }
 ]
