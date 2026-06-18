@@ -838,5 +838,230 @@
       "deterministic-needs-hook-not-prompt",
       "fork-to-isolate-context"
     ]
+  },
+  {
+    "id": "d3-q023",
+    "source_id": "q-3-1-002",
+    "domain": 3,
+    "subdomain": "3.1",
+    "question": "A large TypeScript monorepo has a root CLAUDE.md with universal coding standards and a .claude/rules/ directory with topic-specific rule files. A developer notices that conventions from testing.md in .claude/rules/ are loading even when editing API handler files, consuming unnecessary tokens. The testing.md file has no YAML frontmatter. What should the developer do to fix this?",
+    "options": {
+      "A": "Move testing.md out of .claude/rules/ and into a directory-level CLAUDE.md inside the test folder",
+      "B": "Add the testing conventions to the root CLAUDE.md instead, since rules files cannot be path-scoped",
+      "C": "Add YAML frontmatter with paths: [\"**/*.test.ts\", \"**/*.test.tsx\", \"**/*.spec.ts\"] to testing.md so it only loads when editing test files",
+      "D": "Use an @./.claude/rules/testing.md line in the root CLAUDE.md so the file only loads when the import is reached"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "Test files are co-located with source files throughout 200+ packages in this monorepo. A directory-level CLAUDE.md in a single test folder would not cover test files in other directories, and creating one in every directory would be unmaintainable.",
+      "B": "Rules files absolutely support path scoping via YAML frontmatter with a paths field. Moving conventions to root CLAUDE.md would make the token efficiency problem worse, not better, because root CLAUDE.md loads for every session.",
+      "C": "Without YAML frontmatter, rule files in .claude/rules/ load for all sessions. Adding a paths field with glob patterns restricts loading to sessions where the developer is editing matching files. This is the correct approach for token-efficient, conditional convention loading.",
+      "D": "@ path imports load eagerly when the CLAUDE.md is loaded — the imported file's content is inlined at that moment, regardless of which file the developer is editing. They are a source-organisation mechanism, not a conditional-loading mechanism. Path-scoped frontmatter in .claude/rules/ is the only way to make rule files load only for matching paths."
+    },
+    "claude_notes": "testing.md u .claude/rules/ BEZ YAML frontmatter-a se učitava i pri editovanju API fajlova (troši tokene). Tačno (C): dodaj frontmatter paths:['**/*.test.ts','**/*.test.tsx','**/*.spec.ts'] da se učitava samo za test fajlove. Bez frontmatter-a rule fajlovi se učitavaju za SVE sesije. @ import (D) učitava EAGERLY pri učitavanju CLAUDE.md, bez obzira na editovani fajl — nije uslovni mehanizam. Premeštanje u root CLAUDE.md (B) pogoršava; directory-level CLAUDE.md (A) ne pokriva test fajlove razbacane po 200+ paketa. Provenance: Lesson 3.3 Path-Specific Rules.",
+    "glossary_refs": [
+      ".claude/rules/",
+      "path-specific rules",
+      "frontmatter",
+      "CLAUDE.md",
+      "@path import",
+      "attention dilution"
+    ],
+    "pattern_refs": [
+      "path-scoped-rules-over-root-claudemd"
+    ],
+    "tags": [
+      "claude-rules",
+      "path-rules",
+      "token-efficiency"
+    ]
+  },
+  {
+    "id": "d3-q024",
+    "source_id": "q-3-2-001",
+    "domain": 3,
+    "subdomain": "3.2",
+    "question": "A team wants a /review command available to everyone who clones the repository. A developer also wants a personal /brainstorm skill that produces verbose codebase analysis output without cluttering the main conversation. Where should each be created and what configuration does the skill need?",
+    "options": {
+      "A": "Both in .claude/commands/ with the brainstorm skill using context: fork",
+      "B": "/review in .claude/commands/ for team sharing; /brainstorm as a SKILL.md in ~/.claude/skills/ with context: fork frontmatter",
+      "C": "/review in CLAUDE.md as a documented procedure; /brainstorm in .claude/skills/ with allowed-tools restrictions",
+      "D": "Both in ~/.claude/commands/ with instructions for each developer to copy them locally"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "The /brainstorm skill should be personal (not shared with the team), so it should not go in the project-scoped .claude/commands/ directory.",
+      "B": "/review needs to be project-scoped (.claude/commands/ or equivalently .claude/skills/) so it is shared via version control. Both paths create identical /commands. /brainstorm is personal, so it goes in ~/.claude/skills/. context: fork isolates the verbose analysis output from the main conversation.",
+      "C": "CLAUDE.md is for always-loaded standards, not command definitions. The brainstorm skill needs context: fork for output isolation, not just allowed-tools.",
+      "D": "~/.claude/commands/ (or equivalently ~/.claude/skills/) is user-scoped and not shared via version control. Requiring manual copying defeats the purpose of project-scoped configuration."
+    },
+    "claude_notes": "/review za ceo tim, /brainstorm lični + verbozni izlaz bez zatrpavanja glavne konverzacije. Tačno (B): /review u .claude/commands/ (projektni scope, deli se kroz VCS), /brainstorm kao SKILL.md u ~/.claude/skills/ (lično) sa context: fork frontmatter-om koji izoluje verbozni izlaz od glavne konverzacije. Oba u .claude/commands/ (A) ne čuva ličnost /brainstorm-a. CLAUDE.md (C) je za uvek-učitane standarde, ne definicije komandi. ~/.claude/commands/ + ručno kopiranje (D) poništava smisao projektnog scope-a. Provenance: Lesson 3.2 Commands and Skills.",
+    "glossary_refs": [
+      "slash command",
+      "Skill (SKILL.md)",
+      "context: fork",
+      "frontmatter",
+      "CLAUDE.md"
+    ],
+    "pattern_refs": [
+      "team-config-in-project-scope-not-user-scope"
+    ],
+    "tags": [
+      "skills",
+      "slash-commands",
+      "scope"
+    ]
+  },
+  {
+    "id": "d3-q025",
+    "source_id": "q-3-2-004",
+    "domain": 3,
+    "subdomain": "3.2",
+    "question": "A growing project's CLAUDE.md has reached 800 lines covering API design rules, testing conventions, deployment procedures, and frontend style guides. Most of those topics only matter when working in the matching part of the codebase (API rules in /api, frontend rules in /web, etc.). Developers report attention dilution: Claude Code is increasingly inconsistent on specific conventions. What is the recommended fix to reduce the per-session token load while preserving coverage?",
+    "options": {
+      "A": "Split CLAUDE.md into per-topic files referenced with @ path imports so each topic lives in its own file",
+      "B": "Claude Code has a hard limit of 500 lines for CLAUDE.md files; trim the file to fit within the limit",
+      "C": "Move topic-scoped sections into .claude/rules/<topic>.md files with YAML frontmatter that scopes each rule to the relevant paths, so each rule only loads when Claude is working in that area",
+      "D": "Duplicate the CLAUDE.md content across directory-level CLAUDE.md files in each subdirectory"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "@ path imports load eagerly — Claude reads the imported file inline at load time, exactly as if its content were pasted into CLAUDE.md. The source files become smaller, but the loaded context stays the same size. This improves source-file readability and authoring ergonomics, but it does not solve the attention-dilution problem the question is asking about.",
+      "B": "There is no documented hard line limit for CLAUDE.md files. The issue is token economy and attention dilution at load time, not a technical file-size constraint.",
+      "C": "Path-scoped .claude/rules/ files are the documented way to reduce per-session context for guidance that only applies to part of the codebase. With frontmatter like `paths: [\"api/**\"]`, the API rules only load when working in /api; the frontend rules only load when working in /web; and so on. CLAUDE.md keeps only the genuinely cross-cutting standards. This actually shrinks the loaded context — unlike @ imports, which load eagerly.",
+      "D": "Directory-level CLAUDE.md files load *in addition to* the project root file, not instead of it. Duplicating content would make the problem worse and create a maintenance nightmare. Use path-scoped .claude/rules/ files instead."
+    },
+    "claude_notes": "CLAUDE.md narastao na 800 linija, attention dilution. Tačno (C): premesti tematske sekcije u .claude/rules/<topic>.md sa frontmatter paths (npr. ['api/**']) — pravilo se učitava SAMO kad radiš u toj zoni, što stvarno smanjuje učitan kontekst. Zamka: @ path import (A) učitava EAGERLY — izvorni fajlovi su manji ali učitan kontekst ostaje isti (rešava čitljivost, ne attention dilution). „Hard limit 500 linija” (B) ne postoji. Duplikacija po direktorijumima (D) pogoršava (directory CLAUDE.md se učitava DODATNO uz root). Provenance: Lesson 3.1 Modular Organisation — eager-load warning.",
+    "glossary_refs": [
+      "CLAUDE.md",
+      "CLAUDE.md hierarchy",
+      "@path import",
+      ".claude/rules/",
+      "path-specific rules",
+      "attention dilution"
+    ],
+    "pattern_refs": [
+      "path-scoped-rules-over-root-claudemd"
+    ],
+    "tags": [
+      "claude-md",
+      "path-rules",
+      "token-efficiency"
+    ]
+  },
+  {
+    "id": "d3-q026",
+    "source_id": "q-3-2-005",
+    "domain": 3,
+    "subdomain": "3.2",
+    "question": "A developer has personal code formatting preferences (2-space indentation, trailing commas) that differ from some of the projects they work on. They want Claude Code to apply these preferences across all of their projects by default. Where should these preferences be configured?",
+    "options": {
+      "A": "In the project-level .claude/CLAUDE.md of each repository they work on",
+      "B": "In ~/.claude/CLAUDE.md, so they apply across all of the developer's projects",
+      "C": "In a .claude/rules/ file without YAML frontmatter so it loads for every session",
+      "D": "In a ~/.claude/skills/ file that is invoked before each coding session"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Project-level configuration is shared with the team via version control. Personal formatting preferences should not be imposed on the entire team. Additionally, this would require duplicating the preferences across every project.",
+      "B": "User-level CLAUDE.md (~/.claude/CLAUDE.md) applies to all of that developer's projects and is not shared with the team via version control, which is exactly right for personal preferences. Note that CLAUDE.md files are concatenated into context rather than strictly overriding one another, so a project's conflicting standard is not guaranteed to win; if a rule must always be enforced, put it in settings.json or a hook.",
+      "C": ".claude/rules/ is project-scoped and version-controlled. Personal preferences should not be committed to project repositories where they would affect all team members.",
+      "D": "Skills are on-demand workflows invoked for specific tasks, not always-loaded configuration. Formatting preferences need to be applied automatically to every session without manual invocation."
+    },
+    "claude_notes": "Lične preference formatiranja (2-space, trailing commas) treba primeniti na SVE projekte developera. Tačno (B): ~/.claude/CLAUDE.md (user-level) — važi za sve projekte tog developera i NE deli se sa timom kroz VCS, baš za lične preference. Napomena: CLAUDE.md fajlovi se KONKATENIRAJU u kontekst, ne strogo override-uju — projektni standard koji se sukobi nije garantovano da pobeđuje; ako pravilo MORA da se sprovede, idi u settings.json ili hook. Projektni .claude/CLAUDE.md (A) nameće timu + duplikacija. Skill (D) je on-demand workflow, ne uvek-učitana konfiguracija. .claude/rules/ (C) je projektni/verzionisan. Provenance: Lesson 3.1 User-level CLAUDE.md.",
+    "glossary_refs": [
+      "CLAUDE.md",
+      "CLAUDE.md hierarchy",
+      ".claude/rules/",
+      "Skill (SKILL.md)"
+    ],
+    "pattern_refs": [
+      "team-config-in-project-scope-not-user-scope"
+    ],
+    "tags": [
+      "claude-md",
+      "hierarchy",
+      "user-config"
+    ]
+  },
+  {
+    "id": "d3-q027",
+    "source_id": "q-3-4-001",
+    "domain": 3,
+    "subdomain": "3.4",
+    "question": "Your team faces three tasks: (1) restructure a monolith into microservices, (2) fix a null pointer exception in a single function with a clear stack trace, (3) migrate from one logging library to another across 30 files. Which mode should be used for each?",
+    "options": {
+      "A": "Plan mode for all three, since they all involve code changes",
+      "B": "Plan mode for (1) and (3), direct execution for (2)",
+      "C": "Plan mode for (1), direct execution for (2) and (3)",
+      "D": "Direct execution for all three with comprehensive upfront instructions"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Task 2 is a well-understood, limited-scope bug fix. Plan mode would waste time for a change where the problem and solution are already clear.",
+      "B": "Task 1 involves architectural decisions with multiple valid approaches. Task 3 affects 30 files with a pattern that needs design before execution. Task 2 is a single-function fix with a clear stack trace — direct execution is appropriate.",
+      "C": "Task 3 affects 30 files and requires a consistent migration strategy. Without planning, you risk inconsistent application of the logging library change across files.",
+      "D": "Task 1 (monolith restructuring) requires codebase exploration and architectural design. Comprehensive upfront instructions assume you already know the right structure without exploring."
+    },
+    "claude_notes": "Tri zadatka: (1) monolit→mikroservisi, (2) null pointer fix sa jasnim stack trace-om, (3) migracija logging biblioteke kroz 30 fajlova. Tačno (B): plan mode za (1) i (3), direktno izvršenje za (2). (1) ima arhitektonske odluke i više validnih pristupa; (3) dira 30 fajlova i traži dosledan obrazac pre izvršenja; (2) je fokusiran bug sa jasnim uzrokom — plan mode bi traćio vreme. Pravilo: plan mode za kompleksno/dvosmisleno, direktno za usko i jasno. Provenance: Lesson 3.4 Plan Mode vs Direct Execution.",
+    "glossary_refs": [
+      "planning mode"
+    ],
+    "pattern_refs": [
+      "plan-mode-for-complex-or-ambiguous-tasks"
+    ],
+    "tags": [
+      "plan-mode",
+      "direct-execution"
+    ]
+  },
+  {
+    "id": "d3-q028",
+    "source_id": "q-3-4-004",
+    "domain": 3,
+    "subdomain": "3.4",
+    "question": "A junior developer is using Claude Code to refactor a payment processing module. The team lead wants to ensure Claude Code cannot accidentally delete production configuration files or modify the database migration directory during the refactoring session. What is the most appropriate approach?",
+    "options": {
+      "A": "Instruct the developer to use plan mode so Claude Code will ask for approval before each file change",
+      "B": "Configure allowedTools to restrict the session to only Read, Grep, Glob, and Write for files within the payment module directory",
+      "C": "Add a rule in CLAUDE.md stating 'Never modify files in the config/ or migrations/ directories'",
+      "D": "Set the repository to read-only mode at the filesystem level before starting the session"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Plan mode helps with evaluating strategies for complex tasks, but it does not provide file-level access control. Even in plan mode, the model can still access all tools and directories once execution begins.",
+      "B": "allowedTools provides tool-level permission control that can restrict which tools are available and their scope. By limiting write access to the payment module directory and keeping read access for context, the team lead ensures Claude Code cannot modify production config or migration files.",
+      "C": "CLAUDE.md instructions rely on the model's compliance and are not deterministic safeguards. For production-critical protection, tool-level permission restrictions provide reliable enforcement rather than natural language instructions.",
+      "D": "Making the entire repository read-only would prevent Claude Code from making any changes, including the legitimate refactoring of the payment module. The requirement is selective protection, not blanket read-only access."
+    },
+    "claude_notes": "Junior refaktoriše payment modul; team lead želi da Claude Code NE može da obriše prod config ni migracije. Tačno (B): konfiguriši allowedTools — tool-level kontrola dozvola koja ograničava koji su alati dostupni i njihov opseg (write samo na payment dir, read za kontekst). Plan mode (A) ne daje file-level kontrolu pristupa; read-only ceo repo (D) blokira i legitimni refaktor; CLAUDE.md pravilo „nikad ne diraj config/” (C) se oslanja na poslušnost modela, NIJE determinističko. Pravilo: za produkcijsku zaštitu ide deterministička permisija, ne NL uputstvo. Provenance: Claude Code Settings.",
+    "glossary_refs": [
+      "allowedTools",
+      "scoped tool",
+      "principle of least privilege",
+      "deterministic enforcement",
+      "planning mode",
+      "CLAUDE.md"
+    ],
+    "pattern_refs": [
+      "deterministic-needs-hook-not-prompt"
+    ],
+    "tags": [
+      "permissions",
+      "allowedtools",
+      "security"
+    ]
   }
 ]

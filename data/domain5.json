@@ -487,5 +487,190 @@
     "pattern_refs": [
       "extract-facts-to-persistent-block"
     ]
+  },
+  {
+    "id": "d5-q014",
+    "source_id": "q-5-4-002",
+    "domain": 5,
+    "subdomain": "5.4",
+    "question": "A customer support agent system encounters API rate limits from the Claude API during a peak traffic period. Multiple concurrent user sessions are failing. What is the recommended retry strategy?",
+    "options": {
+      "A": "Retry immediately at fixed intervals until the request succeeds",
+      "B": "Exponential backoff with jitter, increasing wait times between retries to allow the rate limit to reset",
+      "C": "Switch to a different API key to bypass the rate limit",
+      "D": "Queue all requests and process them in a single batch after a fixed 60-second delay"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Fixed-interval immediate retries can worsen rate limiting by maintaining constant pressure on the API. This may extend the rate limit period.",
+      "B": "Exponential backoff progressively increases wait times, reducing pressure on the API. Jitter prevents multiple clients from synchronising their retries and creating burst patterns.",
+      "C": "This circumvents rather than manages rate limits. It violates API terms of service and does not address the underlying capacity issue.",
+      "D": "A fixed 60-second delay is arbitrary and does not adapt to the actual rate limit window. It also creates poor user experience for latency-sensitive support interactions."
+    },
+    "claude_notes": "Rate limit od Claude API-ja u špicu, više konkurentnih sesija pada. Tačno (B): exponential backoff sa jitter-om — progresivno duže pauze smanjuju pritisak na API, a jitter sprečava da klijenti sinhronizuju retry-jeve i prave burst. Trenutni retry na fiksne intervale (A) održava konstantan pritisak i može produžiti rate-limit. Druga API key (C) zaobilazi, krši ToS, ne rešava kapacitet. Fiksnih 60s (D) je arbitrarno i ne prati stvarni rate-limit prozor. Provenance: Anthropic Rate Limits / Errors and Retries.",
+    "glossary_refs": [
+      "exponential backoff",
+      "jitter",
+      "rate limit",
+      "retry boundary"
+    ],
+    "pattern_refs": [
+      "handle-errors-outside-model-loop"
+    ],
+    "tags": [
+      "rate-limit",
+      "backoff",
+      "retry"
+    ]
+  },
+  {
+    "id": "d5-q015",
+    "source_id": "q-5-4-004",
+    "domain": 5,
+    "subdomain": "5.4",
+    "question": "A support system processes two request types: password resets (high volume, latency-sensitive, customers wait on screen) and account migrations (low volume, complex, can complete overnight). Both share one synchronous API endpoint at identical priority. At peak hours, migrations consume rate limit capacity and password-reset latency exceeds thresholds. What is the best approach?",
+    "options": {
+      "A": "Pause all account migration requests during business hours and process them only between midnight and 6am",
+      "B": "Route password resets through the real-time API for low-latency responses, and route account migrations through the batch processing API for high-throughput, latency-tolerant processing",
+      "C": "Implement a priority queue where password resets always execute before migration requests, using a single API endpoint",
+      "D": "Add more API keys to increase total rate limit capacity so both workloads can run simultaneously without contention"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "A fixed time window is inflexible and may not align with actual demand patterns. It also delays migrations unnecessarily during off-peak hours when capacity is available.",
+      "B": "This matches each workload to the appropriate API tier. Password resets need low latency and get real-time processing. Migrations tolerate latency and benefit from batch throughput. The workloads no longer compete for the same rate limits.",
+      "C": "A priority queue on a single endpoint still means both workloads compete for the same rate limit. If the queue is full of migrations, new resets still experience latency waiting for in-flight migration requests to complete.",
+      "D": "Multiple API keys to increase rate limits may violate terms of service and does not fundamentally solve the architectural mismatch between latency-sensitive and throughput-oriented workloads."
+    },
+    "claude_notes": "Dva tipa: password reset (visok volumen, latency-sensitive, korisnik čeka) i account migration (nizak volumen, kompleksno, može preko noći). Dele isti sinhroni endpoint na istom prioritetu → migracije jedu kapacitet, reset latencija probija prag. Tačno (B): reset kroz real-time API (niska latencija), migracije kroz batch API (visok throughput, latency-tolerant) — poslovi prestaju da se takmiče za iste rate-limite. Priority queue na jednom endpointu (C) i dalje deli rate-limit. Fiksni noćni prozor (A) je nefleksibilan. Više API ključeva (D) može kršiti ToS i ne rešava arhitektonski nesklad. Provenance: Lesson 4.5 Batches API.",
+    "glossary_refs": [
+      "Message Batches API",
+      "rate limit",
+      "routing"
+    ],
+    "pattern_refs": [
+      "batch-api-latency-tolerant-not-blocking",
+      "route-by-complexity-not-fixed-pipeline"
+    ],
+    "tags": [
+      "batch-api",
+      "rate-limit",
+      "routing"
+    ]
+  },
+  {
+    "id": "d5-q016",
+    "source_id": "q-5-5-001",
+    "domain": 5,
+    "subdomain": "5.5",
+    "question": "A structured data extraction system achieves 97% overall accuracy across all document types. The team proposes automating all extractions where model confidence exceeds 95% to reduce human review costs. What is the critical risk in this approach?",
+    "options": {
+      "A": "The 95% confidence threshold is too low and should be raised to 99% for automation",
+      "B": "Aggregate accuracy may mask poor performance on specific document types or fields, and confidence scores need calibration against labelled validation sets before use",
+      "C": "The model will become overconfident over time as it processes more documents, requiring regular retraining",
+      "D": "Automated extractions should always have human review regardless of confidence, making the proposal fundamentally flawed"
+    },
+    "correct": "B",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "The threshold value is not the core issue — the problem is that aggregate metrics hide per-type performance disparities.",
+      "B": "97% overall can hide 40% error rates on specific document types. Without stratified validation and confidence calibration, automation will silently fail on certain inputs.",
+      "C": "LLMs do not train during inference. The issue is existing calibration gaps, not drift.",
+      "D": "Automation is valid when properly validated — the issue is doing it based on uncalibrated aggregate metrics, not the concept of automation itself."
+    },
+    "claude_notes": "PROMAŠENO (tvoj C, tačno B). 97% ukupne tačnosti; predlog da se auto-obrađuje sve >95% confidence. Tačno (B): agregat može KRITI loš učinak na specifičnim tipovima dokumenata/poljima, a confidence skorovi traže kalibraciju protiv labeliranih validacionih setova PRE upotrebe — 97% ukupno može kriti 40% grešaka na pojedinim tipovima. Zamka koja te uhvatila: 'model postaje preuveren vremenom, treba retrening' (C) — LLM NE TRENIRA tokom inferencije; problem su postojeće rupe u kalibraciji, ne 'drift'. Prag 99% (A) ne rešava da agregat krije po-tip disparitet. 'Uvek ljudski pregled' (D) nije nužno — automatizacija je validna kad je pravilno verifikovana. ISTA zabluda kao q-5-5-004. Provenance: Lesson 5.5 Aggregate metrics trap.",
+    "glossary_refs": [
+      "aggregate metrics trap",
+      "confidence calibration",
+      "stratified sampling",
+      "false negative"
+    ],
+    "pattern_refs": [
+      "aggregate-metrics-hide-per-segment"
+    ],
+    "tags": [
+      "monitoring",
+      "calibration",
+      "aggregate-metrics"
+    ]
+  },
+  {
+    "id": "d5-q017",
+    "source_id": "q-5-5-004",
+    "domain": 5,
+    "subdomain": "5.5",
+    "question": "A structured data extraction system processes invoices, purchase orders, and contracts. The monitoring dashboard shows 97% overall extraction accuracy and the team considers the system production-ready. A detailed audit reveals: invoices 99.5% accuracy (80% of volume), purchase orders 98% accuracy (15% of volume), contracts 72% accuracy (5% of volume). What does this reveal and what action is required?",
+    "options": {
+      "A": "The system is performing well. 72% on contracts is acceptable since contracts represent only 5% of volume and barely affect the overall metric",
+      "B": "The aggregate accuracy metric is masking a severe per-type performance disparity. Contracts need mandatory human review until accuracy improves, and monitoring must report per-type metrics alongside aggregate figures",
+      "C": "The training data needs rebalancing so that contracts represent a larger proportion, which will naturally improve contract accuracy",
+      "D": "The 97% threshold should be raised to 99% overall to force improvement across all document types"
+    },
+    "correct": "B",
+    "my_answer": "C",
+    "status": "wrong",
+    "explanations": {
+      "A": "Acceptability depends on the business impact, not volume percentage. Contract extraction errors may have severe financial or legal consequences despite low volume. A 28% error rate on any document type is significant.",
+      "B": "This is a textbook case of aggregate metrics hiding per-type problems. 97% overall is misleading because high-volume invoice accuracy (99.5%) overwhelms the poor contract performance (72%). Per-type metrics would have surfaced this immediately. Contracts need different treatment until the extraction quality is acceptable.",
+      "C": "LLMs used for extraction are not retrained on production data this way. The issue is monitoring visibility and operational response, not model training data distribution.",
+      "D": "Raising the aggregate threshold does not address per-type disparities. Even at 99% overall, contract accuracy could remain low if invoice volume continues to dominate the metric. The solution is per-type metrics, not a higher aggregate bar."
+    },
+    "claude_notes": "PROMAŠENO (tvoj C, tačno B). 97% ukupno, ali audit: fakture 99.5% (80% volumena), narudžbenice 98% (15%), ugovori 72% (5%). Tačno (B): agregat MASKIRA ozbiljan po-tip disparitet — visoki volumen faktura preglasava loš učinak ugovora; ugovori traže obavezan ljudski pregled dok se ne popravi, a monitoring mora prijavljivati po-tip metrike uz agregat. Zamka koja te uhvatila: 'rebalansiraj trening podatke da ugovori budu veći udeo' (C) — LLM za ekstrakciju se NE retrenira tako; problem je vidljivost monitoringa i operativni odgovor, ne distribucija trening podataka. 'Sistem radi dobro, 72% je OK jer su 5% volumena' (A) — prihvatljivost zavisi od poslovnog uticaja, ne od % volumena. Prag 99% (D) ne dira po-tip disparitet. ISTA zabluda kao q-5-5-001. Provenance: Lesson 5.5 Aggregate metrics trap.",
+    "glossary_refs": [
+      "aggregate metrics trap",
+      "stratified sampling",
+      "confidence calibration",
+      "human-in-the-loop"
+    ],
+    "pattern_refs": [
+      "aggregate-metrics-hide-per-segment"
+    ],
+    "tags": [
+      "monitoring",
+      "aggregate-metrics",
+      "per-type"
+    ]
+  },
+  {
+    "id": "d5-q018",
+    "source_id": "q-5-5-005",
+    "domain": 5,
+    "subdomain": "5.5",
+    "question": "A contract extraction system reports 96% overall accuracy. The team plans to auto-approve all extractions where model confidence exceeds 90%. A pilot reveals party name extraction achieves 99% accuracy but indemnification clause extraction only 71%, even though the model reports high confidence on both. What should they implement before automating?",
+    "options": {
+      "A": "Raise the automation confidence threshold from 90% to 99% to ensure only the most reliable extractions are automated.",
+      "B": "Calibrate confidence thresholds per field type using labelled validation sets, and implement stratified sampling to continuously monitor accuracy by document type and field segment.",
+      "C": "Exclude indemnification clauses from automation entirely and continue automating all other field types at the 90% threshold.",
+      "D": "Train a separate classification model to predict extraction accuracy before deciding whether to automate each extraction."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Raising the threshold does not fix the calibration problem. The model reports high confidence even for indemnification clauses where it achieves only 71% accuracy. Raw confidence scores are unreliable without calibration.",
+      "B": "Field-level confidence calibration using ground truth data exposes the discrepancy between reported confidence and actual accuracy. Stratified sampling provides ongoing monitoring to detect novel error patterns. Together, these ensure automation is only applied where validated accuracy justifies it.",
+      "C": "This addresses the known problem but does not detect future calibration issues with other field types. Without systematic calibration and monitoring, other fields with hidden accuracy problems will be automated incorrectly.",
+      "D": "A separate model adds infrastructure complexity when the solution is to calibrate the existing confidence scores against labelled data. Calibration directly addresses the unreliable confidence outputs without requiring additional ML infrastructure."
+    },
+    "claude_notes": "96% ukupno; plan auto-approve svega >90% confidence. Pilot: imena strana 99%, indemnifikacione klauzule 71% — a model prijavljuje VISOK confidence na oba. Tačno (B): kalibriši confidence pragove PO TIPU POLJA preko labeliranih setova + stratified sampling za kontinuirani monitoring po tipu dokumenta i segmentu polja. Kalibracija po polju otkriva raskorak između prijavljenog confidence-a i stvarne tačnosti. Podizanje praga na 99% (A) ne popravlja kalibraciju (model je preuveren i za 71% polja). Zaseban model za predikciju tačnosti (D) dodaje kompleksnost umesto da kalibriše postojeći confidence. Isključi samo indemnifikaciju (C) rešava poznat problem ali ne otkriva buduće. Provenance: Lesson 5.5 Field-level calibration / Stratified sampling.",
+    "glossary_refs": [
+      "per-field calibration",
+      "confidence calibration",
+      "stratified sampling",
+      "aggregate metrics trap"
+    ],
+    "pattern_refs": [
+      "aggregate-metrics-hide-per-segment"
+    ],
+    "tags": [
+      "monitoring",
+      "calibration",
+      "per-field"
+    ]
   }
 ]

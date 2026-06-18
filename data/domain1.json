@@ -2007,5 +2007,233 @@
     "pattern_refs": [
       "multi-concern-parallel-tracks-then-synthesize"
     ]
+  },
+  {
+    "id": "d1-q053",
+    "source_id": "q-1-1-005",
+    "domain": 1,
+    "subdomain": "1.1",
+    "question": "A customer support agent's loop terminates when cumulative token usage exceeds a budget. During a complex billing investigation the budget is exhausted mid-task, after data gathering but before resolution, with stop_reason still `tool_use`. What architectural change addresses this?",
+    "options": {
+      "A": "Double the token budget to ensure the agent always has enough tokens to complete complex investigations",
+      "B": "When the token budget is nearly exhausted and stop_reason is 'tool_use', trigger a graceful degradation path that summarises progress so far and escalates to a human agent with a structured handoff",
+      "C": "Remove the token budget entirely and rely solely on the iteration cap for safety",
+      "D": "Switch to a cheaper model to reduce token usage per iteration, allowing more iterations within the same budget"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Doubling the budget is an arbitrary fix that may still be insufficient for edge cases and wastes tokens on simple requests. The fundamental issue is that the budget terminates the loop even when stop_reason indicates the agent has more work to do.",
+      "B": "When constraints prevent completion, the agent should degrade gracefully rather than terminating abruptly. Summarising progress and performing a structured handoff (customer ID, summary, root cause so far, recommended next steps) ensures no work is lost and the human agent can continue from where the AI left off.",
+      "C": "Removing the token budget eliminates a valuable cost control mechanism. The issue is not having a budget, but how the system handles budget exhaustion during active work.",
+      "D": "Using a cheaper model may reduce quality of the investigation itself. The architectural solution is graceful degradation when constraints are reached, not reducing the quality of work to fit within arbitrary limits."
+    },
+    "claude_notes": "Budžet tokena se iscrpi usred zadatka dok je stop_reason još 'tool_use' (agent ima još posla). Lek nije arhitektonski „digni budžet” (B) ni „ugasi budžet” (C) ni „jeftiniji model” (D) — to su simptomatske zakrpe. Pravo rešenje je graceful degradation: kad je budžet pri kraju a stop_reason='tool_use', pređi na putanju koja sažme dosadašnji napredak i uradi STRUKTURISANU predaju čoveku (ID, sažetak, dosadašnji uzrok, sledeći koraci) — ništa se ne gubi. Provenance: Lesson 1.1 Agentic Loops + 1.4 Structured handoff.",
+    "glossary_refs": [
+      "stop_reason",
+      "agentic loop",
+      "graceful degradation",
+      "handoff pattern",
+      "escalation trigger"
+    ],
+    "pattern_refs": [
+      "structured-handoff-not-raw-dump"
+    ],
+    "tags": [
+      "agentic-loop",
+      "graceful-degradation",
+      "handoff"
+    ]
+  },
+  {
+    "id": "d1-q054",
+    "source_id": "q-1-3-003",
+    "domain": 1,
+    "subdomain": "1.3",
+    "question": "A coordinator agent should spawn specialist subagents for billing disputes and technical issues. Its system prompt describes the delegation workflow correctly, yet when it tries to invoke a subagent nothing happens: no subagent is created and no related error is thrown. What is the most likely cause?",
+    "options": {
+      "A": "The coordinator's allowedTools list does not include 'Agent' (or its backward-compatible alias 'Task'), so it cannot invoke the mechanism for spawning subagents",
+      "B": "The subagent's AgentDefinition is missing a description field, preventing it from being invoked",
+      "C": "The coordinator needs to pass the full conversation history to the subagent for it to initialise properly",
+      "D": "The subagents need to be pre-registered in a configuration file before the coordinator can invoke them"
+    },
+    "correct": "A",
+    "my_answer": "A",
+    "status": "correct",
+    "explanations": {
+      "A": "The Agent tool (renamed from Task tool in SDK v2.1.63) is the mechanism for spawning subagents. If 'Agent' (or 'Task') is not in the coordinator's allowedTools, it physically cannot create subagents regardless of what the system prompt instructs. This is a configuration issue, not a prompt issue.",
+      "B": "A missing AgentDefinition description would cause issues with the subagent's behaviour, but the problem here is that the coordinator cannot invoke the spawning mechanism at all. The issue is upstream of any subagent definition.",
+      "C": "Subagents do not inherit the coordinator's conversation history — context must be passed explicitly. However, this is not the cause of the failure to spawn. The fundamental issue is that the coordinator lacks the ability to invoke the Agent tool.",
+      "D": "There is no requirement for subagent pre-registration. Subagents are defined via AgentDefinition and spawned through the Agent tool. The issue is that the coordinator's allowedTools does not include 'Agent' (or 'Task')."
+    },
+    "claude_notes": "Koordinator pokušava da spawn-uje subagenta, ali se NIŠTA ne dešava — ni greška. Kad nema ni greške, problem je da mehanizam fizički nije dostupan: 'Agent' (alias 'Task', preimenovan u SDK v2.1.63) NIJE u coordinator.allowedTools, pa ne može da pozove spawnovanje. Distraktori (nedostaje description B, mora se proslediti istorija C, pre-registracija D) opisuju stvari koje bi izazvale grešku ILI ne postoje. Pravilo: alat mora biti u allowedTools da bi se uopšte mogao pozvati — system prompt ne daje sposobnost, samo uputstvo. Provenance: Lesson 1.3.",
+    "glossary_refs": [
+      "Agent tool",
+      "Task tool",
+      "allowedTools",
+      "AgentDefinition",
+      "subagent"
+    ],
+    "pattern_refs": [
+      "tool-available-not-used-instruct-in-prompt"
+    ],
+    "tags": [
+      "agent-sdk",
+      "allowedtools",
+      "subagent"
+    ]
+  },
+  {
+    "id": "d1-q055",
+    "source_id": "q-1-4-005",
+    "domain": 1,
+    "subdomain": "1.4",
+    "question": "An architect is designing a customer support system using the Claude Agent SDK. The system needs a coordinator agent that can delegate to a billing specialist and a technical support specialist. Each specialist needs different tools. How should the architect configure the AgentDefinitions?",
+    "options": {
+      "A": "Create one AgentDefinition with all tools from both specialists, and use prompt instructions to tell the agent which tools to use in each context",
+      "B": "Create separate AgentDefinitions for each specialist with scoped allowedTools (4–5 tools each), and give the coordinator the Agent tool to spawn them",
+      "C": "Create the specialists as separate API endpoints and have the coordinator call them via HTTP rather than the Agent tool",
+      "D": "Give the coordinator all tools and have it handle all requests directly, eliminating the need for subagents"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Combining all tools into one agent violates the principle of scoped tool access. With too many tools, the agent is more likely to use the wrong tool. Each specialist should have only the 4–5 tools relevant to its role.",
+      "B": "Each specialist gets its own AgentDefinition with allowedTools restricted to the 4–5 tools relevant to its role. The coordinator has the Agent tool (renamed from Task tool in SDK v2.1.63; 'Task' still works as a backward-compatible alias) in its allowedTools so it can spawn specialists. This enforces separation of concerns and scoped tool access.",
+      "C": "Using HTTP calls instead of the Agent tool bypasses the Agent SDK's built-in orchestration capabilities. The Agent tool is the designed mechanism for subagent invocation and provides proper context management.",
+      "D": "A single agent with all tools has a higher error rate due to tool selection confusion. Specialist subagents with scoped tools produce more reliable results. The recommended maximum is 4–5 tools per agent."
+    },
+    "claude_notes": "Koordinator + dva specijalista (billing, tech), svaki sa drugačijim alatima. Tačno: zaseban AgentDefinition po specijalisti sa scoped allowedTools (4–5 alata), a koordinator ima 'Agent' alat da ih spawn-uje (B). Jedan agent sa svim alatima (A, D) ima veću grešku zbog konfuzije pri izboru alata (preporuka max 4–5 alata po agentu). HTTP endpoint-i (C) zaobilaze ugrađenu orkestraciju SDK-a. Provenance: Lesson 1.4 Enforcement spectrum: scoped tools.",
+    "glossary_refs": [
+      "AgentDefinition",
+      "allowedTools",
+      "scoped tool",
+      "Agent tool",
+      "separation of concerns",
+      "subagent",
+      "coordinator"
+    ],
+    "pattern_refs": [
+      "distribute-tools-to-specialized-subagents"
+    ],
+    "tags": [
+      "agent-sdk",
+      "scoped-tools",
+      "multi-agent"
+    ]
+  },
+  {
+    "id": "d1-q056",
+    "source_id": "q-1-4-007",
+    "domain": 1,
+    "subdomain": "1.4",
+    "question": "The moderation system auto-removes posts classified as policy violations. Production logs reveal that 3% of auto-removed posts were legitimate content (false positives), generating user complaints and eroding platform trust. The team considers two approaches: (A) escalate all borderline cases to human reviewers, or (B) add a confidence threshold where only high-confidence violations are auto-removed and everything else goes to human review. Which approach is better and why?",
+    "options": {
+      "A": "Approach A is better because human reviewers are always more accurate than automated systems",
+      "B": "Approach B with confidence-based routing — auto-remove only high-confidence violations, escalate uncertain cases to human review, and auto-approve high-confidence safe content",
+      "C": "Neither — instead lower the classification threshold so fewer posts are flagged as violations",
+      "D": "Approach B but with a fixed threshold of 95% confidence for all categories"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Escalating all borderline cases overwhelms the human review queue without leveraging the system's ability to handle clear-cut cases autonomously. The goal is to route intelligently, not to defer everything.",
+      "B": "Confidence-based routing creates a tiered system: high-confidence violations are actioned immediately, high-confidence safe content passes through, and uncertain cases receive human review. This balances speed, accuracy, and reviewer workload while directly addressing the false positive problem.",
+      "C": "Lowering the threshold reduces false positives but increases false negatives (genuine violations going undetected). This trades one problem for another rather than adding an appropriate escalation path.",
+      "D": "A single fixed threshold across all categories ignores that different violation types have different risk profiles. Hate speech may warrant a lower auto-action threshold than copyright claims. The threshold should be calibrated per category based on the cost of false positives vs false negatives."
+    },
+    "claude_notes": "3% false-positive auto-uklanjanja. Bolje je confidence-based routing (B): auto-ukloni samo high-confidence prekršaje, propusti high-confidence bezbedan sadržaj, a NEIZVESNE slučajeve šalji čoveku — tri sloja balansiraju brzinu/tačnost/opterećenje. Eskalacija SVEGA (A) zatrpava queue; spuštanje praga (C) trampi false-positive za false-negative; fiksni prag 95% za sve kategorije (D) ignoriše da različiti prekršaji imaju različit rizik. Provenance: Lesson 1.4 Confidence-based escalation.",
+    "glossary_refs": [
+      "confidence calibration",
+      "escalation trigger",
+      "human-in-the-loop",
+      "routing",
+      "false positive"
+    ],
+    "pattern_refs": [
+      "route-by-complexity-not-fixed-pipeline"
+    ],
+    "tags": [
+      "confidence-routing",
+      "escalation",
+      "moderation"
+    ]
+  },
+  {
+    "id": "d1-q057",
+    "source_id": "q-1-5-002",
+    "domain": 1,
+    "subdomain": "1.5",
+    "question": "A customer support agent integrates with three different backend systems via MCP tools. One system returns dates as Unix timestamps, another returns ISO 8601 strings, and the third returns dates in 'DD/MM/YYYY' format. The agent occasionally misinterprets dates, leading to incorrect order lookup results. What is the correct fix?",
+    "options": {
+      "A": "Add instructions to the system prompt explaining the three date formats and how to interpret each one",
+      "B": "Standardise the backend APIs to all return the same date format",
+      "C": "Implement a PreToolUse hook that converts all dates to ISO 8601 before passing them to the tools",
+      "D": "Implement a PostToolUse hook that normalises all date formats to ISO 8601 before the model processes the results"
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Relying on the model to correctly interpret heterogeneous formats is unreliable. The model may confuse DD/MM/YYYY with MM/DD/YYYY or miscalculate Unix timestamps. Data normalisation should happen deterministically, not probabilistically.",
+      "B": "While ideal, modifying three separate backend systems is often impractical and outside the agent architect's control. The Agent SDK provides PostToolUse hooks precisely for normalising heterogeneous outputs without modifying upstream systems.",
+      "C": "PreToolUse hooks intercept outgoing calls before execution, not incoming results. Date normalisation needs to happen on tool results after execution. The correct hook type is PostToolUse, not PreToolUse.",
+      "D": "PostToolUse hooks intercept tool results after execution but before the model processes them. Converting all dates to a consistent ISO 8601 format ensures the model receives clean, unambiguous data regardless of which backend system produced it. This is the canonical use case for PostToolUse hooks."
+    },
+    "claude_notes": "Tri backend-a vraćaju datume u tri formata (Unix, ISO 8601, DD/MM/YYYY), agent ih meša. Lek je PostToolUse hook (D) koji normalizuje sve na ISO 8601 PRE nego što model obradi rezultate — determinističko, ne probabilističko. PreToolUse (C) presreće ODLAZNE pozive, a normalizacija treba na DOLAZNE rezultate — pogrešan tip hooka. System prompt sa uputstvima (A) je nepouzdan (model meša DD/MM sa MM/DD). Menjanje 3 backend-a (B) je nepraktično i van kontrole arhitekte. Provenance: Lesson 1.5 Agent SDK Hooks.",
+    "glossary_refs": [
+      "PostToolUse hook",
+      "data normalization",
+      "PreToolUse hook",
+      "system prompt"
+    ],
+    "pattern_refs": [
+      "match-hook-to-job",
+      "deterministic-needs-hook-not-prompt"
+    ],
+    "tags": [
+      "hooks",
+      "posttooluse",
+      "data-normalization"
+    ]
+  },
+  {
+    "id": "d1-q058",
+    "source_id": "q-1-7-004",
+    "domain": 1,
+    "subdomain": "1.7",
+    "question": "A Claude Code agent has been working on a feature branch for 45 minutes and has accumulated extensive context about the codebase. The developer notices that several tool results from early in the session (file reads from 40 minutes ago) are now stale because a colleague pushed changes to those files. The agent is making recommendations based on the outdated file contents. What is the best recovery strategy?",
+    "options": {
+      "A": "Continue in the current session and ask the agent to re-read the changed files",
+      "B": "Start a completely new session with no context from the previous session",
+      "C": "Start a fresh session with a summary injection that captures the key findings and decisions from the previous session, then read the changed files for current state",
+      "D": "Use fork_session to create a new branch that excludes the stale tool results"
+    },
+    "correct": "C",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "While re-reading files updates the information, the stale results remain in the context window. The agent may still reference the outdated content from earlier in the conversation, leading to contradictory reasoning.",
+      "B": "Starting fresh discards 45 minutes of accumulated context and architectural understanding. The agent would need to rediscover all the insights it already found about the codebase.",
+      "C": "Fresh start with summary injection is the prescribed recovery strategy for stale tool results. It preserves the valuable insights and decisions from the previous session while eliminating the stale data. Reading the changed files in the new session ensures the agent works from current state.",
+      "D": "fork_session creates a branch from the current state, which includes the stale tool results. It does not allow selective exclusion of context. It is designed for divergent exploration, not for stale context recovery."
+    },
+    "claude_notes": "PROMAŠENO (tvoj D, tačno C). Tool rezultati od pre 40 min su zastareli (kolega gurnuo izmene), agent rezonuje nad starim sadržajem. Tačno: fresh sesija sa summary injection (C) — sažmi ključne nalaze/odluke iz stare sesije pa pročitaj IZMENJENE fajlove za aktuelno stanje; čuvaš uvide, brišeš zastarele podatke. Zamka koja te uhvatila: fork_session (D) grana iz TRENUTNOG stanja koje UKLJUČUJE zastarele rezultate — fork je za divergentnu eksploraciju, ne za čišćenje zastarelog konteksta. Re-read u istoj sesiji (A) ostavlja stari sadržaj u prozoru (kontradiktorno rezonovanje). Potpuno nova sesija bez konteksta (B) baca 45 min uvida. Pravilo: zastareli/iskvaren kontekst → fresh + summary, NE fork.",
+    "glossary_refs": [
+      "session state",
+      "session resumption",
+      "fork-based session",
+      "summary injection",
+      "context degradation"
+    ],
+    "pattern_refs": [],
+    "tags": [
+      "session-state",
+      "stale-context",
+      "fork-session"
+    ]
   }
 ]

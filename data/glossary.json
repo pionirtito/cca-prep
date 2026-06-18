@@ -8,7 +8,8 @@
       "d1-q001",
       "d1-q030",
       "d2-q009",
-      "d4-q015"
+      "d4-q015",
+      "d1-q053"
     ]
   },
   {
@@ -20,7 +21,8 @@
       "d1-q001",
       "d1-q015",
       "d1-q030",
-      "d1-q032"
+      "d1-q032",
+      "d1-q053"
     ]
   },
   {
@@ -79,7 +81,8 @@
       "d1-q027",
       "d1-q028",
       "d3-q003",
-      "d1-q049"
+      "d1-q049",
+      "d1-q057"
     ]
   },
   {
@@ -107,7 +110,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q002",
-      "d1-q031"
+      "d1-q031",
+      "d1-q058"
     ]
   },
   {
@@ -120,7 +124,8 @@
       "d1-q008",
       "d3-q003",
       "d1-q039",
-      "d1-q050"
+      "d1-q050",
+      "d3-q028"
     ]
   },
   {
@@ -188,7 +193,10 @@
       "d1-q004",
       "d1-q010",
       "d2-q005",
-      "d4-q006"
+      "d4-q006",
+      "d4-q021",
+      "d4-q022",
+      "d4-q023"
     ]
   },
   {
@@ -220,7 +228,8 @@
       "d1-q044",
       "d3-q007",
       "d4-q007",
-      "d4-q016"
+      "d4-q016",
+      "d4-q024"
     ]
   },
   {
@@ -241,7 +250,9 @@
       "d2-q001",
       "d2-q031",
       "d1-q036",
-      "d5-q004"
+      "d5-q004",
+      "d1-q054",
+      "d1-q055"
     ]
   },
   {
@@ -257,7 +268,8 @@
       "d1-q020",
       "d1-q025",
       "d1-q026",
-      "d1-q031"
+      "d1-q031",
+      "d1-q058"
     ]
   },
   {
@@ -308,7 +320,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q007",
-      "d1-q025"
+      "d1-q025",
+      "d1-q054"
     ]
   },
   {
@@ -317,7 +330,8 @@
     "sr": "Strategija ponavljanja gde pauza između pokušaja raste (npr. 1s, 2s, 4s) umesto trenutnog ponavljanja. Koristi se za tranzijentne greške (503, timeout) da se servisu da vremena da se oporavi, bez zatrpavanja.",
     "domain": 1,
     "seen_in": [
-      "d1-q009"
+      "d1-q009",
+      "d5-q014"
     ]
   },
   {
@@ -339,7 +353,8 @@
       "d5-q002",
       "d5-q009",
       "d5-q010",
-      "d5-q011"
+      "d5-q011",
+      "d1-q053"
     ]
   },
   {
@@ -396,7 +411,8 @@
       "d1-q039",
       "d1-q043",
       "d1-q045",
-      "d2-q036"
+      "d2-q036",
+      "d1-q055"
     ]
   },
   {
@@ -405,7 +421,8 @@
     "sr": "Trenutak predaje zadatka drugom izvršiocu (agent->čovek eskalacija ili agent->agent). Dobra predaja je STRUKTURISANA i KURIRANA - uzrok, šta je pokušano, preporučeni sledeći korak - ne sirov transkript, da primalac nastavi umesto da krene iz nule. Najbolje iznuđena tool-om sa obaveznim poljima koji primorava agenta-predavaoca da sintetizuje potreban kontekst.",
     "domain": 1,
     "seen_in": [
-      "d1-q012"
+      "d1-q012",
+      "d1-q053"
     ]
   },
   {
@@ -423,7 +440,9 @@
       "d5-q005",
       "d1-q051",
       "d2-q039",
-      "d4-q020"
+      "d4-q020",
+      "d1-q056",
+      "d5-q017"
     ]
   },
   {
@@ -449,7 +468,9 @@
       "d1-q040",
       "d5-q001",
       "d1-q041",
-      "d5-q008"
+      "d5-q008",
+      "d3-q023",
+      "d3-q025"
     ]
   },
   {
@@ -488,7 +509,8 @@
     "domain": 1,
     "seen_in": [
       "d1-q016",
-      "d1-q031"
+      "d1-q031",
+      "d1-q058"
     ]
   },
   {
@@ -505,7 +527,10 @@
       "d2-q040",
       "d2-q041",
       "d2-q042",
-      "d4-q017"
+      "d4-q017",
+      "d1-q056",
+      "d2-q043",
+      "d5-q015"
     ]
   },
   {
@@ -659,7 +684,10 @@
     "seen_in": [
       "d1-q025",
       "d1-q039",
-      "d3-q022"
+      "d3-q022",
+      "d1-q054",
+      "d1-q055",
+      "d3-q028"
     ]
   },
   {
@@ -668,7 +696,9 @@
     "sr": "Definicija subagenta: identitet, sistem prompt i alati koje sme da koristi. OPISUJE subagenta; ne sadrži automatski okidač (npr. izmišljeni 'trigger_intent') koji bi ga sam pokrenuo - invokaciju radi koordinator preko Task alata.",
     "domain": 1,
     "seen_in": [
-      "d1-q025"
+      "d1-q025",
+      "d1-q054",
+      "d1-q055"
     ]
   },
   {
@@ -689,7 +719,8 @@
       "d1-q043",
       "d1-q045",
       "d1-q046",
-      "d1-q047"
+      "d1-q047",
+      "d1-q055"
     ]
   },
   {
@@ -720,7 +751,9 @@
     "domain": 1,
     "seen_in": [
       "d1-q027",
-      "d2-q014"
+      "d2-q014",
+      "d5-q014",
+      "d5-q015"
     ]
   },
   {
@@ -731,7 +764,8 @@
     "seen_in": [
       "d1-q028",
       "d3-q003",
-      "d1-q049"
+      "d1-q049",
+      "d1-q057"
     ]
   },
   {
@@ -798,7 +832,9 @@
       "d2-q029",
       "d2-q032",
       "d1-q049",
-      "d2-q038"
+      "d2-q038",
+      "d2-q044",
+      "d2-q045"
     ]
   },
   {
@@ -819,7 +855,8 @@
     "domain": 2,
     "seen_in": [
       "d2-q002",
-      "d2-q032"
+      "d2-q032",
+      "d2-q045"
     ]
   },
   {
@@ -839,7 +876,9 @@
     "seen_in": [
       "d2-q003",
       "d2-q023",
-      "d2-q025"
+      "d2-q025",
+      "d2-q044",
+      "d2-q046"
     ]
   },
   {
@@ -857,7 +896,9 @@
       "d2-q030",
       "d5-q003",
       "d5-q002",
-      "d5-q009"
+      "d5-q009",
+      "d2-q044",
+      "d2-q046"
     ]
   },
   {
@@ -867,7 +908,8 @@
     "domain": 2,
     "seen_in": [
       "d2-q003",
-      "d4-q014"
+      "d4-q014",
+      "d5-q016"
     ]
   },
   {
@@ -904,7 +946,9 @@
       "d2-q035",
       "d2-q041",
       "d2-q042",
-      "d4-q017"
+      "d4-q017",
+      "d2-q043",
+      "d2-q045"
     ]
   },
   {
@@ -929,7 +973,8 @@
     "seen_in": [
       "d2-q005",
       "d2-q022",
-      "d2-q040"
+      "d2-q040",
+      "d2-q045"
     ]
   },
   {
@@ -940,7 +985,8 @@
     "seen_in": [
       "d2-q005",
       "d2-q035",
-      "d2-q040"
+      "d2-q040",
+      "d2-q043"
     ]
   },
   {
@@ -1001,7 +1047,9 @@
       "d1-q036",
       "d1-q039",
       "d2-q034",
-      "d2-q036"
+      "d2-q036",
+      "d1-q055",
+      "d3-q028"
     ]
   },
   {
@@ -1019,7 +1067,8 @@
     "sr": "Multi-agent obrazac u kome jedan agent generiše sadržaj (npr. kod), a drugi ga validira (npr. pokreće testove). Razdvajanje generisanja od validacije sprovodi separaciju poslova i sprečava agenta da radi posao van svoje uloge.",
     "domain": 2,
     "seen_in": [
-      "d2-q008"
+      "d2-q008",
+      "d4-q024"
     ]
   },
   {
@@ -1074,7 +1123,8 @@
       "d2-q026",
       "d2-q027",
       "d2-q028",
-      "d2-q033"
+      "d2-q033",
+      "d2-q045"
     ]
   },
   {
@@ -1099,7 +1149,8 @@
       "d2-q010",
       "d2-q026",
       "d2-q027",
-      "d2-q028"
+      "d2-q028",
+      "d2-q047"
     ]
   },
   {
@@ -1145,7 +1196,9 @@
       "d2-q027",
       "d2-q028",
       "d2-q033",
-      "d2-q032"
+      "d2-q032",
+      "d2-q045",
+      "d2-q047"
     ]
   },
   {
@@ -1154,7 +1207,8 @@
     "sr": "Ugrađeni Claude Code alat koji piše ili prepisuje ceo fajl (nov fajl ili pun rewrite). Razlikuje se od Edit-a, koji pravi ciljanu izmenu na licu mesta.",
     "domain": 2,
     "seen_in": [
-      "d2-q028"
+      "d2-q028",
+      "d2-q047"
     ]
   },
   {
@@ -1224,7 +1278,8 @@
       "d5-q003",
       "d2-q037",
       "d5-q010",
-      "d5-q012"
+      "d5-q012",
+      "d2-q044"
     ]
   },
   {
@@ -1248,7 +1303,9 @@
       "d2-q015",
       "d2-q016",
       "d2-q025",
-      "d2-q030"
+      "d2-q030",
+      "d2-q044",
+      "d2-q046"
     ]
   },
   {
@@ -1260,7 +1317,8 @@
       "d2-q016",
       "d2-q023",
       "d2-q030",
-      "d2-q037"
+      "d2-q037",
+      "d2-q044"
     ]
   },
   {
@@ -1280,7 +1338,8 @@
     "domain": 2,
     "seen_in": [
       "d2-q017",
-      "d2-q018"
+      "d2-q018",
+      "d2-q047"
     ]
   },
   {
@@ -1299,7 +1358,8 @@
     "sr": "Komanda Anthropic text_editor built-in alata koja zamenjuje TAČAN niz znakova (uklj. razmake/\\n); doslovna tekstualna zamena, nije strukturno svesna — puca na promenu formatiranja.",
     "domain": 2,
     "seen_in": [
-      "d2-q017"
+      "d2-q017",
+      "d2-q047"
     ]
   },
   {
@@ -1331,7 +1391,8 @@
       "d2-q034",
       "d2-q035",
       "d2-q041",
-      "d2-q042"
+      "d2-q042",
+      "d2-q043"
     ]
   },
   {
@@ -1351,7 +1412,8 @@
     "seen_in": [
       "d2-q021",
       "d2-q034",
-      "d2-q036"
+      "d2-q036",
+      "d3-q028"
     ]
   },
   {
@@ -1382,7 +1444,8 @@
       "d2-q023",
       "d5-q003",
       "d2-q037",
-      "d2-q039"
+      "d2-q039",
+      "d2-q046"
     ]
   },
   {
@@ -1461,7 +1524,9 @@
       "d2-q022",
       "d2-q029",
       "d4-q001",
-      "d2-q040"
+      "d2-q040",
+      "d1-q057",
+      "d4-q022"
     ]
   },
   {
@@ -1526,7 +1591,8 @@
     "sr": "Obrazac u kome agent (ili namenska faza) ocenjuje sopstveni nacrt po konkretnim kriterijumima pre isporuke — self-critique. Hvata propuste (npr. nedostaje kontekst politike, rokovi, sledeći koraci) bez ljudskog nadzora. Koristan kad je rešenje tačno ali objašnjenje nedosledno.",
     "domain": 1,
     "seen_in": [
-      "d4-q019"
+      "d4-q019",
+      "d4-q021"
     ]
   },
   {
@@ -1655,7 +1721,12 @@
       "d3-q012",
       "d3-q017",
       "d3-q018",
-      "d3-q020"
+      "d3-q020",
+      "d3-q023",
+      "d3-q024",
+      "d3-q025",
+      "d3-q026",
+      "d3-q028"
     ]
   },
   {
@@ -1666,7 +1737,9 @@
     "seen_in": [
       "d3-q002",
       "d3-q010",
-      "d3-q020"
+      "d3-q020",
+      "d3-q025",
+      "d3-q026"
     ]
   },
   {
@@ -1675,7 +1748,9 @@
     "sr": "Sintaksa u CLAUDE.md koja uvozi spoljne fajlove (npr. '@./standards/coding-style.md') radi modularnosti konfiguracije. Bez razmaka posle '@'; relativne putanje se računaju u odnosu na fajl koji uvozi; maksimalna dubina ugnježdavanja je 5. Izbegava dupliranje — svaki paket uključi samo relevantne standarde.",
     "domain": 3,
     "seen_in": [
-      "d3-q011"
+      "d3-q011",
+      "d3-q023",
+      "d3-q025"
     ]
   },
   {
@@ -1689,7 +1764,10 @@
       "d3-q010",
       "d3-q011",
       "d3-q012",
-      "d3-q018"
+      "d3-q018",
+      "d3-q023",
+      "d3-q025",
+      "d3-q026"
     ]
   },
   {
@@ -1700,7 +1778,9 @@
     "seen_in": [
       "d3-q002",
       "d3-q001",
-      "d3-q012"
+      "d3-q012",
+      "d3-q023",
+      "d3-q025"
     ]
   },
   {
@@ -1711,7 +1791,8 @@
     "seen_in": [
       "d3-q015",
       "d3-q017",
-      "d3-q018"
+      "d3-q018",
+      "d3-q024"
     ]
   },
   {
@@ -1727,7 +1808,9 @@
       "d3-q015",
       "d3-q017",
       "d3-q018",
-      "d3-q022"
+      "d3-q022",
+      "d3-q024",
+      "d3-q026"
     ]
   },
   {
@@ -1738,7 +1821,8 @@
     "seen_in": [
       "d3-q013",
       "d3-q014",
-      "d3-q022"
+      "d3-q022",
+      "d3-q024"
     ]
   },
   {
@@ -1757,7 +1841,9 @@
     "domain": 3,
     "seen_in": [
       "d3-q016",
-      "d3-q019"
+      "d3-q019",
+      "d3-q027",
+      "d3-q028"
     ]
   },
   {
@@ -1819,7 +1905,10 @@
       "d4-q016",
       "d4-q017",
       "d4-q018",
-      "d4-q020"
+      "d4-q020",
+      "d2-q043",
+      "d4-q021",
+      "d4-q023"
     ]
   },
   {
@@ -1839,7 +1928,10 @@
       "d4-q007",
       "d4-q010",
       "d4-q014",
-      "d4-q020"
+      "d4-q020",
+      "d4-q021",
+      "d4-q022",
+      "d4-q023"
     ]
   },
   {
@@ -1855,7 +1947,8 @@
     "sr": "Kad izvučeni podaci padnu na validaciji, ponovi prompt sa originalnim dokumentom, prethodnom (pogrešnom) ekstrakcijom i konkretnom greškom validacije. Deluje za greške formata, strukture i aritmetike (model može da se ispravi). NE pomaže kad informacije jednostavno nema u izvoru ili je u drugom, nepriloženom dokumentu.",
     "domain": 4,
     "seen_in": [
-      "d4-q002"
+      "d4-q002",
+      "d4-q024"
     ]
   },
   {
@@ -1864,7 +1957,8 @@
     "sr": "Obrazac za otkrivanje internih protivrečnosti: model izvuče i navedenu vrednost (stated) i nezavisno izračunatu (calculated); ako se razlikuju, zastavica 'conflict_detected' omogućava da se nesklad obradi. Npr. navedeni total $150 vs izračunati $145 → konflikt detektovan, ne propušta se tiho.",
     "domain": 4,
     "seen_in": [
-      "d4-q019"
+      "d4-q019",
+      "d4-q024"
     ]
   },
   {
@@ -1883,7 +1977,8 @@
       "d4-q001",
       "d4-q008",
       "d4-q011",
-      "d4-q014"
+      "d4-q014",
+      "d1-q056"
     ]
   },
   {
@@ -1894,7 +1989,10 @@
     "seen_in": [
       "d4-q001",
       "d4-q008",
-      "d4-q010"
+      "d4-q010",
+      "d4-q021",
+      "d4-q022",
+      "d4-q023"
     ]
   },
   {
@@ -1920,7 +2018,8 @@
       "d4-q009",
       "d4-q012",
       "d4-q013",
-      "d4-q015"
+      "d4-q015",
+      "d5-q015"
     ]
   },
   {
@@ -1985,7 +2084,8 @@
     "sr": "U dugim sesijama model počne da daje nestabilne odgovore i da priča o „tipičnim obrascima“ umesto o konkretnim klasama/fajlovima iz zadatka. Signal da je vreme za '/compact', scratchpad fajl ili novu sesiju sa strukturisanim sažetkom. Često je pouzdanije početi ispočetka sa „evo kratkog rezimea šta smo našli…“ nego nastaviti sa zastarelim podacima.",
     "domain": 5,
     "seen_in": [
-      "d5-q013"
+      "d5-q013",
+      "d1-q058"
     ]
   },
   {
@@ -2074,7 +2174,9 @@
     "seen_in": [
       "d1-q012",
       "d1-q051",
-      "d4-q020"
+      "d4-q020",
+      "d1-q053",
+      "d1-q056"
     ]
   },
   {
@@ -2086,7 +2188,11 @@
       "d4-q001",
       "d4-q008",
       "d4-q011",
-      "d4-q020"
+      "d4-q020",
+      "d1-q056",
+      "d5-q016",
+      "d5-q017",
+      "d5-q018"
     ]
   },
   {
@@ -2094,7 +2200,11 @@
     "en": "Stratified (random) sampling — regularly auditing a sample even of high-confidence extractions, broken down by document type and field — because an aggregate metric (e.g. 97% accuracy) can hide 40% error rates for a particular document type or field.",
     "sr": "Stratifikovano (slojevito) uzorkovanje — redovna revizija uzorka čak i kod ekstrakcija visoke pouzdanosti, razloženo po TIPU dokumenta i po polju. Razlog: agregatna metrika (npr. 97% tačnosti) može da krije 40% grešaka za jedan određeni tip dokumenta. Analiziraj tačnost po segmentima, ne samo ukupno — inače „prosek“ lažno smiruje.",
     "domain": 5,
-    "seen_in": []
+    "seen_in": [
+      "d5-q016",
+      "d5-q017",
+      "d5-q018"
+    ]
   },
   {
     "term": "unreliable escalation signal",
@@ -2122,7 +2232,9 @@
       "d3-q001",
       "d3-q012",
       "d3-q013",
-      "d3-q022"
+      "d3-q022",
+      "d3-q023",
+      "d3-q024"
     ]
   },
   {
@@ -2173,7 +2285,9 @@
     "sr": "errorCategory za kršenje politike/pravila/dozvole (npr. nema licence, ograničen resurs). Nije za ponavljanje — retry nikad ne pomaže; agent mora da eskalira ili ponudi alternativu.",
     "domain": 2,
     "seen_in": [
-      "d2-q030"
+      "d2-q030",
+      "d2-q044",
+      "d2-q046"
     ]
   },
   {
@@ -2205,7 +2319,8 @@
     "sr": "Granica između otkaza koje retry-sa-feedbackom može popraviti (format-greške na sadržaju koji model razume) i onih koje ne može (praznine u sposobnosti — npr. nečitljiv jezik — ili trajni/dozvolni otkazi). Drugi se rutiraju na ljudsku proveru ili eskalaciju.",
     "domain": 4,
     "seen_in": [
-      "d4-q002"
+      "d4-q002",
+      "d5-q014"
     ]
   },
   {
@@ -2264,5 +2379,80 @@
     "sr": "Anti-pattern u dizajnu agenta gde se alati pozivaju preventivno (uz svaki traženi alat) na pretpostavku da bi mogli zatrebati, vraćajući sve rezultate svejedno. Troši resurse na nepotrebne pozive i dodaje složenost; bolje je promptom navesti model da grupiše alate koji stvarno trebaju u jednom potezu.",
     "domain": 1,
     "seen_in": []
+  },
+  {
+    "term": "aggregate metrics trap",
+    "en": "A single aggregate accuracy/quality number can hide severe failure on specific segments (document types, fields, languages) because high-volume, easy segments dominate the average. Fix: report stratified per-segment metrics, not just the headline figure.",
+    "sr": "Jedan agregatni broj tačnosti/kvaliteta može da krije težak pad na pojedinim segmentima (tipovi dokumenata, polja, jezici) jer lak segment velikog volumena preglasava prosek. Lek: prijavljuj stratifikovane po-segment metrike, ne samo glavnu cifru.",
+    "domain": 5,
+    "seen_in": [
+      "d5-q016",
+      "d5-q017",
+      "d5-q018"
+    ]
+  },
+  {
+    "term": "per-field calibration",
+    "en": "Calibrating confidence thresholds separately for each field/type against labelled validation data, because a model can report high confidence on a field where its real accuracy is low. Distinct from one global threshold.",
+    "sr": "Kalibracija confidence pragova zasebno po polju/tipu protiv labeliranih validacionih podataka, jer model može prijaviti visok confidence na polju gde mu je stvarna tačnost niska. Razlikuje se od jednog globalnog praga.",
+    "domain": 5,
+    "seen_in": [
+      "d5-q018"
+    ]
+  },
+  {
+    "term": "Agent tool",
+    "en": "The Agent SDK tool a coordinator uses to spawn subagents (renamed from the Task tool in SDK v2.1.63; 'Task' still works as a backward-compatible alias). Must be in the coordinator's allowedTools or it physically cannot create subagents.",
+    "sr": "Alat Agent SDK-a kojim koordinator spawn-uje subagente (preimenovan iz Task alata u SDK v2.1.63; 'Task' radi kao kompatibilni alias). Mora biti u coordinator.allowedTools ili fizički ne može da kreira subagente.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q054",
+      "d1-q055"
+    ]
+  },
+  {
+    "term": "PreToolUse hook",
+    "en": "An Agent SDK hook that intercepts an outgoing tool call BEFORE execution (e.g. to validate or block arguments). Contrast with PostToolUse, which fires on results after execution. Wrong choice for normalising incoming tool results.",
+    "sr": "Hook Agent SDK-a koji presreće ODLAZNI poziv alata PRE izvršenja (npr. validacija/blokada argumenata). Suprotno od PostToolUse koji se okida na rezultatima posle izvršenja. Pogrešan izbor za normalizaciju dolaznih rezultata.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q057"
+    ]
+  },
+  {
+    "term": "summary injection",
+    "en": "Recovery technique for stale/corrupted context: start a fresh session and inject a concise summary of the prior session's key findings and decisions, then re-read current state. Preserves insight while dropping stale tool results.",
+    "sr": "Tehnika oporavka za zastareo/iskvaren kontekst: pokreni fresh sesiju i ubaci sažet pregled ključnih nalaza i odluka prethodne sesije, pa ponovo pročitaj aktuelno stanje. Čuva uvid a izbacuje zastarele tool rezultate.",
+    "domain": 1,
+    "seen_in": [
+      "d1-q058"
+    ]
+  },
+  {
+    "term": "replace_all",
+    "en": "An Edit-tool option that replaces every occurrence of the target string. Alongside expanding the search string with more surrounding context, it is the documented recovery path for a 'non-unique match' Edit error — preferable to rewriting the whole file with Write.",
+    "sr": "Opcija Edit alata koja menja SVAKU pojavu ciljanog stringa. Uz proširenje search stringa dodatnim kontekstom, to je dokumentovana putanja oporavka za 'non-unique match' grešku Edit-a — bolje nego prepisivanje celog fajla Write-om.",
+    "domain": 2,
+    "seen_in": [
+      "d2-q047"
+    ]
+  },
+  {
+    "term": "jitter",
+    "en": "Random variation added to retry wait times (on top of exponential backoff) so that many clients do not synchronise their retries and create coordinated bursts against a rate-limited API.",
+    "sr": "Nasumična varijacija dodata vremenu čekanja pri retry-ju (povrh exponential backoff-a) da više klijenata ne sinhronizuje retry-jeve i ne prave koordinisane burst-eve ka rate-limited API-ju.",
+    "domain": 5,
+    "seen_in": [
+      "d5-q014"
+    ]
+  },
+  {
+    "term": "detected_patterns",
+    "en": "A structured output field where the model lists the specific features/patterns it identified (e.g. 'slur targeting ethnicity'). Externalising reasoning into structured data lets a validation step programmatically check it against the conclusion and feed back targeted error messages for self-correction.",
+    "sr": "Polje strukturisanog izlaza u koje model upisuje konkretne obrasce koje je prepoznao (npr. 'uvreda na etničkoj osnovi'). Eksternalizacija rezonovanja u strukturu omogućava da validacija programski proveri poklapanje sa zaključkom i vrati ciljan feedback za self-correction.",
+    "domain": 4,
+    "seen_in": [
+      "d4-q024"
+    ]
   }
 ]

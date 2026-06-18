@@ -16,7 +16,9 @@
       "d1-q039",
       "d1-q049",
       "d1-q050",
-      "d3-q022"
+      "d3-q022",
+      "d1-q057",
+      "d3-q028"
     ]
   },
   {
@@ -44,7 +46,8 @@
     "seen_in": [
       "d1-q001",
       "d1-q015",
-      "d1-q030"
+      "d1-q030",
+      "d4-q024"
     ]
   },
   {
@@ -180,7 +183,8 @@
       "d1-q023",
       "d1-q028",
       "d3-q003",
-      "d1-q049"
+      "d1-q049",
+      "d1-q057"
     ]
   },
   {
@@ -191,7 +195,8 @@
     "lesson_en": "Keep transport-level transient errors (503, timeout) and retry logic (retry, exponential backoff) inside deterministic code (hook/orchestrator), outside the model's reasoning loop. Three reasons: (1) preserves token context - the model never sees failed attempts, only the final outcome; (2) prevents hallucination - the model never receives a raw error to misinterpret or to 'guess' data around; (3) more reliable and robust than prompt-based retry (which is probabilistic and brittle). Return to the model either finalized data or a standardized state signal (graceful degradation). Related to match-hook-to-job (PostToolUse is where this lives).",
     "seen_in": [
       "d1-q009",
-      "d1-q011"
+      "d1-q011",
+      "d5-q014"
     ]
   },
   {
@@ -219,7 +224,8 @@
       "d1-q024",
       "d1-q026",
       "d1-q038",
-      "d1-q042"
+      "d1-q042",
+      "d1-q053"
     ]
   },
   {
@@ -266,7 +272,9 @@
       "d1-q017",
       "d1-q029",
       "d2-q001",
-      "d2-q036"
+      "d2-q036",
+      "d1-q056",
+      "d5-q015"
     ]
   },
   {
@@ -331,7 +339,8 @@
     "lesson_sr": "Dodavanje alata u allowedTools čini ga DOSTUPNIM, ali ne i upotrebljenim. Ako model narira nameru ('prebaciću te') umesto da pozove alat, promptu fali eksplicitno uputstvo KADA/da treba da ga pozove. Rešenje je dopuna sistem prompta, ne dodavanje novog alata ili izmišljenog config polja. RAZLIKA od [[deterministic-needs-hook-not-prompt]]: tamo je pravilo koje MORA uvek da važi (sprovedi hook-om/kodom, ne promptom); OVDE je invokacija po PROCENI dostupne sposobnosti u pravom trenutku -> prompt je baš pravi alat. Često ide uz [[distractor-invents-a-mechanism]] (lažne opcije izmišljaju fork/Escalate tool/trigger_intent).",
     "lesson_en": "Adding a tool to allowedTools makes it AVAILABLE, not USED. If the model narrates intent ('I will transfer you') instead of calling the tool, the system prompt lacks explicit guidance on when to invoke it. The fix is prompt guidance, not a new tool or an invented config field. Contrast with [[deterministic-needs-hook-not-prompt]]: that covers a rule that must ALWAYS hold (enforce via hook/code, not prompt); here invocation is a judgment call about an available capability -> prompt is the right lever. Often paired with [[distractor-invents-a-mechanism]] (decoy options invent fork/Escalate tool/trigger_intent).",
     "seen_in": [
-      "d1-q025"
+      "d1-q025",
+      "d1-q054"
     ]
   },
   {
@@ -374,7 +383,8 @@
       "d2-q001",
       "d2-q007",
       "d2-q008",
-      "d2-q031"
+      "d2-q031",
+      "d1-q055"
     ]
   },
   {
@@ -396,7 +406,9 @@
     "seen_in": [
       "d2-q003",
       "d2-q016",
-      "d2-q023"
+      "d2-q023",
+      "d2-q044",
+      "d2-q046"
     ]
   },
   {
@@ -535,7 +547,8 @@
       "d2-q023",
       "d2-q025",
       "d2-q030",
-      "d2-q037"
+      "d2-q037",
+      "d2-q044"
     ]
   },
   {
@@ -572,7 +585,9 @@
       "d2-q032",
       "d2-q035",
       "d2-q041",
-      "d2-q042"
+      "d2-q042",
+      "d2-q043",
+      "d2-q045"
     ]
   },
   {
@@ -605,7 +620,8 @@
     "lesson_sr": "Biraj alat za izmenu po PRIRODI promene. Cela zamena sadržaja fajla → Write: atomski create/overwrite, jednokoračno, čisto. Targetirana, kontekstualna izmena malog regiona → Edit. NE rm (Bash) pa recreate (file-system churn, problemi s dozvolama/metapodacima). NE search alat (Grep) za brisanje sadržaja — Grep je za pretragu, ne za mutaciju. Edit na velikom fajlu uz uparivanje prve/poslednje linije za full-file zamenu je krhko i podložno greškama. Vidi [[discovery-by-name-glob-by-content-grep]] i [[right-size-tool-to-task]].",
     "lesson_en": "Pick the mutation tool by the NATURE of the change. Full-file content replacement -> Write: atomic create/overwrite, single-step, clean. Targeted, contextual edit of a small region -> Edit. NOT rm (Bash) then recreate (file-system churn, permission/metadata issues). NOT a search tool (Grep) to delete contents — Grep is for searching, not mutation. Using Edit to match the first/last line for a full-file replace on a large file is brittle and error-prone. See [[discovery-by-name-glob-by-content-grep]] and [[right-size-tool-to-task]].",
     "seen_in": [
-      "d2-q028"
+      "d2-q028",
+      "d2-q047"
     ]
   },
   {
@@ -646,7 +662,9 @@
       "d3-q010",
       "d3-q011",
       "d3-q012",
-      "d3-q018"
+      "d3-q018",
+      "d3-q023",
+      "d3-q025"
     ]
   },
   {
@@ -708,7 +726,10 @@
       "d4-q016",
       "d4-q017",
       "d4-q018",
-      "d4-q020"
+      "d4-q020",
+      "d4-q021",
+      "d4-q022",
+      "d4-q023"
     ]
   },
   {
@@ -732,7 +753,8 @@
       "d4-q009",
       "d4-q012",
       "d4-q013",
-      "d4-q015"
+      "d4-q015",
+      "d5-q015"
     ]
   },
   {
@@ -774,7 +796,8 @@
     "lesson_en": "When a task is already known to be COMPLEX (large-scale changes, architectural decisions, dependencies) OR AMBIGUOUS (multiple valid approaches, unclear requirements), enter plan mode: explore the codebase, understand dependencies/trade-offs, and propose an approach BEFORE making changes. Direct execution on assumptions leads to costly rework (auth/error patterns differ significantly; service boundaries need the dependency graph). 'Switch to plan mode only if complexity arises' ignores that the complexity is already in the requirements.",
     "seen_in": [
       "d3-q016",
-      "d3-q019"
+      "d3-q019",
+      "d3-q027"
     ]
   },
   {
@@ -787,7 +810,9 @@
       "d2-q038",
       "d3-q015",
       "d3-q017",
-      "d3-q020"
+      "d3-q020",
+      "d3-q024",
+      "d3-q026"
     ]
   },
   {
@@ -798,6 +823,18 @@
     "lesson_en": "Progressive summarization is inherently LOSSY for precise data (amounts, percentages, dates, order numbers) — the model later fabricates them because they got condensed into a vague 'discussed pricing'. You can't 'prompt your way out' (LLMs don't reliably preserve details under context pressure) nor merely raise the threshold (only delays it). Fix: extract transactional facts into a PERSISTENT, structured 'case facts' block present in EVERY prompt, OUTSIDE the summarized history. External retrieval triggered by 'as I mentioned' phrases is brittle (reference detection is unreliable; fails when the model proactively uses a wrong value).",
     "seen_in": [
       "d5-q013"
+    ]
+  },
+  {
+    "id": "aggregate-metrics-hide-per-segment",
+    "title": "Agregatne metrike kriju po-segmentni pad",
+    "domain": 5,
+    "lesson_sr": "Jedan agregatni skor (npr. 97% tačnosti) može da KRIJE težak pad na pojedinim segmentima — tipovima dokumenata, poljima, jezicima — jer lak segment velikog volumena preglasava prosek (npr. ugovori 72% sakriveni iza faktura 99.5%). Lek: meri STRATIFIKOVANO po segmentu + kalibriši confidence po tipu/polju protiv labeliranog seta + ciljani ljudski pregled za slab segment. Ključna zabluda na ispitu: LLM NE „uči”/„drift”-uje/„rebalansira trening” pri inferenci — kad confidence ne odgovara stvarnoj tačnosti, problem je KALIBRACIJA i VIDLJIVOST monitoringa, ne distribucija trening podataka. Srodno [[fix-root-cause-not-symptom]].",
+    "lesson_en": "A single aggregate score (e.g. 97% accuracy) can HIDE severe degradation on specific segments — document types, fields, languages — because a high-volume easy segment dominates the average (e.g. contracts at 72% masked behind invoices at 99.5%). Fix: measure STRATIFIED per segment + calibrate confidence per type/field against a labelled set + targeted human review for the weak segment. Key exam misconception: an LLM does not 'learn'/'drift'/'rebalance training' at inference — when confidence does not match real accuracy, the problem is CALIBRATION and monitoring VISIBILITY, not training-data distribution. Related to fix-root-cause-not-symptom.",
+    "seen_in": [
+      "d5-q016",
+      "d5-q017",
+      "d5-q018"
     ]
   }
 ]

@@ -50,8 +50,8 @@
       "D": "Remove the reasoning validation requirement for posts in unfamiliar languages"
     },
     "correct": "B",
-    "my_answer": "C",
-    "status": "wrong",
+    "my_answer": "B",
+    "status": "correct",
     "explanations": {
       "A": "Incorrect. More retries are ineffective when the model lacks the capability to analyse content in that language. The failure is not a transient format issue — the model genuinely cannot provide reasoning for content it cannot understand.",
       "B": "Correct. The retry boundary distinguishes between fixable format issues and unfixable capability gaps. Empty reasoning on analysable posts is a format error that retries with error feedback can fix. Unfamiliar languages represent absent capability — no amount of retrying will create language understanding. Route these to human review.",
@@ -736,6 +736,156 @@
     "pattern_refs": [
       "escalate-only-on-genuine-policy-gap",
       "concrete-examples-beat-abstract-instructions"
+    ]
+  },
+  {
+    "id": "d4-q021",
+    "source_id": "q-4-1-002",
+    "domain": 4,
+    "subdomain": "4.1",
+    "question": "Your Claude Code review prompt for the TypeScript monorepo classifies severity using prose descriptions like 'critical means the code is dangerous' and 'minor means the code is slightly suboptimal'. Developers complain that identical code patterns receive different severity ratings across runs. What is the most effective improvement?",
+    "options": {
+      "A": "Replace prose severity descriptions with concrete code examples for each severity level, showing actual TypeScript snippets that qualify as critical, major, and minor",
+      "B": "Add a confidence threshold so only findings above 90% confidence are reported, filtering out uncertain severity ratings",
+      "C": "Lower the model temperature to 0 to ensure deterministic severity ratings",
+      "D": "Add a second model pass that re-evaluates each finding's severity to catch inconsistencies"
+    },
+    "correct": "A",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Severity calibration with concrete code examples produces consistent classification across invocations. Prose descriptions are inherently ambiguous and leave the model to interpret severity differently each time.",
+      "B": "Self-reported confidence scores are poorly calibrated. Confidence-based filtering does not fix the root cause, which is ambiguous severity criteria. Explicit code examples are the correct fix.",
+      "C": "While lower temperature reduces randomness, it does not address the fundamental problem: the model has no concrete reference for what each severity level looks like. Code examples provide that reference.",
+      "D": "A second pass using the same vague prose criteria will produce the same inconsistency. The criteria themselves must be improved with concrete code examples before adding verification layers."
+    },
+    "claude_notes": "PROMAŠENO (tvoj D, tačno A). Severity klasifikacija preko proznih opisa ('critical=opasno') daje različite ocene za isti kod. Tačno (A): zameni proze KONKRETNIM primerima koda za svaki nivo (stvarni TS snippeti za critical/major/minor) — kalibracija primerima daje doslednu klasifikaciju. Zamka koja te uhvatila: drugi prolaz modela koji re-evaluira (D) — isti nejasni kriterijumi daju istu nedoslednost; PRVO popravi kriterijume konkretnim primerima, pa tek onda dodaj verifikacione slojeve. Temperature 0 (C) smanjuje nasumičnost ali model i dalje nema referencu šta je koji nivo. Confidence prag 90% (B) — self-reported confidence je loše kalibrisan. Uporedi sa q-4-1-006/q-4-1-007 (iste pouke — te si pogodio). Provenance: Lesson 4.1 Severity calibration.",
+    "glossary_refs": [
+      "explicit criteria",
+      "severity criteria",
+      "few-shot prompting",
+      "temperature",
+      "evaluator-optimizer pattern"
+    ],
+    "pattern_refs": [
+      "concrete-examples-beat-abstract-instructions"
+    ],
+    "tags": [
+      "system-prompt",
+      "severity",
+      "calibration"
+    ]
+  },
+  {
+    "id": "d4-q022",
+    "source_id": "q-4-1-006",
+    "domain": 4,
+    "subdomain": "4.1",
+    "question": "The moderation system's prompt instructs Claude to 'be conservative when moderating and err on the side of caution.' Reviewers find that innocuous posts about cooking with knives, news articles about violence, and fictional war stories are all being flagged as policy violations. What is the root cause and fix?",
+    "options": {
+      "A": "The model is too sensitive — lower the temperature to reduce over-flagging",
+      "B": "Replace 'be conservative' with explicit categorical criteria — define each violation category with specific indicators, severity levels, and concrete examples of what does and does not qualify, including edge cases like news reporting and fiction",
+      "C": "Add an allowlist of safe topics (cooking, news, fiction) that should never be flagged",
+      "D": "Add a second pass that reviews flagged posts and removes false positives before actioning them"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Temperature affects randomness, not the interpretation of moderation criteria. The over-flagging is caused by vague instructions, not sampling behaviour.",
+      "B": "Vague directives like 'be conservative' give the model no basis for distinguishing between genuine violations and legitimate content that mentions sensitive topics. Explicit criteria with examples of both violations and non-violations (news, fiction, educational content) enable consistent, calibrated decisions.",
+      "C": "Allowlists are brittle and impossible to maintain comprehensively. New safe topics will constantly appear. The fix is better criteria that teach the model to distinguish context, not a growing list of exceptions.",
+      "D": "A second pass using the same vague 'be conservative' criteria will reproduce the same false positives. Fix the criteria first; add verification layers second."
+    },
+    "claude_notes": "'Budi konzervativan' flaguje bezazlene postove (kuvanje noževima, vesti o nasilju, ratna fikcija). Tačno (B): zameni 'budi konzervativan' EKSPLICITNIM kategorijalnim kriterijumima — definiši svaku kategoriju prekršaja sa indikatorima, nivoima ozbiljnosti i konkretnim primerima šta JESTE i šta NIJE prekršaj, uklj. ivične slučajeve (vesti, fikcija, edukacija). Vage direktive ne daju osnovu za razlikovanje. Temperature (A) ne menja tumačenje kriterijuma. Allowlist (C) je krhak/neodrživ. Drugi prolaz (D) sa istim vage kriterijumima reprodukuje iste false-positive. Provenance: Lesson 4.1 Explicit criteria over hedge phrases.",
+    "glossary_refs": [
+      "explicit criteria",
+      "severity criteria",
+      "system prompt",
+      "temperature"
+    ],
+    "pattern_refs": [
+      "concrete-examples-beat-abstract-instructions"
+    ],
+    "tags": [
+      "system-prompt",
+      "explicit-criteria",
+      "moderation"
+    ]
+  },
+  {
+    "id": "d4-q023",
+    "source_id": "q-4-1-007",
+    "domain": 4,
+    "subdomain": "4.1",
+    "question": "A moderation team introduces a severity scale ('low', 'medium', 'high', 'critical'). The same post (a user threatening to 'destroy' a competitor's product in a review) is classified as 'high' on some runs and 'low' on others. The prompt defines severities with phrases like 'high means the content is clearly harmful' and 'low means the content is mildly inappropriate'. What should they change?",
+    "options": {
+      "A": "Set temperature to 0 to eliminate classification variance across runs",
+      "B": "Replace prose severity descriptions with concrete examples for each level — 'high' includes direct threats of physical harm with specifics; 'low' includes figurative language in product reviews — so the model has calibration anchors for each severity",
+      "C": "Remove the severity scale and use binary classification (violation / not violation) to reduce inconsistency",
+      "D": "Run the classification three times and take the majority vote for severity"
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Lower temperature reduces randomness but does not fix ambiguous criteria. The model is inconsistent because the severity definitions are vague, not because of sampling variance.",
+      "B": "Concrete examples anchor each severity level to specific, observable patterns. When the model sees 'destroy a competitor's product' in a review context, it can match against the 'low severity — figurative language' example rather than interpreting 'clearly harmful' differently each run.",
+      "C": "Binary classification loses valuable granularity needed for routing decisions (auto-remove vs escalate vs warn). The fix is better severity criteria, not removing severity entirely.",
+      "D": "Majority voting averages out noise but triples cost and latency without fixing the root cause. With vague criteria, the model may consistently misclassify in the same direction, making voting ineffective."
+    },
+    "claude_notes": "Skala severity (low/medium/high/critical) preko proza ('high=jasno štetno') daje 'high' nekad, 'low' drugi put za isti post. Tačno (B): zameni proze KONKRETNIM primerima po nivou — 'high' = direktne pretnje fizičkom povredom sa specifikom; 'low' = figurativni jezik u recenzijama — model dobija kalibracione sidra. Temperature 0 (A) ne popravlja nejasne kriterijume. Majority vote 3x (D) tripluje cenu a sa vage kriterijumima model može dosledno grešiti u istom smeru. Binarna klasifikacija (C) gubi granularnost za rutiranje. Provenance: Lesson 4.1 Severity calibration.",
+    "glossary_refs": [
+      "explicit criteria",
+      "severity criteria",
+      "few-shot prompting",
+      "temperature"
+    ],
+    "pattern_refs": [
+      "concrete-examples-beat-abstract-instructions"
+    ],
+    "tags": [
+      "system-prompt",
+      "severity",
+      "calibration"
+    ]
+  },
+  {
+    "id": "d4-q024",
+    "source_id": "q-4-4-006",
+    "domain": 4,
+    "subdomain": "4.4",
+    "question": "A moderation classification tool includes a `detected_patterns` array where the model lists specific patterns it identified (e.g. 'repeated slur targeting ethnicity'). Validation checks whether the detected patterns match the assigned category, and on mismatch retries with feedback like 'You classified this as spam but detected patterns of hate speech targeting ethnicity, please re-evaluate.' What is the primary benefit of the `detected_patterns` field in this workflow?",
+    "options": {
+      "A": "It lets the system auto-correct the category by overriding the model's classification with a rule-based pattern match",
+      "B": "It provides an auditable evidence trail showing which specific content features drove each moderation decision",
+      "C": "It enables the validation step to detect internal reasoning inconsistencies and provide targeted error feedback that the model can use to self-correct its classification",
+      "D": "It increases classification accuracy by forcing the model to identify specific patterns before assigning a category"
+    },
+    "correct": "C",
+    "my_answer": "C",
+    "status": "correct",
+    "explanations": {
+      "A": "The system does not override the model's classification. It feeds back the inconsistency and asks the model to re-evaluate. The model may correct its category or its patterns — the point is self-correction, not rule-based override.",
+      "B": "Auditability is a secondary benefit. The primary benefit in this validation/retry workflow is enabling the system to detect and feed back reasoning inconsistencies for self-correction.",
+      "C": "The detected_patterns field externalises the model's reasoning into structured data that can be programmatically validated against the conclusion. When patterns and category are inconsistent, the specific error feedback ('you detected hate speech patterns but classified as spam') gives the model actionable information to self-correct. This is the core benefit in a retry-with-error-feedback workflow.",
+      "D": "While structured reasoning fields can improve accuracy, this framing misses the retry workflow context. The primary benefit is enabling programmatic validation of reasoning consistency and targeted feedback for self-correction."
+    },
+    "claude_notes": "Polje detected_patterns (model lista konkretne obrasce) + validacija da li se poklapaju sa dodeljenom kategorijom, uz retry sa feedback-om. Tačno (C): polje eksternalizuje modelovo rezonovanje u STRUKTURISANE podatke koji se programski validiraju protiv zaključka; kad se obrasci i kategorija ne poklope, ciljani feedback ('detektovao si hate speech ali klasifikovao kao spam') daje modelu konkretnu informaciju za self-correction. Auditabilnost (B) je SEKUNDARNA korist. Sistem NE override-uje klasifikaciju pravilom (A). Povećana tačnost (D) promašuje kontekst retry workflow-a. Provenance: Lesson 4.3 detected_patterns / Self-correction flow.",
+    "glossary_refs": [
+      "detected_patterns",
+      "self-correction",
+      "retry-with-feedback",
+      "structured output",
+      "Generate-Validate Pattern"
+    ],
+    "pattern_refs": [
+      "structured-signals-over-text"
+    ],
+    "tags": [
+      "structured-output",
+      "validation",
+      "self-correction"
     ]
   }
 ]

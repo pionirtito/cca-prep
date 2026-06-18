@@ -1704,5 +1704,200 @@
     "pattern_refs": [
       "tool-description-defines-boundaries"
     ]
+  },
+  {
+    "id": "d2-q043",
+    "source_id": "q-2-1-006",
+    "domain": 2,
+    "subdomain": "2.1",
+    "question": "A platform has `search_knowledge_base` ('Searches help articles') and `process_action` ('Handles customer actions like refunds and plan changes'). The agent picks `search_knowledge_base` for 'cancel my subscription' requests. After adding 'subscription cancellations' to `process_action`'s description, it now picks `process_action` for knowledge queries like 'how does cancellation work?'. What is the most effective solution?",
+    "options": {
+      "A": "Add boundary descriptions to both tools: process_action should state 'Use when the customer wants to execute a cancellation' and search_knowledge_base should state 'Use when the customer wants to learn about the cancellation process without taking action'.",
+      "B": "Remove the word 'cancellation' from both tool descriptions to eliminate the keyword conflict entirely.",
+      "C": "Consolidate search_knowledge_base and process_action into a single tool that determines the correct action based on user intent.",
+      "D": "Add few-shot examples to the system prompt showing five cancellation scenarios with the correct tool for each."
+    },
+    "correct": "A",
+    "my_answer": "D",
+    "status": "wrong",
+    "explanations": {
+      "A": "Boundary descriptions that specify when to use each tool versus similar tools resolve ambiguity. The key distinction is intent: executing an action versus seeking information. Describing these boundaries explicitly in both tools prevents cross-routing in both directions.",
+      "B": "Removing relevant keywords makes both tools less discoverable for cancellation-related queries. The solution is to differentiate when each tool handles cancellation, not to hide the concept from both.",
+      "C": "Consolidation pushes the routing problem inside the tool implementation and loses the LLM's natural language understanding. Keeping tools separate with clear boundary descriptions is simpler and more maintainable.",
+      "D": "Few-shot examples consume tokens and do not scale to the many variations of cancellation queries. Boundary descriptions in tool definitions are more efficient and generalise better."
+    },
+    "claude_notes": "PROMAŠENO (tvoj D, tačno A). search_knowledge_base vs process_action: dodavanje „subscription cancellations” u process_action izazvalo PREbacivanje u drugom smeru (info-upiti idu na akciju). Tačno: boundary descriptions u OBA alata (A) — process_action „kad korisnik želi da IZVRŠI otkazivanje”, search_knowledge_base „kad želi da NAUČI o procesu BEZ akcije”. Ključ je namera: izvršiti vs informisati se; opis granica u oba sprečava unakrsno rutiranje u oba smera. Zamka koja te uhvatila: few-shot primeri (D) troše tokene i ne skaliraju na sve varijante upita; granice u definicijama alata su efikasnije i generalizuju. Brisanje reči (B) smanjuje pronalaženje; konsolidacija (C) gubi NL razumevanje LLM-a. Provenance: Lesson 2.1 Boundary descriptions / Misrouting.",
+    "glossary_refs": [
+      "tool boundaries",
+      "tool description",
+      "few-shot prompting",
+      "unintended tool associations",
+      "routing"
+    ],
+    "pattern_refs": [
+      "tool-description-defines-boundaries"
+    ],
+    "tags": [
+      "tool-boundaries",
+      "misrouting",
+      "tool-description"
+    ]
+  },
+  {
+    "id": "d2-q044",
+    "source_id": "q-2-2-004",
+    "domain": 2,
+    "subdomain": "2.2",
+    "question": "A customer support MCP server receives a request to look up a customer record, but the database connection times out after 30 seconds. The server needs to communicate this failure to the agent. What is the correct way to structure the MCP error response?",
+    "options": {
+      "A": "Return an empty result with no error flag, and let the agent infer the failure from the missing data.",
+      "B": "Set isError to true and return a structured response with errorCategory: 'transient', isRetryable: true, and a message describing the timeout.",
+      "C": "Set isError to true and return errorCategory: 'business', isRetryable: false, since the operation could not be completed.",
+      "D": "Throw an unhandled exception to let the MCP framework propagate the error to the agent automatically."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "Returning empty results without error metadata makes the failure indistinguishable from a valid empty result (e.g. customer not found). The agent cannot determine whether to retry or accept the result.",
+      "B": "A database timeout is a transient error — the database may be available on the next attempt. Setting isError: true signals failure, errorCategory: 'transient' classifies it correctly, and isRetryable: true tells the agent it is safe to retry.",
+      "C": "A database timeout is not a business error. Business errors represent policy violations (such as exceeding a refund limit) that will never succeed on retry. A timeout is transient — the database may recover, making retry appropriate.",
+      "D": "Unhandled exceptions produce generic error messages without structured metadata. The agent cannot distinguish error types or determine retry behaviour from an unhandled exception."
+    },
+    "claude_notes": "DB timeout posle 30s — MCP server mora to javiti agentu. Tačno (B): isError:true + errorCategory:'transient' + isRetryable:true + poruka o timeout-u. Timeout je TRANZIJENTNA greška — baza može biti dostupna pri sledećem pokušaju. Prazan rezultat bez error flega (A) se ne razlikuje od validno-prazno (customer not found). Unhandled exception (D) daje generičku poruku bez metapodataka. errorCategory:'business', isRetryable:false (C) je pogrešno — business greške su trajne politike (npr. prekoračen limit), a timeout NIJE business. Pravilo: tip greške mora biti TAČAN, ne samo prisutan. Provenance: Lesson 2.2 Structured Error Responses.",
+    "glossary_refs": [
+      "structured error response",
+      "isError",
+      "errorCategory",
+      "isRetryable",
+      "transient error",
+      "business error",
+      "MCP server"
+    ],
+    "pattern_refs": [
+      "mcp-error-needs-iserror-not-empty-success",
+      "error-type-must-be-accurate-not-just-present"
+    ],
+    "tags": [
+      "mcp",
+      "error-handling",
+      "transient"
+    ]
+  },
+  {
+    "id": "d2-q045",
+    "source_id": "q-2-4-002",
+    "domain": 2,
+    "subdomain": "2.4",
+    "question": "A customer support team configures an MCP server for their internal CRM system. The agent frequently ignores the CRM MCP tool and instead uses the built-in Grep tool to search local log files for customer information, producing incomplete results. The MCP tool's description reads: 'CRM tool'. What should the team do first?",
+    "options": {
+      "A": "Remove the Grep tool from the agent's available tools so it cannot fall back to local file search.",
+      "B": "Add a system prompt instruction: 'Always use the CRM tool for customer queries. Never use Grep for customer data.'",
+      "C": "Move the MCP server configuration from .mcp.json to ~/.claude.json so it takes higher priority.",
+      "D": "Enhance the MCP tool's description to detail its capabilities: full customer records, transaction history, account status, and structured output — explaining what it returns that Grep cannot."
+    },
+    "correct": "D",
+    "my_answer": "D",
+    "status": "correct",
+    "explanations": {
+      "A": "Removing Grep cripples the agent for legitimate file search tasks. The problem is not that Grep exists but that the MCP tool's description does not communicate its superior capabilities for customer data.",
+      "B": "Hard-coding tool preferences in the system prompt is brittle and does not scale. If new tools are added or the CRM tool is renamed, the instruction becomes stale or causes conflicts.",
+      "C": "Configuration scoping (project vs user level) does not affect tool selection priority. Both levels make tools available simultaneously. The issue is the tool description, not the configuration location.",
+      "D": "When an MCP tool's description is sparse, the agent defaults to familiar built-in tools. Enhancing the description to explain capabilities and structured output in detail makes the agent prefer it for relevant queries. This is the recommended fix for MCP tool underutilisation."
+    },
+    "claude_notes": "Agent ignoriše CRM MCP alat (opis: samo „CRM tool”) i koristi Grep po log fajlovima → nepotpuni rezultati. PRVO (D): obogati OPIS alata — puni zapisi kupaca, istorija transakcija, status naloga, strukturisan izlaz; objasni šta vraća što Grep ne može. Kad je opis šturi, agent se vraća na poznate ugrađene alate. Uklanjanje Grep-a (A) sakati legitimne pretrage; hard-kodiranje u system prompt (B) je krhko i ne skalira; premeštanje konfiguracije .mcp.json → ~/.claude.json (C) ne menja prioritet izbora alata. Provenance: Lesson 2.4 Enhancing MCP descriptions.",
+    "glossary_refs": [
+      "tool description",
+      "tool discovery",
+      "MCP server",
+      "built-in tools",
+      "Grep",
+      "keyword-sensitive instructions"
+    ],
+    "pattern_refs": [
+      "tool-description-defines-boundaries"
+    ],
+    "tags": [
+      "mcp",
+      "tool-description",
+      "tool-selection"
+    ]
+  },
+  {
+    "id": "d2-q046",
+    "source_id": "q-2-4-004",
+    "domain": 2,
+    "subdomain": "2.4",
+    "question": "A customer support agent calls a payment processing tool to check a refund status. The tool returns: {\"status\": \"success\", \"data\": [], \"message\": \"No refunds found for this transaction\"}. The agent's recovery logic treats this as an error and retries the request. What is wrong with the agent's behaviour?",
+    "options": {
+      "A": "The agent should retry more times, as the payment system may be slow to process refund records.",
+      "B": "The agent incorrectly treats a valid empty result as an error. An empty data array with a success status means the query executed correctly but found no matching records — this requires no retry.",
+      "C": "The tool should not return an empty array — it should return an error with isRetryable: false to prevent the retry.",
+      "D": "The agent should escalate to a human immediately instead of retrying, as payment queries should never be retried."
+    },
+    "correct": "B",
+    "my_answer": "B",
+    "status": "correct",
+    "explanations": {
+      "A": "The tool returned status 'success' with a clear message. This is not a slow-processing issue — the query completed successfully and found no refunds. Retrying will produce the same result.",
+      "B": "An empty array result is not a failure when the status indicates success. The tool queried the payment system, found no refund records, and returned that information correctly. The agent should inform the customer that no refund exists for this transaction, not retry.",
+      "C": "The tool response is correct — a successful query with no results should return an empty array with a success status. The problem is the agent's recovery logic failing to distinguish valid empty results from actual errors.",
+      "D": "There is nothing to escalate. The query succeeded and returned a valid result: no refunds exist. The agent should simply communicate this to the customer."
+    },
+    "claude_notes": "Alat vraća {status:'success', data:[], message:'No refunds found'}, a recovery logika to tretira kao grešku i retry-uje. Tačno (B): agent pogrešno tretira VALIDAN prazan rezultat kao grešku — prazan niz uz success znači da je upit uspeo ali nije našao zapise; ne treba retry, samo javi kupcu da povraćaj ne postoji. Retry više puta (A) daje isti rezultat. Eskalacija čoveku (D) — nema šta da se eskalira. „Alat treba da vrati error umesto praznog niza” (C) je pogrešno: uspešan upit bez rezultata se ISPRAVNO vraća kao prazan niz uz success; problem je u agentovoj recovery logici, ne u alatu. Provenance: Lesson 2.2 Access failure vs empty result.",
+    "glossary_refs": [
+      "empty result",
+      "structured error response",
+      "isError",
+      "isRetryable",
+      "business error"
+    ],
+    "pattern_refs": [
+      "mcp-error-needs-iserror-not-empty-success"
+    ],
+    "tags": [
+      "error-handling",
+      "empty-result",
+      "retry"
+    ]
+  },
+  {
+    "id": "d2-q047",
+    "source_id": "q-2-5-007",
+    "domain": 2,
+    "subdomain": "2.5",
+    "question": "A developer asks Claude Code to modify a function in a large file. The Edit tool fails with a 'non-unique match' error because the target text appears in multiple locations within the file. What is the correct recovery approach?",
+    "options": {
+      "A": "Switch to Bash with sed to perform the replacement using line numbers instead of text matching.",
+      "B": "Use Read to load the full file contents, then use Write to output the complete modified file with the change applied.",
+      "C": "Expand the Edit search string to include more surrounding context until it becomes unique in the file.",
+      "D": "Split the file into smaller files so that each occurrence appears in only one file, then use Edit on each."
+    },
+    "correct": "C",
+    "my_answer": "B",
+    "status": "wrong",
+    "explanations": {
+      "A": "Bash with sed bypasses the built-in Edit tool's safety guarantees and is fragile when line numbers shift. The Edit tool documents the correct first recovery step (expand context or use replace_all).",
+      "B": "Rewriting the whole file with Write is wasteful and unsafe — it loses the surgical-edit guarantees of Edit and risks dropping content. This is a last resort when no unique context exists, not the designed recovery path.",
+      "C": "The Edit tool's documented recovery path: 'Either provide a larger string with more surrounding context to make it unique, or use replace_all to change every instance of old_string.' Expanding context preserves Edit's surgical safety. If every occurrence should be changed identically, replace_all is the alternative.",
+      "D": "Restructuring files to accommodate tool limitations is disproportionate effort. The Edit tool's own recovery path (more context or replace_all) handles non-unique matches without changing the codebase."
+    },
+    "claude_notes": "PROMAŠENO (tvoj B, tačno C). Edit pada sa 'non-unique match' jer se ciljani tekst javlja na više mesta. Tačno (C): proširi search string Edit-a dodatnim okolnim kontekstom dok ne postane jedinstven (ili replace_all ako sve pojave treba menjati isto) — to čuva hiruršku sigurnost Edit-a; baš tako glasi dokumentovana putanja oporavka. Zamka koja te uhvatila: učitati ceo fajl pa Write ceo izmenjen sadržaj (B) je rasipno i nesigurno (gubi garancije Edit-a, rizik da ispustiš sadržaj) — to je poslednje sredstvo, ne dizajnirana putanja. sed po brojevima linija (A) je krhko; cepanje fajla (D) je nesrazmeran trud. Provenance: Lesson 2.5 Edit non-unique match recovery.",
+    "glossary_refs": [
+      "Edit",
+      "replace_all",
+      "str_replace",
+      "Write",
+      "structurally-aware editing",
+      "built-in tools"
+    ],
+    "pattern_refs": [
+      "full-file-replace-write-targeted-edit-edit"
+    ],
+    "tags": [
+      "edit-tool",
+      "recovery",
+      "built-in-tools"
+    ]
   }
 ]
