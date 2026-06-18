@@ -2011,5 +2011,12 @@
     "seen_in": [
       "d5-q004"
     ]
+  },
+  {
+    "term": "regression testing",
+    "en": "Re-running existing tests after a change to ensure previously-working behavior has not broken. A 'regression' is a defect where functionality that used to work degrades or breaks after a code change, refactor, or model/prompt update. In agentic and Claude Code workflows it is automated in CI (e.g. via hooks or a -p non-interactive review step) so changes are gated before merge.",
+    "sr": "Ponovno pokretanje postojećih testova posle izmene da se proveri da ranije ispravno ponašanje nije pokvareno. „Regresija” je defekt gde funkcionalnost koja je radila počne da otkazuje posle izmene koda, refaktora ili promene modela/prompta. U agentskim i Claude Code tokovima automatizuje se u CI-ju (npr. preko hook-ova ili -p non-interaktivnog review koraka) da se izmene propuste tek kad prođu kapiju.",
+    "domain": 3,
+    "seen_in": []
   }
 ]
